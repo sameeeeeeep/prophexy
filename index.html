@@ -1,9 +1,4 @@
 <title>Prophexy &middot; Tonight</title>
-<!-- Switchboard SDK resolution: on deploy, place the @relay/sdk bundle at ./relay-sdk.js
-     (or repoint this map). Absent -> the dynamic import fails and the app degrades gracefully. -->
-<script type="importmap">
-{ "imports": { "@relay/sdk": "./relay-sdk.js" } }
-</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&display=swap">
@@ -2023,6 +2018,20 @@ function localOptionHTML(){
     '<button class="aibtn ghost" id="aiLocal">Read on this device</button>'+
     '<div class="aiprog" id="aiProg" hidden><div class="aiprogbar"><i id="aiProgFill"></i></div><div class="aiprogtxt" id="aiProgTxt">Waking it up&hellip;</div></div></div>';
 }
+function wireOpenSB(){
+  var a=$('aiOpenSB');if(!a)return;
+  a.addEventListener('click',function(e){
+    if(window.claude&&window.claude.isRelay)return; /* already inside Switchboard */
+    var left=false,onHide=function(){left=true;};
+    document.addEventListener('visibilitychange',onHide,{once:true});
+    window.addEventListener('blur',onHide,{once:true});
+    setTimeout(function(){
+      document.removeEventListener('visibilitychange',onHide);
+      window.removeEventListener('blur',onHide);
+      if(!left)location.href='https://thelastprompt.ai/switchboard/';
+    },1400);
+  });
+}
 function wireLocal(){
   var b=$('aiLocal');if(!b)return;
   b.addEventListener('click',function(){
@@ -2070,11 +2079,12 @@ function renderAI(){
     wireLocal();renderTaste();return;
   }
   if(AI.installed===false){
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Your reading is written live by an AI reading your whole chart &mdash; on your own Claude, through Switchboard.</p>'+
-      '<a class="aibtn" href="'+(AI.installUrl||'#')+'" target="_blank">Install Switchboard to unlock</a>'+
+    host.innerHTML='<div class="aigate"><p class="aigatelead">Your reading is written live by an AI that has read your whole chart &mdash; on <b>your own Claude</b>, through Switchboard. No account, no fee.</p>'+
+      '<p class="aigatesub">Open Prophexy inside Switchboard and it gains your Claude; every grant is still asked for on your own machine.</p>'+
+      '<a class="aibtn" id="aiOpenSB" href="'+(AI.installUrl||'#')+'">Open in Switchboard</a>'+
       localOptionHTML()+
       '<div class="aitaste"><div class="lb">A taste, computed offline</div><p id="aiTaste"></p></div></div>';
-    wireLocal();renderTaste();return;
+    wireOpenSB();wireLocal();renderTaste();return;
   }
   if(!AI.connected){
     host.innerHTML='<div class="aigate"><p class="aigatelead">Ready. Connect your Claude and Prophexy will read your whole chart and speak to you directly.</p>'+
@@ -3707,30 +3717,71 @@ window.PX3D={
 frame();
 })();
 </script>
-<script type="module">
-/* Switchboard bridge: the reading runs on the user's own Claude, no key, no server.
-   Fails safe - if the SDK/app is absent, window.PROPHEXY_AI is null and the page degrades. */
-(async function(){
-  var api;
-  try{
-    var mod=await import('@relay/sdk');
-    var relay=await mod.whenRelayReady();
-    if(relay && !('connect' in relay)){
-      api={installed:false, installUrl:relay.installUrl};
-    }else if(relay){
-      var conn=null;
-      api={
-        installed:true, connected:false,
-        connect:async function(){ conn=await relay.connect({
-          models:['claude-sonnet-5','claude-haiku-4-5'],
-          reason:'Read your birth chart across every system and answer your questions, as your personal astrologer'});
-          api.connected=true; return conn; },
-        stream:function(o){ return (conn||relay).stream(o); },
-        complete:function(o){ return (conn||relay).complete(o); }
+<script>
+/* Switchboard bridge - the reading runs on the user's OWN Claude via window.claude (no key, no server).
+   window.claude is injected by the Switchboard Mac app (any origin) or its Chrome extension
+   (allowlisted origins, which include sameeeeeeep.github.io). Absent -> installed:false, the page
+   shows "Open in Switchboard" and degrades to the on-device model / computed taste. */
+(function(){
+  var OPEN_URL='switchboard://open?url='+encodeURIComponent(location.href.split('#')[0])+'&name=Prophexy';
+  function ready(){
+    if(window.claude&&window.claude.isRelay)return Promise.resolve(window.claude);
+    return new Promise(function(res){
+      var done=false,fin=function(){ if(done)return; done=true;
+        res(window.claude&&window.claude.isRelay?window.claude:null); };
+      window.addEventListener('claude#initialized',fin,{once:true});
+      setTimeout(fin,1600);
+    });
+  }
+  function toWire(o){
+    var msgs=(o.messages||[]).map(function(m){return {role:m.role,content:m.content};});
+    if(o.system){
+      if(msgs.length&&msgs[0].role==='user'){ msgs[0]={role:'user',content:o.system+'\n\n'+msgs[0].content}; }
+      else { msgs.unshift({role:'user',content:o.system}); }
+    }
+    var p={model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,messages:msgs};
+    if(o.attachments&&o.attachments.length)p.attachments=o.attachments;
+    return p;
+  }
+  async function *streamOnce(o){
+    var params=toWire(o),res=null;
+    try{ res=window.claude.request({method:'claude_stream',params:params}); }catch(e){ res=null; }
+    if(res&&typeof res.then==='function'){ try{ res=await res; }catch(e){ res=null; } }
+    if(res&&res[Symbol.asyncIterator]){
+      for await (var d of res){ if(!d)continue;
+        if(d.type==='text'&&d.text) yield {type:'text',text:d.text}; }
+      return;
+    }
+    var out=await window.claude.request({method:'claude_complete',params:params});
+    var text=(out&&(out.text||out.completion||out.content))||'';
+    if(text) yield {type:'text',text:text};
+  }
+  async function *streamWire(o){
+    var emitted=0;
+    try{ for await (var d of streamOnce(o)){ emitted++; yield d; } }
+    catch(e){
+      if(emitted===0 && o.model!=='claude-haiku-4-5'){
+        var o2={}; for(var k in o)o2[k]=o[k]; o2.model='claude-haiku-4-5';
+        for await (var d2 of streamOnce(o2)){ yield d2; }
+      } else throw e;
+    }
+  }
+  ready().then(function(claude){
+    var api;
+    if(!claude){ api={installed:false, installUrl:OPEN_URL}; }
+    else{
+      api={ installed:true, connected:false, installUrl:OPEN_URL,
+        connect:async function(){
+          await window.claude.request({method:'claude_connect',params:{
+            models:['claude-sonnet-5','claude-haiku-4-5'],
+            reason:'Read your birth chart across every system and answer your questions, as your personal astrologer'}});
+          api.connected=true; return true; },
+        stream:function(o){ return streamWire(o); },
+        complete:function(o){ return window.claude.request({method:'claude_complete',params:toWire(o)}); }
       };
-    }else{ api=null; }
-  }catch(e){ api=null; }
-  window.PROPHEXY_AI=api;
-  window.dispatchEvent(new CustomEvent('prophexy-ai-ready'));
+    }
+    window.PROPHEXY_AI=api;
+    window.dispatchEvent(new CustomEvent('prophexy-ai-ready'));
+  });
 })();
 </script>
