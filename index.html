@@ -665,6 +665,7 @@
   .aiprogbar{height:2px;background:var(--g3);overflow:hidden}
   .aiprogbar i{display:block;height:100%;width:0;background:var(--sig);transition:width .35s ease}
   .aiprogtxt{font-size:11px;letter-spacing:.03em;color:var(--g2);margin-top:9px}
+  .scoremeta{display:block;margin-top:10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--g2)}
   .aithread{margin-top:20px;display:flex;flex-direction:column;gap:16px}
   .aiqa{max-width:62ch;line-height:1.6}
   .aiqa.you{color:var(--g1);font-size:14px;border-left:1px solid var(--g3);padding-left:14px}
@@ -3283,36 +3284,64 @@ function verdict(){
   var S=SPREADS[SPREAD],w=S.w,score=0,p=[];
   picked.forEach(function(c,i){var v=POLARITY[c.r]*(c.inv?-1:1);p.push(v);score+=v*w[i];});
   var maxAbs=w.reduce(function(a,b){return a+Math.abs(b);},0);
-  var v,reason;
-  if(SPREAD==='yesno'){
-    if(score>=3){v='yes<em>.</em>';reason='Three seats agree. Move while it is open.';}
-    else if(score>=1){v='yes<em>, with one condition.</em>';reason='The way is open but not free &mdash; the middle plate names the price.';}
-    else if(score===0){v='not yet<em>.</em>';reason='The board is balanced. Nothing is refused; nothing is ready.';}
-    else if(score>=-2){v='not in this form<em>.</em>';reason='The wanting is sound, the shape is wrong. Change it and ask again.';}
-    else{v='no<em>.</em>';reason='The answer is against you this time. Spend the effort elsewhere.';}
-  }else if(SPREAD==='choice'){
-    if(p[0]>p[1]){v='the <em>first</em>.';reason='The first path reads stronger. ';}
-    else if(p[1]>p[0]){v='the <em>second</em>.';reason='The second path reads stronger. ';}
-    else{v='<em>neither, yet</em>.';reason='Both paths weigh the same, which means the choice is not the real question. ';}
-    reason+='What decides it is the third seat, not your preference.';
-  }else if(SPREAD==='timing'){
-    if(score>=2){v='<em>sooner</em> than you think.';reason='What was holding it has lost its grip. The window is opening, not closing.';}
-    else if(score>=0){v='when you <em>move first</em>.';reason='Nothing external is due to change. The clock starts when you do.';}
-    else{v='<em>not on this attempt</em>.';reason='The hold is still real. Forcing the timing now costs you the next window too.';}
-  }else if(SPREAD==='block'){
-    if(score>=2){v='it is <em>already lifting</em>.';reason='The way through is stronger than the block. Push here.';}
-    else if(score>=0){v='the block is <em>yours</em>.';reason='Nothing outside is stopping this. The root seat names the habit holding it.';}
-    else{v='the block is <em>structural</em>.';reason='This will not move by effort. Change the arrangement, not the intensity.';}
-  }else{
-    if(score>=1){v='<em>less</em> than you fear.';reason='What you are missing is not against you. Look again without flinching.';}
-    else if(score>=-1){v='the <em>obvious thing</em>.';reason='You already suspect it. The second seat is the one you skipped past.';}
-    else{v='<em>the cost</em>.';reason='You have seen the opportunity and not the price. The third seat is the bill.';}
+
+  /* --- who is asking, and what is actually live for THEM right now --- */
+  var who=firstName(PROF.name)||'';
+  var dt=new Date(),pp=PROF.dob.split('-'),pd=pDay(+pp[1],+pp[2],dt);
+  var TR=todayReading();
+  var force;
+  if(TR&&TR.transit){
+    var vb={flows:'opening up',tense:'under pressure',act:'lit up'}[TR.transit.tone]||'stirring';
+    force='<b>'+TP_PLAIN[TR.transit.tp]+'</b> is touching '+NAT_PLAIN[TR.transit.np]+' in your birth chart, so '+NAT_AREA[TR.transit.np]+' is '+vb+' today';
+  } else {
+    force='the sky is unusually quiet against your chart today, so the weight falls on your number &mdash; a '+pd+'-day, '+N(pd).w;
   }
-  var mid=ARCANA[picked[1].r];
+  var qraw=($('q')&&$('q').value||'').trim().replace(/[<>]/g,'');
+  var qc=qraw?(' against &ldquo;'+qraw+'&rdquo;'):'';
+
+  /* --- the three cards, in their seats --- */
+  var c=[0,1,2].map(function(i){var a=ARCANA[picked[i].r];
+    return {n:a[1],m:a[2],inv:picked[i].inv,pos:S.pos[i].toLowerCase()};});
+  var cardline='<b>'+c[0].n+'</b>'+(c[0].inv?' (inverted)':'')+' fell in &ldquo;'+c[0].pos+'&rdquo;, <b>'+c[1].n+'</b>'+(c[1].inv?' (inverted)':'')+' at the centre, <b>'+c[2].n+'</b>'+(c[2].inv?' (inverted)':'')+' in &ldquo;'+c[2].pos+'&rdquo;.';
+  var cruxIdx=({yesno:1,choice:2,timing:1,block:2,blind:1})[SPREAD]; if(cruxIdx==null)cruxIdx=1;
+  var crux=c[cruxIdx];
+
+  /* --- crisp verdict (v) + a short lead; the body below is built per-person --- */
+  var v,lead;
+  if(SPREAD==='yesno'){
+    if(score>=3){v='yes<em>.</em>';lead='Three seats agree.';}
+    else if(score>=1){v='yes<em>, with one condition.</em>';lead='The way is open, but priced.';}
+    else if(score===0){v='not yet<em>.</em>';lead='The board is balanced &mdash; nothing refused, nothing ready.';}
+    else if(score>=-2){v='not in this form<em>.</em>';lead='The want is sound; the shape is wrong.';}
+    else{v='no<em>.</em>';lead='The board is against this one.';}
+  }else if(SPREAD==='choice'){
+    if(p[0]>p[1]){v='the <em>first</em>.';lead='The first path reads stronger &mdash; but the deciding seat is neither option.';}
+    else if(p[1]>p[0]){v='the <em>second</em>.';lead='The second path reads stronger &mdash; but the deciding seat is neither option.';}
+    else{v='<em>neither, yet</em>.';lead='Both paths weigh the same, so the choice is not the real question.';}
+  }else if(SPREAD==='timing'){
+    if(score>=2){v='<em>sooner</em> than you think.';lead='What was holding it has lost its grip.';}
+    else if(score>=0){v='when you <em>move first</em>.';lead='Nothing external is due to turn on its own.';}
+    else{v='<em>not on this attempt</em>.';lead='The hold is still real; forcing it costs you the next window.';}
+  }else if(SPREAD==='block'){
+    if(score>=2){v='it is <em>already lifting</em>.';lead='The way through outweighs the block.';}
+    else if(score>=0){v='the root is <em>within your reach</em>.';lead='Nothing outside is doing this to you.';}
+    else{v='the block is <em>structural</em>.';lead='Effort will not shift this &mdash; the arrangement has to change.';}
+  }else{
+    if(score>=1){v='<em>less</em> than you fear.';lead='What you are missing is not against you.';}
+    else if(score>=-1){v='the <em>obvious thing</em>.';lead='You already suspect it.';}
+    else{v='<em>the cost</em>.';lead='You have seen the opportunity, not the price.';}
+  }
+
+  var tip=(score>0?'tips it your way':score<0?'tips it against you':'holds it at a standstill');
+  var reason=lead+' '+cardline+' '+
+    'This reading is yours, not a template &mdash; '+force+(who?(', for '+who):'')+qc+'. '+
+    'That live pressure is what '+tip+'. '+
+    'Your move is in &ldquo;'+S.pos[cruxIdx].toLowerCase()+'&rdquo; &mdash; <b>'+crux.n+'</b>'+
+    (crux.inv?', inverted,':'')+': '+crux.m+'. '+
+    '<span class="scoremeta">Weighted '+(score>0?'+':'')+score+' of &plusmn;'+maxAbs+'.</span>';
+
   $('vv').innerHTML=v;
-  $('vr').innerHTML=reason+' <b>'+mid[1]+'</b> sits in &ldquo;'+S.pos[1].toLowerCase()+'&rdquo;'+
-    (picked[1].inv?', inverted':'')+' &mdash; '+mid[2]+'. Weighted score '+(score>0?'+':'')+score+
-    ' of a possible &plusmn;'+maxAbs+'.';
+  $('vr').innerHTML=reason;
   $('verdict').classList.add('on');
   resolveTone();
 }
