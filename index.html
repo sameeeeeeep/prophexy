@@ -665,6 +665,35 @@
   .aiprogbar{height:2px;background:var(--g3);overflow:hidden}
   .aiprogbar i{display:block;height:100%;width:0;background:var(--sig);transition:width .35s ease}
   .aiprogtxt{font-size:11px;letter-spacing:.03em;color:var(--g2);margin-top:9px}
+  /* hub deck */
+  .hubdeck{margin:clamp(30px,5vh,58px) 0 clamp(6px,2vh,18px)}
+  .hublb{margin-bottom:15px}
+  .hubgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  @media(max-width:760px){.hubgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:440px){.hubgrid{grid-template-columns:1fr}}
+  .hubcard{position:relative;background:#000;border:none;text-align:left;padding:20px 18px 18px;cursor:pointer;color:var(--ink);font-family:inherit;display:flex;flex-direction:column;gap:5px;min-height:120px;transition:background .18s}
+  .hubcard:hover{background:#07070c}
+  .hcn{font-size:10px;letter-spacing:.2em;color:var(--g2)}
+  .hct{font-size:17px;line-height:1.2;margin-top:auto}
+  .hcs{font-size:12.5px;color:var(--g1);line-height:1.4}
+  .hcarrow{position:absolute;top:18px;right:16px;color:var(--g2);transition:color .18s,transform .18s}
+  .hubcard:hover .hcarrow{color:var(--sig);transform:translateX(3px)}
+  .dreamlead{font-size:15px;color:var(--g1);line-height:1.65;max-width:62ch;margin:0 0 20px}
+  .dreamin{width:100%;min-height:118px;background:#000;border:1px solid var(--g3);color:var(--ink);font-family:"Archivo",sans-serif;font-size:16px;line-height:1.6;padding:16px;resize:vertical;box-sizing:border-box}
+  .dreamin:focus{outline:none;border-color:var(--g1);background:#07070c}
+  .dreamchips{display:flex;flex-wrap:wrap;gap:1px;background:var(--g3);border:1px solid var(--g3);width:fit-content;margin:14px 0}
+  .dreamchips button{background:#000;border:none;color:var(--g1);font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 15px;cursor:pointer;font-family:inherit}
+  .dreamchips button:hover{color:var(--ink)}
+  .dreamchips button.on{background:var(--sig);color:#000}
+  .dreamrec{display:flex;align-items:center;gap:9px;color:var(--g1);font-size:13.5px;margin:6px 0 18px;cursor:pointer}
+  .dreamlist{margin-top:30px;border-top:1px solid var(--line);padding-top:22px;display:flex;flex-direction:column;gap:24px}
+  .dreammeta{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .drtag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#000;background:var(--g1);padding:2px 8px}
+  .drdate{font-size:11px;color:var(--g2);letter-spacing:.06em}
+  .dreamtext{font-size:15px;color:var(--ink);line-height:1.55;margin:0 0 10px;font-style:italic}
+  .dreamread{font-size:15px;color:var(--g1);line-height:1.65;white-space:pre-wrap}
+  .dreamread.streaming::after{content:"\258d";color:var(--sig)}
+  .dreamsaved{color:var(--g1);font-size:14px;line-height:1.6}
   #thread{display:none}
   .scoremeta{display:block;margin-top:10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--g2)}
   .aithread{margin-top:20px;display:flex;flex-direction:column;gap:16px}
@@ -849,6 +878,8 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
     <div class="rail" id="rail"></div>
   </div>
 
+  <div class="hubdeck rv" id="hubDeck"></div>
+
   <section class="blk" id="do">
     <div class="shead rv"><h2>Do this today</h2><span class="lb dim">One thing, three steps</span></div>
     <div class="dosteps rv" id="doSteps"></div>
@@ -878,6 +909,11 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
       <div class="capslot"><div class="lb" style="margin-bottom:12px">Your palm</div><div id="cap_palm"></div></div>
       <div class="capslot"><div class="lb" style="margin-bottom:12px">Your face</div><div id="cap_face"></div></div>
     </div>
+  </section>
+
+  <section class="blk" id="dream">
+    <div class="shead rv"><h2>Tell it a dream</h2><span class="lb dim">When you remember one</span></div>
+    <div class="dreamwrap rv" id="dreamWrap"></div>
   </section>
 
   <section class="blk" id="reading-ai">
@@ -2018,7 +2054,7 @@ function aiSystemPrompt(){
         '. Read '+(PROPHEXY_MEDIA.palm?'the palm (heart, head, life and fate lines, and the mounts) ':'')+(PROPHEXY_MEDIA.face?(PROPHEXY_MEDIA.palm?'and the face (physiognomy)':'the face (physiognomy)'):'')+
         ' and let what you see there confirm, sharpen or complicate the chart - weave it in, do not analyse it separately. '
       : '')+
-    calibNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
+    calibNote()+dreamNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
 }
 function localOptionHTML(){
   if(!LocalAI.supported())return '';
@@ -2181,6 +2217,94 @@ function applyDailyLine(){
   var h=$('headline');if(h){h.textContent=d.line;h.classList.add('aiwritten');}
   var co=$('chainOut');if(co){var cs=co.querySelector('.chainhead');if(cs)cs.textContent=d.line;}
 }
+function escapeHTML(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function aiUsable(){ try{ return (AIMODE==='local'&&LocalAI.isReady())||(window.PROPHEXY_AI&&window.PROPHEXY_AI.connected); }catch(e){ return false; } }
+
+var DRKEY='prophexy.dreams';
+function loadDreams(){try{return JSON.parse(localStorage.getItem(DRKEY))||[];}catch(e){return [];}}
+function saveDreams(a){try{localStorage.setItem(DRKEY,JSON.stringify(a.slice(-12)));}catch(e){}}
+function addDream(text,feel,recurring){var a=loadDreams();a.push({t:String(text).slice(0,1400),f:feel||'',r:!!recurring,d:todayKey(),reading:''});saveDreams(a);return a;}
+function dreamNote(){
+  var a=loadDreams();if(!a.length)return '';
+  var recent=a.slice(-4).map(function(x){return '- '+(x.r?'[recurring] ':'')+(x.f?'(felt '+x.f+') ':'')+x.t;});
+  return '\n\nDREAMS they have written down (use these to understand what is really on their mind - weave the meaning into who they are and what they are living through; NEVER give a generic dream-symbol dictionary):\n'+recent.join('\n');
+}
+function readDream(idx){
+  var a=loadDreams(),dr=a[idx];if(!dr)return;
+  var box=document.getElementById('dreamRead'+idx);if(!box)return;
+  if(!aiUsable()){
+    box.innerHTML='<p class="dreamsaved">Saved. This dream now feeds your reading &mdash; open your reading (your own Claude, or the on-device mind) and it will read it for you.</p>';
+    return;
+  }
+  box.classList.add('streaming');box.textContent='';
+  var msg=[{role:'user',content:'I had this dream'+(dr.r?' and it keeps coming back':'')+(dr.f?', it felt '+dr.f:'')+': "'+dr.t+'". Read it for me - plainly, tied to my chart and what I am living through right now. What is it really about? A few honest sentences, no generic symbol lookup.'}];
+  aiStreamInto(box,{system:aiSystemPrompt(),messages:msg,attachments:(AIMODE==='local'?[]:aiAttachments()),model:'claude-sonnet-5',maxTokens:420}).then(function(){
+    box.classList.remove('streaming');
+    var a2=loadDreams();if(a2[idx]){a2[idx].reading=box.textContent;saveDreams(a2);}
+  });
+}
+function renderDream(){
+  var host=$('dreamWrap');if(!host)return;
+  var a=loadDreams();
+  var saved=a.map(function(dr,i){
+    return '<div class="dreamitem"><div class="dreammeta">'+
+      (dr.r?'<span class="drtag">recurring</span>':'')+(dr.f?'<span class="drtag">'+escapeHTML(dr.f)+'</span>':'')+
+      '<span class="drdate">'+escapeHTML(dr.d)+'</span></div>'+
+      '<p class="dreamtext">&ldquo;'+escapeHTML(dr.t)+'&rdquo;</p>'+
+      (dr.reading
+        ? '<div class="dreamread">'+escapeHTML(dr.reading)+'</div>'
+        : '<div class="dreamread" id="dreamRead'+i+'"></div><button type="button" class="linkbtn" data-dream="'+i+'">read this dream</button>')+
+      '</div>';
+  }).reverse().join('');
+  host.innerHTML=
+    '<p class="dreamlead">A dream is the most honest thing you can hand it. Write one down while you still have it &mdash; it reads the dream against your chart, and it remembers, so every reading after this knows you a little better.</p>'+
+    '<textarea id="dreamIn" class="dreamin" placeholder="I was somewhere I half-recognised&hellip;"></textarea>'+
+    '<div class="dreamchips" id="dreamFeel">'+['uneasy','vivid','calm','strange','sad','charged'].map(function(f){return '<button type="button" data-feel="'+f+'">'+f+'</button>';}).join('')+'</div>'+
+    '<label class="dreamrec"><input type="checkbox" id="dreamRec"> This one keeps coming back</label>'+
+    '<button type="button" class="aibtn ghost" id="dreamSave">Log &amp; read it</button>'+
+    (saved?'<div class="dreamlist">'+saved+'</div>':'');
+  var feel='';
+  host.querySelectorAll('#dreamFeel button').forEach(function(b){b.addEventListener('click',function(){
+    host.querySelectorAll('#dreamFeel button').forEach(function(o){o.classList.remove('on');});
+    b.classList.add('on');feel=b.dataset.feel;try{A();blip(600,0.06,0.06);}catch(e){}});});
+  var sv=$('dreamSave');
+  if(sv)sv.addEventListener('click',function(){
+    var t=($('dreamIn').value||'').trim();if(!t)return;
+    addDream(t,feel,$('dreamRec')&&$('dreamRec').checked);
+    try{A();blip(680,0.09,0.1);}catch(e){}
+    renderDream();
+    var a2=loadDreams();readDream(a2.length-1);
+  });
+  host.querySelectorAll('[data-dream]').forEach(function(b){b.addEventListener('click',function(){readDream(+b.dataset.dream);});});
+}
+
+var HUBCARDS=[
+ {t:'Today&rsquo;s reading',s:'the one thing, in your own words',go:'reading-ai'},
+ {t:'Why today says this',s:'the signals behind the line',go:'do',why:true},
+ {t:'Your chart',s:'where everything sits right now',go:'sky'},
+ {t:'Every system',s:'Vedic, Chinese, your numbers',go:'vedic'},
+ {t:'What you are here for',s:'the part that never changes',go:'purpose'},
+ {t:'Tell it a dream',s:'log one while you remember it',go:'dream'},
+ {t:'Tonight&rsquo;s remedy',s:'one small thing to do',go:'remedy'},
+ {t:'The week ahead',s:'your strong and weak days',go:'week'},
+ {t:'Ask the cards',s:'a yes / no, a choice, a block',go:'cards'}
+];
+function renderHub(){
+  var host=$('hubDeck');if(!host)return;
+  host.innerHTML='<div class="hublb"><span class="lb">Where to go</span></div>'+
+   '<div class="hubgrid">'+HUBCARDS.map(function(c,i){
+     return '<button type="button" class="hubcard" data-go="'+c.go+'"'+(c.why?' data-why="1"':'')+'>'+
+       '<span class="hcn">'+String(i+1).padStart(2,'0')+'</span>'+
+       '<span class="hct">'+c.t+'</span><span class="hcs">'+c.s+'</span>'+
+       '<span class="hcarrow">&rarr;</span></button>';
+   }).join('')+'</div>';
+  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
+    var id=b.dataset.go,el=document.getElementById(id);
+    if(b.dataset.why){var wp=$('whyPanelWrap'),wt=$('whyToggle');if(wp&&wt&&!wp.classList.contains('open'))wt.click();}
+    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    try{A();blip(680,0.08,0.09);}catch(e){}
+  });});
+}
 function build(){
   var dt=new Date(),p=PROF.dob.split('-'),by=+p[0],bm=+p[1],bd=+p[2];
   var b=skyNow(dt,PROF.lat,PROF.lng);
@@ -2242,6 +2366,8 @@ function build(){
   renderDo();
   renderChain();
   renderCapture();
+  renderDream();
+  renderHub();
   renderAI();
   (function(){
     var t=$('whyToggle'),w=$('whyPanelWrap');
