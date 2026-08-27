@@ -734,7 +734,11 @@
   .hubcard:hover{background:#07070c}
   .hcn{font-size:10px;letter-spacing:.2em;color:var(--g2)}
   .hct{font-size:17px;line-height:1.2;margin-top:auto}
-  .hcs{font-size:12.5px;color:var(--g1);line-height:1.4}
+  .hcs{font-size:12.5px;color:var(--g1);line-height:1.42}
+  .hubcard .hcs{color:var(--ink)}
+  .geohere{margin-top:9px;background:none;border:none;color:var(--sig);font-family:inherit;font-size:11px;letter-spacing:.04em;cursor:pointer;padding:2px 0;text-align:left}
+  .geohere:hover{text-decoration:underline}
+  .geohere:disabled{color:var(--g2);cursor:default}
   .hcarrow{position:absolute;top:18px;right:16px;color:var(--g2);transition:color .18s,transform .18s}
   .hubcard:hover .hcarrow{color:var(--sig);transform:translateX(3px)}
   .dreamlead{font-size:15px;color:var(--g1);line-height:1.65;max-width:62ch;margin:0 0 20px}
@@ -868,7 +872,7 @@
             <option value="22">Night &middot; 20&ndash;24</option>
           </select>
         </div>
-        <label class="fld w"><span>Station &mdash; where you were born</span><select id="inPlace"></select></label>
+        <label class="fld w"><span>Where you were born</span><input id="inPlace" list="cityList" placeholder="Type any city or town&hellip;" autocomplete="off"><datalist id="cityList"></datalist><button type="button" class="geohere" id="useHere">&#9678; use my current location</button></label>
       </div>
       <div class="identfoot">
         <span class="msg" id="identNote">Name drives your number. Time and station fix your ascendant.</span>
@@ -2415,13 +2419,36 @@ function wireNav(){
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
     a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home')showHome();else openCard(g,a.textContent);});});
 }
+function trunc(x,n){x=String(x||'');return x.length>n?x.slice(0,n-1).replace(/\s+\S*$/,'')+'&hellip;':x;}
+function cardSummary(go){
+  try{
+    var dt=new Date(),pp=PROF.dob.split('-'),by=+pp[0],bm=+pp[1],bd=+pp[2];
+    if(go==='reading-ai'){var tl=todaysLine&&todaysLine();return tl?trunc(tl.line,64):trunc(String(specificHeadline()).replace(/<[^>]+>/g,''),64);}
+    if(go==='do'){var a=actionFor();return trunc(cap(a.t||a.d||''),58);}
+    if(go==='why'){var TR=todayReading();return TR&&TR.transit?(cap(TP_PLAIN[TR.transit.tp])+' meeting '+(NAT_PLAIN[TR.transit.np]||'you')):'a quiet sky over your chart';}
+    if(go==='sky'){var b=skyNow(dt,PROF.lat,PROF.lng);return 'Moon '+signOf(b.Moon.lon).sign+' &middot; Sun '+signOf(b.Sun.lon).sign+' &middot; Rising '+signOf(b.ASC.lon).sign;}
+    if(go==='reading'){var pd=pDay(bm,bd,dt),lp=lifePath(by,bm,bd);return 'Day '+pd+' &middot; '+N(pd).w+' &middot; life path '+lp;}
+    if(go==='vedic'){var b2=natalChart(),ay=ayanamsa(by);return signOf(rev(b2.Sun.lon-ay)).sign+' Sun, the Vedic way';}
+    if(go==='chinese'){var Y=chineseYear(by,bm,bd);return (Y.yang?'Yang':'Yin')+' '+Y.element+' '+Y.animal;}
+    if(go==='purpose'){try{var ns=nodesFor();return trunc(NODE_AIM[ns.sign],60);}catch(e){return 'the part that never moves';}}
+    if(go==='dream'){var d=loadDreams();return d.length?(d.length+' dream'+(d.length>1?'s':'')+' logged'):'none yet &mdash; log one while it&rsquo;s fresh';}
+    if(go==='capture'){var m=(window.PROPHEXY_MEDIA||{});return (m.palm||m.face)?((m.palm&&m.face)?'palm + face added':(m.palm?'palm added':'face added')):'not added yet';}
+    if(go==='remedy'){var ruler=DR[dt.getDay()],RP=PL[ruler];return trunc(cap(RP.act),56);}
+    if(go==='prescribe'){var W=dayWindows(dt,PROF.lat,PROF.lng);return W?('best hour '+fmtT(W.abhijit.from)+'&ndash;'+fmtT(W.abhijit.to)):'the day&rsquo;s good and dead hours';}
+    if(go==='week'){var F=forecast(),ds=F.days.slice().sort(function(a,b){return b.total-a.total;}),WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return 'strongest '+WD[ds[0].dt.getDay()]+' &middot; weakest '+WD[ds[ds.length-1].dt.getDay()];}
+    if(go==='matrix'){var F2=forecast(),d0=F2.days[0],best=CATS.slice().sort(function(a,b){return d0.sc[b.k].s-d0.sc[a.k].s;})[0];return best.label+' is strongest today';}
+    if(go==='learn'){var c=loadCalib();return c&&c.n?(c.n+' reading'+(c.n>1?'s':'')+' rated'):'rate a reading to teach me';}
+    if(go==='cards'){return 'a yes/no, a choice, a block';}
+  }catch(e){}
+  return '';
+}
 function renderHub(){
   var host=$('hubDeck');if(!host)return;
   host.innerHTML='<div class="hublb"><span class="lb">Your cards</span><span class="hubhint">swipe &rarr;</span></div>'+
    '<div class="hubstrip">'+HUBCARDS.map(function(c,i){
      return '<button type="button" class="hubcard" data-go="'+c.go+'" data-title="'+c.t.replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,"&").replace(/"/g,'')+'">'+
        '<span class="hcn">'+String(i+1).padStart(2,'0')+'</span>'+
-       '<span class="hct">'+c.t+'</span><span class="hcs">'+c.s+'</span>'+
+       '<span class="hct">'+c.t+'</span><span class="hcs">'+(cardSummary(c.go)||c.s)+'</span>'+
        '<span class="hcarrow">&rarr;</span></button>';
    }).join('')+'</div>';
   host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
@@ -3708,9 +3735,34 @@ setInterval(build,60000);
 
 /* ======================= identity ======================= */
 (function initIdentity(){
-  var sel=$('inPlace');
-  CITIES.forEach(function(c,i){var o=document.createElement('option');o.value=i;o.textContent=c[0];sel.appendChild(o);});
-  function cityIndexFor(place){for(var i=0;i<CITIES.length;i++)if(CITIES[i][0].split(',')[0]===place)return i;return 0;}
+  var dl=$('cityList');
+  CITIES.forEach(function(c){var o=document.createElement('option');o.value=c[0];dl.appendChild(o);});
+  async function resolvePlace(str){
+    var el=$('inPlace');
+    if(el.dataset.lat)return {lat:+el.dataset.lat,lng:+el.dataset.lng,place:(str||'Current location').split(',')[0]};
+    for(var i=0;i<CITIES.length;i++){var full=CITIES[i][0],sh=full.split(',')[0];
+      if(str.toLowerCase()===full.toLowerCase()||str.toLowerCase()===sh.toLowerCase())return {lat:CITIES[i][1],lng:CITIES[i][2],place:sh};}
+    if(!str)return {lat:CITIES[0][1],lng:CITIES[0][2],place:CITIES[0][0].split(',')[0]};
+    try{var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(str),{headers:{Accept:'application/json'}});
+      var j=await r.json();if(j&&j[0])return {lat:+j[0].lat,lng:+j[0].lon,place:str.split(',')[0]};}catch(e){}
+    return null;
+  }
+  $('inPlace').addEventListener('input',function(){delete this.dataset.lat;delete this.dataset.lng;});
+  var useHere=$('useHere');
+  if(useHere)useHere.addEventListener('click',function(){
+    if(!navigator.geolocation){$('identNote').innerHTML='Location isn&rsquo;t available here &mdash; type your city.';return;}
+    useHere.innerHTML='&#9678; locating&hellip;';useHere.disabled=true;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var lat=pos.coords.latitude,lng=pos.coords.longitude,ip=$('inPlace');
+      ip.dataset.lat=lat;ip.dataset.lng=lng;
+      fetch('https://nominatim.openstreetmap.org/reverse?format=json&zoom=10&lat='+lat+'&lon='+lng,{headers:{Accept:'application/json'}})
+        .then(function(r){return r.json();}).then(function(j){var a=(j&&j.address)||{};
+          ip.value=a.city||a.town||a.village||a.county||a.state||'Current location';
+          ip.dataset.lat=lat;ip.dataset.lng=lng;
+          useHere.innerHTML='&#9678; using your location';useHere.disabled=false;})
+        .catch(function(){ip.value='Current location';useHere.innerHTML='&#9678; using your location';useHere.disabled=false;});
+    },function(){useHere.innerHTML='&#9678; use my current location';useHere.disabled=false;$('identNote').innerHTML='Location denied &mdash; type your city instead.';});
+  });
   var tmode='exact';
   function setTmode(m){
     tmode=m;
@@ -3729,22 +3781,23 @@ setInterval(build,60000);
   var known=loadProf();
   if(known){
     $('inName').value=known.name;$('inDob').value=known.dob;
-    sel.value=cityIndexFor(known.place);
+    $('inPlace').value=known.place;
     setTmode(known.tmode||'exact');
     if((known.tmode||'exact')==='range')$('inRange').value=known.tob;
     else $('inTob').value=known.tob;
   }else{
     $('inDob').value=DEFAULT_PROF.dob;setTmode('exact');
   }
-  function commit(){
+  async function commit(){
     var nm=$('inName').value.trim();
     if(!nm){$('identNote').innerHTML='A name is required &mdash; it is what your number is derived from.';
       $('inName').focus();return;}
     if(!$('inDob').value){$('identNote').innerHTML='A birth date is required.';return;}
-    var c=CITIES[+sel.value||0];
     var tob = tmode==='range' ? $('inRange').value : (tmode==='unknown' ? '12:00' : ($('inTob').value||'12:00'));
-    PROF={name:nm,dob:$('inDob').value,tob:tob,tmode:tmode,
-          lat:c[1],lng:c[2],place:c[0].split(',')[0]};
+    $('identNote').innerHTML='Finding that place&hellip;';
+    var loc=await resolvePlace($('inPlace').value.trim());
+    if(!loc){$('identNote').innerHTML='Couldn&rsquo;t find that place &mdash; try a bigger nearby city, or pick one from the list.';return;}
+    PROF={name:nm,dob:$('inDob').value,tob:tob,tmode:tmode,lat:loc.lat,lng:loc.lng,place:loc.place};
     saveProf(PROF);
     build();                                   /* recompute everything for this subject */
     $('ident').style.display='none';
