@@ -881,9 +881,9 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </section>
 
   <section class="blk" id="reading-ai">
-    <div class="shead rv"><h2>Your reading</h2><span class="lb dim">Written for you, live</span></div>
+    <div class="shead rv"><h2>Your reading</h2><span class="lb dim">In your own words</span></div>
     <div class="aibody rv" id="aiBody"></div>
-    <p class="bandnote rv" style="padding:0;margin-top:22px">Everything below is the evidence &mdash; the exact chart this reading was built from. Scroll on to see the parts.</p>
+    <p class="bandnote rv" style="padding:0;margin-top:22px">The evidence &mdash; the exact chart this reading is built from.</p>
   </section>
 
   <section class="blk" id="sky">
@@ -908,7 +908,7 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </div>
 
   <section class="blk" id="reading">
-    <div class="shead rv"><h2 id="readWho">Your reading</h2><span class="lb dim">Worked out, not guessed</span></div>
+    <div class="shead rv"><h2 id="readWho">Your reading</h2><span class="lb dim">Your numbers, in full</span></div>
     <div class="spec" id="spec"></div>
   </section>
 
@@ -1314,8 +1314,8 @@ function renderChain(){
       'Your birth day and month against today&rsquo;s date. It changes daily, but others born near you share it.',
       'Number '+pd,(NUMVOTE[pd]!==undefined?NUMVOTE[pd]:0))+
     node('Your chart','<span class="onlyyou">Only you</span>',
-      TR.transit?(cap(TP_PLAIN[TR.transit.tp])+' is touching '+NAT_PLAIN[TR.transit.np]+' today.'):'The sky is quiet against your chart today.',
-      TR.transit?('Where the planets are right now, measured against where they were at your exact birth. This is the part no one else shares &mdash; and the part that decides the wording below.'):'No close contact today, so your number leads instead.',
+      chartReason(),
+      TR.transit?('Where the planets are right now, set against where they were at your exact birth. This is the part no one else shares &mdash; and the part that makes your reading yours.'):'No close contact today, so your number leads instead.',
       TR.transit?'yours alone':'quiet sky',TR.vote);
   var cols=votes.map(function(v){return v>0?'#ff9d2e':(v<0?'#6f97cf':'#8c8c99');});
   var xs=[125,375,625,875];
@@ -1331,7 +1331,7 @@ function renderChain(){
       '<path d="M443 32 L450 40 L457 32" stroke="#ff9d2e" stroke-width="1.2"/></svg>';
   $('chainOut').innerHTML='<div class="lb">Where this points</div><div class="chainhead">'+
     specificHeadline()+'</div><p class="chainsub">Those four signals are the <b>evidence</b>. '+
-    'Your reading &mdash; written from your whole chart, in your own words, never a template &mdash; is just below.</p>';
+    'Your reading &mdash; written from your whole chart, in your own words, never a template.</p>';
   applyDailyLine();
 }
 function node(k,sub,t,d,tag,vote){
@@ -2084,7 +2084,7 @@ function renderAI(){
       'A real reading &mdash; written live by an AI that has read your whole chart across every system, and that you can ask anything.</p>'+
       '<p class="aigatesub">Best on <b>your own Claude</b> through Switchboard &mdash; no account, no fee &mdash; which unlocks once the app runs on the web with Switchboard installed.</p>'+
       localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste, computed offline</div><p id="aiTaste"></p></div></div>';
+      '<div class="aitaste"><div class="lb">A taste</div><p id="aiTaste"></p></div></div>';
     wireLocal();renderTaste();return;
   }
   if(AI.installed===false){
@@ -2092,7 +2092,7 @@ function renderAI(){
       '<p class="aigatesub">Open Prophexy inside Switchboard and it gains your Claude; every grant is still asked for on your own machine.</p>'+
       '<a class="aibtn" id="aiOpenSB" href="'+(AI.installUrl||'#')+'">Open in Switchboard</a>'+
       localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste, computed offline</div><p id="aiTaste"></p></div></div>';
+      '<div class="aitaste"><div class="lb">A taste</div><p id="aiTaste"></p></div></div>';
     wireOpenSB();wireLocal();renderTaste();return;
   }
   if(!AI.connected){
@@ -2156,18 +2156,25 @@ var NPNAME={Sun:'Sun',Moon:'Moon',Mercury:'Mercury',Venus:'Venus',Mars:'Mars',Ju
    contact in the sky against THIS person's birth chart (their natal sign of that planet
    varies, so two people never share the line). The worded prediction is the AI's job. */
 function specificHeadline(){
+  /* The ANSWER, in plain words - no astrology terms. The mechanism that produced it
+     (which planet, which sign) is reasoning and lives in the evidence panels, not here. */
   try{
     var TR=todayReading();
-    if(!TR||!TR.transit){
-      var p=PROF.dob.split('-');var pd=pDay(+p[1],+p[2],new Date());
-      return 'A rare quiet sky over your chart today &mdash; the weight falls on your numbers, a '+pd+'-day.';
-    }
+    if(!TR||!TR.transit) return 'A quiet, steady day &mdash; nothing is pulling hard at you.';
+    var verb={flows:'is opening up',tense:'is under real pressure',act:'is lit up'}[TR.transit.tone]||'is stirring';
+    return cap(NAT_AREA[TR.transit.np])+' '+verb+' today.';
+  }catch(e){ return 'Your day is being read.'; }
+}
+/* The reasoning behind that answer, in plain words - THIS is where the mechanism belongs. */
+function chartReason(){
+  try{
+    var TR=todayReading();
+    if(!TR||!TR.transit) return 'No planet is closely lined up with your birth chart today, so nothing in the sky is pulling on you.';
     var t=TR.transit,nc=natalChart();
     var nsign=(nc&&nc[t.np])?signOf(nc[t.np].lon).sign:'';
-    var verb={flows:'is opening up',tense:'is under real pressure',act:'is lit up'}[t.tone]||'is stirring';
-    return cap(TP_PLAIN[t.tp])+' is crossing your natal '+NPNAME[t.np]+(nsign?' in '+nsign:'')+
-      ' &mdash; so '+NAT_AREA[t.np]+' '+verb+' today.';
-  }catch(e){ return 'Your chart is being read for today.'; }
+    return cap(TP_PLAIN[t.tp])+' is passing over the spot where '+NPNAME[t.np]+' sat when you were born'+
+      (nsign?', in '+nsign:'')+' &mdash; the part of you that runs '+NAT_AREA[t.np]+'.';
+  }catch(e){ return ''; }
 }
 function applyDailyLine(){
   var d=todaysLine();if(!d)return;
@@ -2191,8 +2198,7 @@ function build(){
   $('cardWho').innerHTML=who?('Drawn for '+who):'Pick three';
   $('chartStamp').innerHTML='As seen from Earth &middot; '+PROF.lat.toFixed(2)+'&deg;N '+PROF.lng.toFixed(2)+'&deg;E';
   $('headline').innerHTML=specificHeadline();
-  $('hsub').innerHTML='<b>'+mn.name+'</b> at <b>'+mn.illum+'%</b> &middot; <b>'+ruler+'</b>&rsquo;s day &middot; personal day <b>'+pd+'</b>'+
-    (todaysLine()?'':' &mdash; the reading in your own words is below.');
+  $('hsub').innerHTML='<b>'+mn.name+'</b> at <b>'+mn.illum+'%</b> &middot; <b>'+ruler+'</b>&rsquo;s day &middot; personal day <b>'+pd+'</b>';
 
   /* hero rail — the whole reading at a glance */
   $('rail').innerHTML=
@@ -3158,7 +3164,7 @@ function runSequence(){
       riser(1.6);
       setTimeout(function(){
         $('seqState').textContent='Resolved';
-        $('seqMsg').innerHTML=steps.length+' sources locked &middot; reading is coherent';
+        $('seqMsg').innerHTML=steps.length+' sources locked';
         $('seqGo').classList.add('show');
         resolveTone();
         /* let the bloom ring out, then silence the background hum on its own */
