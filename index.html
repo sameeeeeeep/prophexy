@@ -665,6 +665,7 @@
   .aiprogbar{height:2px;background:var(--g3);overflow:hidden}
   .aiprogbar i{display:block;height:100%;width:0;background:var(--sig);transition:width .35s ease}
   .aiprogtxt{font-size:11px;letter-spacing:.03em;color:var(--g2);margin-top:9px}
+  #thread{display:none}
   .scoremeta{display:block;margin-top:10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--g2)}
   .aithread{margin-top:20px;display:flex;flex-direction:column;gap:16px}
   .aiqa{max-width:62ch;line-height:1.6}
@@ -913,7 +914,7 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
 
   <!-- BREAK 03 — how the number falls out -->
   <div class="bleed band">
-    <div class="bandcap rv"><h3>How tonight reduces</h3><span class="lb dim">Pythagorean &middot; step by step</span></div>
+    <div class="bandcap rv"><h3>How tonight reduces</h3><span class="lb dim">Your numbers &middot; step by step</span></div>
     <div class="cascade rv" id="cascade"></div>
     <p class="bandnote rv">Your birth day and month are folded against today&rsquo;s date, each sum reduced to a single digit unless it lands on a master number. Nothing here is chosen &mdash; it is arithmetic, and it changes tomorrow.</p>
   </div>
@@ -924,10 +925,6 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
       <div class="c7 rxmain">
         <div class="lb" style="margin-bottom:18px">One action</div>
         <p id="rxMain">&mdash;</p>
-        <div class="rxact">
-          <button type="button" data-v="did">I did it</button>
-          <button type="button" data-v="not">Not yet</button>
-        </div>
         <div class="rxstate" id="rxState"></div>
       </div>
       <div class="c5 levers">
@@ -947,19 +944,19 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </section>
 
   <section class="blk" id="chapter">
-    <div class="shead rv"><h2>The long season you are in</h2><span class="lb dim">A 120-year cycle &middot; Vimshottari</span></div>
+    <div class="shead rv"><h2>The long season you are in</h2><span class="lb dim">A 120-year map &middot; where you are on it</span></div>
     <div class="rv" id="dashaBody"></div>
   </section>
 
   <section class="blk" id="vedic">
-    <div class="shead rv"><h2>The same chart, the Vedic way</h2><span class="lb dim">Jyotish &middot; sidereal</span></div>
+    <div class="shead rv"><h2>The same chart, the Vedic way</h2><span class="lb dim">The Indian system &middot; a shifted zodiac</span></div>
     <p class="rxlead rv" id="vedicLead"></p>
     <div class="vedic rv" id="vedicRows"></div>
     <p class="bandnote rv" style="padding:0;margin-top:22px">Your long season and every remedy on this page already use this Vedic, sidereal system. This panel just makes it visible &mdash; and answers the question everyone asks: &ldquo;wait, am I actually that sign?&rdquo;</p>
   </section>
 
   <section class="blk" id="chinese">
-    <div class="shead rv"><h2>A second sky &mdash; Chinese astrology</h2><span class="lb dim">Animal, element, day master</span></div>
+    <div class="shead rv"><h2>A second sky &mdash; Chinese astrology</h2><span class="lb dim">Your animal, element &amp; core</span></div>
     <p class="rxlead rv" id="chLead"></p>
     <div class="chgrid rv" id="chGrid"></div>
     <p class="bandnote rv" style="padding:0;margin-top:22px">A completely separate tradition, built on a different calendar. It is not translating the Western chart &mdash; it is a second, independent read on the same person.</p>
@@ -975,7 +972,7 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </section>
 
   <section class="blk" id="learn">
-    <div class="shead rv"><h2>What this has learned about you</h2><span class="lb dim">From your own answers only</span></div>
+    <div class="shead rv"><h2>What this has learned about you</h2><span class="lb dim">What it got right, and wrong</span></div>
     <div class="thread rv" id="learnStat"></div>
     <div class="patterns rv" id="learned"></div>
   </section>
@@ -2910,34 +2907,27 @@ function userModel(){
     confident:n>=6};
 }
 function renderLearned(){
-  var M=userModel();
-  if(M.n<3){
-    $('learned').innerHTML='<p class="emptythread">Nothing learned yet. After a few days of answering &ldquo;did you do it?&rdquo;, this fills in on its own &mdash; and the app starts adjusting what it asks of you.</p>';
-    $('learnStat').innerHTML='';
+  /* Honest version: what the READING has gotten right or wrong for this person
+     (from the calibration they give each reading) - not whether they "did the task". */
+  var c=loadCalib(),stat=$('learnStat'),body=$('learned');
+  if(!c||!c.n||!c.notes||!c.notes.length){
+    if(stat)stat.innerHTML='';
+    if(body)body.innerHTML='<p class="emptythread">This fills in from your readings. After each one, tell it what it got right and what it missed &mdash; it carries every correction into the next reading, so it stops giving you generic lines and learns to read <b>you</b>.</p>';
     return;
   }
-  var pct=Math.round(M.rate*100),odds=Math.round(M.risk*100);
-  $('learnStat').innerHTML=
-    th('You keep','<em>'+pct+'%</em>','of what this asks of you')+
-    th('Today, likely','<em>'+odds+'%</em>','based on how '+M.todayRuler+' days and '+M.todayNum+'s go for you')+
-    th('Trend',M.trend===null?'&mdash;':((M.trend>0?'+':'')+Math.round(M.trend*100)+'%'),
-      M.trend===null?'needs two weeks':(M.trend>0?'better than last week':(M.trend<0?'slipping from last week':'holding steady')))+
-    th('Ask size',M.ask==='full'?'Full':(M.ask==='small'?'Reduced':'Minimum'),
-      M.ask==='full'?'you can take it today':'set smaller for you automatically');
-  var out='';
-  if(M.ruler.length>=2){
-    var hi=M.ruler[0],lo=M.ruler[M.ruler.length-1];
-    out+=pt('Your best days','You do what you said on <b>'+hi.k+'</b> days about '+Math.round(hi.r*100)+
-      '% of the time. If something matters, put it there.');
-    if(lo.k!==hi.k)out+=pt('Your hard days','<b>'+lo.k+'</b> days run near '+Math.round(lo.r*100)+
-      '%. Not a character flaw &mdash; just a day to ask less of yourself on.');
-  }
-  if(M.num.length>=2)out+=pt('Your number','Number <b>'+M.num[0].k+'</b> days are when you move &mdash; around '+
-    Math.round(M.num[0].r*100)+'%.');
-  if(M.ask!=='full')out+=pt('So today','Today reads as a '+odds+'% day, so the ask has already been '+
-    (M.ask==='tiny'?'cut to the smallest version':'reduced')+'. You did not have to ask.');
-  else if(M.confident)out+=pt('So today','Today reads as a '+odds+'% day. The ask is at full size &mdash; you can take it.');
-  $('learned').innerHTML=out;
+  var spot=0,partly=0,off=0;
+  c.notes.forEach(function(x){ if(x.v==='spot')spot++; else if(x.v==='off')off++; else partly++; });
+  if(stat)stat.innerHTML=
+    th('Readings rated','<em>'+c.n+'</em>',c.n===1?'time':'times')+
+    th('Landed','<em>'+spot+'</em>','felt exactly you')+
+    th('Half right','<em>'+partly+'</em>','partly you')+
+    th('Missed','<em>'+off+'</em>','it got wrong');
+  var corr=c.notes.filter(function(x){return x.t;}).slice(-4).reverse().map(function(x){
+    var tag=x.v==='spot'?'It landed':x.v==='off'?'It missed':'Half right';
+    return pt(tag,'&ldquo;'+String(x.t).replace(/[<>]/g,'')+'&rdquo;');
+  }).join('');
+  if(body)body.innerHTML=(corr||pt('Learning','You have rated it, but not told it what to fix yet &mdash; add a note next time and it sharpens.'))+
+    pt('How this works','Every correction rides into the brief for your next reading, so the voice keeps getting closer to the real you.');
 }
 
 function renderJourney(){
