@@ -17,8 +17,8 @@
     --pad:clamp(20px,5vw,56px);
   }
   *{box-sizing:border-box;border-radius:0!important}
-  html{scroll-behavior:smooth}
-  html{height:100%}
+  html{scroll-behavior:smooth;overflow-x:hidden}
+  html{min-height:100%}
   /* WebGL stage sits behind everything; content scrolls over it */
   /* width/height must be explicit: a canvas with only inset:0 lays out at its
      intrinsic buffer size (dpr-scaled) instead of stretching to the viewport */
@@ -30,7 +30,7 @@
     opacity:1;transition:opacity .6s}
   body{margin:0;background:var(--black);color:var(--ink);
     font-family:"Archivo",Arial,Helvetica,sans-serif;font-weight:400;line-height:1.5;
-    -webkit-font-smoothing:antialiased;overflow-x:hidden;font-variant-numeric:tabular-nums}
+    -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
   button{font-family:inherit;color:inherit}
   .wrap{max-width:1320px;margin:0 auto;padding:0 var(--pad)}
 
@@ -725,7 +725,28 @@
   .hubstrip::-webkit-scrollbar-track{background:#000}
   .hubstrip::-webkit-scrollbar-thumb{background:var(--g3)}
   .hubstrip .hubcard{flex:0 0 216px;scroll-snap-align:start;min-height:150px}
-  .hubsection{margin-bottom:clamp(26px,4vh,42px)}
+  .hubsection{margin-bottom:clamp(20px,3vh,34px)}
+  .hubseclabel{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+  .acc{border-bottom:1px solid var(--line)}
+  .acchead{width:100%;background:none;border:none;color:var(--ink);font-family:inherit;text-align:left;display:flex;align-items:center;gap:16px;padding:clamp(15px,2vh,20px) 2px;cursor:pointer}
+  .acn{font-size:10px;color:var(--g2);letter-spacing:.14em;flex:none;width:26px}
+  .acmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+  .act{font-size:clamp(17px,2.1vw,21px);line-height:1.15}
+  .acs{font-size:13px;color:var(--g1);line-height:1.4}
+  .acc.open .acs{color:var(--sig)}
+  .acchead:hover .acs{color:var(--ink)}
+  .acchev{flex:none;width:13px;height:13px;position:relative}
+  .acchev:before,.acchev:after{content:"";position:absolute;background:var(--g2);transition:.2s}
+  .acchev:before{top:6px;left:0;width:13px;height:1.5px}
+  .acchev:after{left:6px;top:0;height:13px;width:1.5px}
+  .acc.open .acchev:after{transform:scaleY(0)}
+  .acc.open .acchev:before{background:var(--sig)}
+  .blk.inacc{padding:0}
+  .blk.inacc.open{display:block;padding:2px 0 26px 42px}
+  .blk.inacc .shead{display:none}
+  @media(max-width:600px){.blk.inacc.open{padding-left:0}}
+  #chapter{display:none}
+  .hubsection-legacy{margin-bottom:clamp(26px,4vh,42px)}
   .hubseclabel{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px}
   .hubsecn{font-size:10px;color:var(--g2);letter-spacing:.14em}
   .hubcard.hasimg{padding:0;overflow:hidden;min-height:0}
@@ -2536,17 +2557,11 @@ function showHome(){
   window.scrollTo(0,0);
   try{A();blip(520,0.07,0.08);}catch(e){}
 }
+function jumpTo(go){var acc=document.querySelector('.acc[data-go="'+go+'"]');if(acc){openAcc(acc);acc.scrollIntoView({behavior:'smooth',block:'start'});}}
 function wireNav(){
-  var bb=$('backBtn');if(bb&&!bb.dataset.w){bb.dataset.w='1';bb.addEventListener('click',showHome);}
-  var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){if(sb.classList.contains('computed'))openCard('reading-ai',decodeTitle('Today&rsquo;s reading'));});}
-  var pv=$('cardPrev');if(pv&&!pv.dataset.w){pv.dataset.w='1';pv.addEventListener('click',function(){stepCard(-1);});}
-  var nx=$('cardNext');if(nx&&!nx.dataset.w){nx.dataset.w='1';nx.addEventListener('click',function(){stepCard(1);});}
-  if(!window.__cardKeys){window.__cardKeys=1;document.addEventListener('keydown',function(e){
-    if(!document.body.classList.contains('focused'))return;
-    if(e.key==='ArrowRight')stepCard(1); else if(e.key==='ArrowLeft')stepCard(-1); else if(e.key==='Escape')showHome();
-  });}
+  var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){if(sb.classList.contains('computed'))jumpTo('reading-ai');});}
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
-    a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home')showHome();else openCard(g,a.textContent);});});
+    a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home'){window.scrollTo({top:0,behavior:'smooth'});}else jumpTo(g);});});
 }
 var BREATH=null;
 function startBreath(){
@@ -2830,21 +2845,28 @@ function cardSummary(go){
   return '';
 }
 function cardEmblem(go){var m=window.PXEMBLEM||{};return m[go]||'';}
+var _hubBuilt=false;
 function renderHub(){
   var host=$('hubDeck');if(!host)return;
+  if(_hubBuilt){HUBCARDS.forEach(function(c){var el=document.querySelector('.acs[data-sum="'+c.go+'"]');if(el)el.innerHTML=cardSummary(c.go)||c.s;});return;}
+  _hubBuilt=true;
   host.innerHTML=HUBGROUPS.map(function(g){
     var cards=HUBCARDS.filter(function(c){return c.g===g.k;});
-    return '<div class="hubsection"><div class="hubseclabel"><span class="lb">'+g.label+'</span><span class="hubsecn">'+cards.length+'</span></div>'+
-     '<div class="hubstrip">'+cards.map(function(c){var gi=HUBCARDS.indexOf(c),em=cardEmblem(c.go);
-       return '<button type="button" class="hubcard'+(em?' hasimg':'')+'" data-go="'+c.go+'" data-title="'+decodeTitle(c.t).replace(/"/g,'')+'">'+
-         (em?'<span class="hcimg"><img src="'+em+'" alt="" loading="lazy"></span>':'')+
-         '<span class="hcn">'+String(gi+1).padStart(2,'0')+'</span>'+
-         '<span class="hcbody"><span class="hct">'+c.t+'</span><span class="hcs">'+(cardSummary(c.go)||c.s)+'</span></span>'+
-         '<span class="hcarrow">&rarr;</span></button>';
-     }).join('')+'</div></div>';
+    return '<div class="hubsection"><div class="hubseclabel"><span class="lb">'+g.label+'</span></div>'+
+      cards.map(function(c){var gi=HUBCARDS.indexOf(c);
+        return '<div class="acc" data-go="'+c.go+'"><button type="button" class="acchead">'+
+          '<span class="acn">'+String(gi+1).padStart(2,'0')+'</span>'+
+          '<span class="acmain"><span class="act">'+c.t+'</span><span class="acs" data-sum="'+c.go+'">'+(cardSummary(c.go)||c.s)+'</span></span>'+
+          '<span class="acchev" aria-hidden="true"></span></button>'+
+          '<div class="accbody" id="accbody-'+c.go+'"></div></div>';
+      }).join('')+'</div>';
   }).join('');
-  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){openCard(b.dataset.go,b.dataset.title);});});
+  HUBCARDS.forEach(function(c){var blk=document.getElementById(c.go),body=document.getElementById('accbody-'+c.go);if(blk&&body){blk.classList.add('inacc');body.appendChild(blk);}});
+  host.querySelectorAll('.acchead').forEach(function(h){h.addEventListener('click',function(){toggleAcc(h.parentNode);});});
+  ['reading-ai','do'].forEach(function(go){var a=host.querySelector('.acc[data-go="'+go+'"]');if(a)openAcc(a);});
 }
+function openAcc(acc){if(!acc)return;acc.classList.add('open');var blk=acc.querySelector('.blk');if(blk){blk.classList.add('open');blk.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});}}
+function toggleAcc(acc){if(!acc)return;if(acc.classList.contains('open')){acc.classList.remove('open');var blk=acc.querySelector('.blk');if(blk)blk.classList.remove('open');}else{openAcc(acc);try{A();blip(660,0.06,0.07);}catch(e){}}}
 function build(){
   var dt=new Date(),p=PROF.dob.split('-'),by=+p[0],bm=+p[1],bd=+p[2];
   var b=skyNow(dt,PROF.lat,PROF.lng);
