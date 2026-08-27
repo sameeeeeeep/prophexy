@@ -749,6 +749,25 @@
   .srcopt .son{font-size:16px}
   .srcopt .sos{font-size:12.5px;color:var(--g1);line-height:1.45;margin-top:5px;max-width:46ch}
   .srcopt .aibtn{margin-top:0;white-space:nowrap;flex:none;padding:12px 20px}
+  /* ===== explore: sliding tabs, one open reading at a time ===== */
+  .tabbar{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:2px 0 14px;border-bottom:1px solid var(--line);scrollbar-width:none}
+  .tabbar::-webkit-scrollbar{display:none}
+  .tabgroup{display:flex;gap:8px;align-items:center;flex:0 0 auto;padding-right:10px}
+  .tabgroup .tglb{color:var(--g3);white-space:nowrap;margin-right:2px}
+  .tab{flex:0 0 auto;background:none;border:1px solid var(--line);color:var(--g1);font-family:inherit;
+    font-size:13px;padding:9px 14px;cursor:pointer;white-space:nowrap;transition:border-color .15s,color .15s}
+  .tab:hover{border-color:var(--g3);color:var(--ink)}
+  .tab.on{border-color:var(--sig);color:var(--sig)}
+  .tabpanel{padding-top:clamp(22px,3.4vw,34px);min-height:220px}
+  .blk.intab{display:block;padding:0}
+  .blk.intab .shead{padding-bottom:18px;margin-bottom:4px}
+  .reasontog{background:none;border:none;border-top:1px solid var(--line);color:var(--g1);font-family:inherit;
+    width:100%;display:flex;align-items:center;gap:10px;padding:15px 0;margin-top:20px;cursor:pointer}
+  .reasontog .lb{color:var(--g2)}
+  .reasontog:hover .lb{color:var(--ink)}
+  .reasontog .rzchev{margin-left:auto;color:var(--g2);font-size:17px;transition:transform .18s,color .18s}
+  .reasontog.open .rzchev{transform:rotate(90deg);color:var(--sig)}
+  .reasonwrap{padding-top:14px}
   .aireading.streaming::after{content:'\258c';color:var(--sig);animation:blink 1s steps(2) infinite}
   @keyframes blink{50%{opacity:0}}
   .aichat{margin-top:clamp(30px,4vw,44px);border-top:1px solid var(--line);padding-top:24px}
@@ -1220,6 +1239,7 @@ window.PXEMBLEM={};
 
 <div class="wrap">
 
+  <svg width="0" height="0" style="position:absolute;pointer-events:none" aria-hidden="true"><symbol id="logo" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="20" cy="20" r="18.5" stroke-width="1"/><path d="M20 1.5v6M20 32.5v6M1.5 20h6M32.5 20h6" stroke-width="1"/><path d="M2.6 20 Q20 5.4 37.4 20 Q20 34.6 2.6 20Z"/><circle cx="20" cy="20" r="5.4"/><circle cx="20" cy="20" r="1.7" fill="currentColor" stroke="none"/></symbol></svg>
   <div id="backbar"><button type="button" id="backBtn">&lsaquo; all</button><span id="backTitle"></span><span class="cardnav"><button type="button" id="cardPrev" aria-label="previous card">&lsaquo;</button><span id="cardPos"></span><button type="button" id="cardNext" aria-label="next card">&rsaquo;</button></span></div>
 
   <div id="home">
@@ -1249,7 +1269,9 @@ window.PXEMBLEM={};
     </button>
 
     <div class="explorehead"><span class="lb">EXPLORE &middot; GO DEEPER</span></div>
-    <div class="hubdeck" id="hubDeck"></div>
+    <div class="tabbar" id="tabBar"></div>
+    <div class="tabpanel" id="tabPanel"></div>
+    <div id="blkStore" hidden></div>
   </div>
 
 
@@ -2810,7 +2832,12 @@ function showHome(){
   window.scrollTo(0,0);
   try{A();blip(520,0.07,0.08);}catch(e){}
 }
-function jumpTo(go){var h=null;for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go)h=HUBCARDS[i];if(h)openCard(go,decodeTitle(h.t));}
+function jumpTo(go){
+  var isTab=false; for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go){isTab=true;break;}
+  if(isTab){ if(document.body.classList.contains('focused'))showHome(); showTab(go); var ex=$('explorehead')||$('tabBar'); if(ex&&ex.scrollIntoView)ex.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  var h=null;for(var j=0;j<HUBCARDS.length;j++)if(HUBCARDS[j].go===go)h=HUBCARDS[j];
+  if(h)openCard(go,decodeTitle(h.t));
+}
 function wireNav(){
   var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){openSourceChoice();});}
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
@@ -3123,25 +3150,48 @@ function cardEmblem(go){var m=window.PXEMBLEM||{};return m[go]||'';}
 var HUBPIC={'cards':'tarot','intent':'vision'};
 var _hubBuilt=false;
 function renderHub(){
-  var host=$('hubDeck');if(!host)return;
-  if(_hubBuilt){HUBCARDS.forEach(function(c){var el=host.querySelector('.hcs[data-sum="'+c.go+'"]');if(el)el.innerHTML=cardSummary(c.go)||c.s;});return;}
+  var bar=$('tabBar'); if(!bar) return;
+  if(_hubBuilt) return;
   _hubBuilt=true;
-  host.innerHTML=HUBGROUPS.map(function(g){
+  var store=$('blkStore');
+  HUBCARDS.forEach(function(c){var blk=document.getElementById(c.go); if(blk&&store) store.appendChild(blk);});
+  bar.innerHTML=HUBGROUPS.map(function(g){
     var cards=HUBCARDS.filter(function(c){return c.g===g.k;});
-    return '<div class="hubsection"><div class="hubseclabel"><span class="lb">'+g.label+'</span>'+
-      '<span class="hubhint">swipe &rsaquo;</span></div>'+
-      '<div class="hubstrip">'+
-      cards.map(function(c){var gi=HUBCARDS.indexOf(c);
-        return '<button type="button" class="hubcard" data-go="'+c.go+'">'+
-          '<span class="hcn">'+String(gi+1).padStart(2,'0')+'</span>'+
-          '<span class="hct">'+c.t+'</span>'+
-          '<span class="hcs" data-sum="'+c.go+'">'+(cardSummary(c.go)||c.s)+'</span>'+
-          '<span class="hcarrow" aria-hidden="true">&rsaquo;</span></button>';
-      }).join('')+'</div></div>';
+    if(!cards.length) return '';
+    return '<span class="tabgroup"><span class="tglb lb">'+g.label+'</span>'+
+      cards.map(function(c){return '<button type="button" class="tab" data-go="'+c.go+'">'+c.t+'</button>';}).join('')+
+      '</span>';
   }).join('');
-  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
-    var go=b.dataset.go,h=null;for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go)h=HUBCARDS[i];
-    openCard(go,h?decodeTitle(h.t):'');});});
+  bar.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){showTab(b.dataset.go);});});
+  if(HUBCARDS.length) showTab(HUBCARDS[0].go);
+}
+var _activeTab=null;
+function showTab(go){
+  var panel=$('tabPanel'),bar=$('tabBar'),store=$('blkStore'); if(!panel||!bar) return;
+  bar.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.go===go);});
+  if(_activeTab&&_activeTab!==go){var prev=document.getElementById(_activeTab); if(prev&&store){prev.classList.remove('open','intab'); store.appendChild(prev);}}
+  var blk=document.getElementById(go); if(!blk) return;
+  blk.classList.add('open','intab');
+  blk.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});
+  panel.appendChild(blk);
+  collapseReasoning(blk);
+  _activeTab=go;
+  var t=bar.querySelector('.tab[data-go="'+go+'"]'); if(t)t.scrollIntoView({inline:'center',block:'nearest'});
+  try{A();blip(640,0.04,0.05);}catch(e){}
+}
+/* the reading stays open; the mechanism folds away behind one toggle */
+function collapseReasoning(blk){
+  if(blk.dataset.rz) return; blk.dataset.rz='1';
+  var reasons=[].slice.call(blk.querySelectorAll('.chaingrid,.chainjoin,.legend'));
+  if(!reasons.length) return;
+  var first=reasons[0];
+  var wrap=document.createElement('div'); wrap.className='reasonwrap'; wrap.hidden=true;
+  first.parentNode.insertBefore(wrap, first);
+  reasons.forEach(function(r){wrap.appendChild(r);});
+  var tog=document.createElement('button'); tog.type='button'; tog.className='reasontog';
+  tog.innerHTML='<span class="lb">Why &middot; the reasoning</span><span class="rzchev" aria-hidden="true">&rsaquo;</span>';
+  wrap.parentNode.insertBefore(tog, wrap);
+  tog.addEventListener('click',function(){wrap.hidden=!wrap.hidden; tog.classList.toggle('open',!wrap.hidden); try{A();blip(600,0.04,0.05);}catch(e){}});
 }
 function build(){
   var dt=new Date(),p=PROF.dob.split('-'),by=+p[0],bm=+p[1],bd=+p[2];
