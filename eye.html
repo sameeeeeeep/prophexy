@@ -1,0 +1,233 @@
+<meta charset="utf-8">
+<title>Prophexy · Connect the dots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Expanded:wght@600&display=swap">
+<style>
+  :root{--ink:#f0f0fa;--sig:#ff9d2e;--g1:#8c8c99;--g2:#54545f}
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:'Archivo',system-ui,sans-serif;color:var(--ink)}
+  #c{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+  .brand{position:fixed;top:22px;left:24px;display:flex;align-items:center;gap:11px;font-size:12px;letter-spacing:.34em;font-weight:600;z-index:3;pointer-events:none}
+  .brand .dot{width:6px;height:6px;border-radius:50%;background:var(--sig);box-shadow:0 0 10px 2px rgba(255,157,46,.7)}
+  .hint{position:fixed;left:0;right:0;bottom:26px;text-align:center;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--g2);z-index:3;pointer-events:none;transition:opacity .4s}
+  .state{position:fixed;left:0;right:0;bottom:58px;text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--sig);z-index:3;pointer-events:none;opacity:0;transition:opacity .35s}
+  .state.on{opacity:1}
+  #cta{position:fixed;left:50%;bottom:86px;transform:translateX(-50%);z-index:3;background:none;border:1px solid rgba(255,157,46,.5);color:var(--sig);font-family:inherit;font-size:10px;letter-spacing:.24em;text-transform:uppercase;padding:12px 22px;cursor:pointer;transition:.2s;border-radius:0}
+  #cta:hover{background:rgba(255,157,46,.12)}
+  #labels{position:fixed;inset:0;z-index:2;pointer-events:none}
+  .lab{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;letter-spacing:.02em;white-space:nowrap;opacity:0;transition:opacity .3s;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .lab .lt{color:var(--ink)}
+  .lab .ls{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--g2)}
+  .loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:var(--g2);font-size:11px;letter-spacing:.24em;text-transform:uppercase;z-index:5}
+</style>
+<div class="brand"><span class="dot"></span><span>PROPHEXY</span></div>
+<div class="state" id="state">reading you</div>
+<div class="hint" id="hint">move to look &middot; click to read</div>
+<button id="cta">Reveal your constellation &rarr;</button>
+<div id="labels"></div>
+<canvas id="c"></canvas>
+<div class="loading" id="load">summoning</div>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const load=document.getElementById('load');
+try{
+const AMBER=new THREE.Color(0xff9d2e), WHITE=new THREE.Color(0xdfe0ee), STEEL=new THREE.Color(0x5b6bb0), GREY=new THREE.Color(0x40414e);
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,0.1,100);
+cam.position.set(0,0,4.6);
+
+const composer=new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,cam));
+const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),0.42,0.55,0.62);
+bloom.threshold=0.5; bloom.strength=0.55; bloom.radius=0.6;
+composer.addPass(bloom);
+
+const world=new THREE.Group(); scene.add(world);
+
+/* ---------- the iris: a dense dome of dots ---------- */
+const R=1.0, PR=0.34, DOME=0.42;
+const P=[], C=[], S=[], RAD=[], BASE=[], PH=[];
+function push(x,y,z,col,size,base,rad,phase){P.push(x,y,z);C.push(col.r,col.g,col.b);S.push(size);BASE.push(base);RAD.push(rad);PH.push(phase);}
+const bands=[{r0:PR,r1:0.52,spokes:60},{r0:0.52,r1:0.76,spokes:120},{r0:0.76,r1:1.0,spokes:180}];
+const dr=0.023;
+bands.forEach(function(bd,bi){
+  const off=bi*(Math.PI/bd.spokes);
+  for(let r=bd.r0; r<=bd.r1+1e-6; r+=dr){
+    const rim=(r<PR+dr*1.5);
+    for(let k=0;k<bd.spokes;k++){
+      const a=(k/bd.spokes)*Math.PI*2 + off;
+      const jr=r+(Math.random()-.5)*0.005, ja=a+(Math.random()-.5)*0.005;
+      const x=Math.cos(ja)*jr, y=Math.sin(ja)*jr;
+      const z=DOME*(1-(jr/R)*(jr/R));
+      const t=Math.random();
+      let col, base, size;
+      if(rim){ col=WHITE; base=1.0; size=2.3; }
+      else if(t>0.91){ col=AMBER; base=0.7+Math.random()*0.55; size=2.0+Math.random()*1.1; }
+      else if(t>0.5){ col=STEEL; base=0.26+Math.random()*0.3; size=1.5+Math.random()*0.7; }
+      else { col=GREY; base=0.15+Math.random()*0.16; size=1.3+Math.random()*0.6; }
+      push(x,y,z,col,size,base,r,Math.random()*6.283);
+    }
+  }
+});
+const g=new THREE.BufferGeometry();
+g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));
+g.setAttribute('aCol',new THREE.Float32BufferAttribute(C,3));
+g.setAttribute('aSize',new THREE.Float32BufferAttribute(S,1));
+g.setAttribute('aBase',new THREE.Float32BufferAttribute(BASE,1));
+g.setAttribute('aRad',new THREE.Float32BufferAttribute(RAD,1));
+g.setAttribute('aPhase',new THREE.Float32BufferAttribute(PH,1));
+const uni={uTime:{value:0},uWave:{value:-1},uPulse:{value:0},uFade:{value:1},uPix:{value:renderer.getPixelRatio()}};
+const dotMat=new THREE.ShaderMaterial({
+  uniforms:uni, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+  vertexShader:`
+    attribute vec3 aCol; attribute float aSize; attribute float aBase; attribute float aRad; attribute float aPhase;
+    uniform float uTime,uWave,uPulse,uFade,uPix; varying vec3 vCol; varying float vB;
+    void main(){ vCol=aCol;
+      float wave = uPulse*exp(-pow((aRad-uWave)*7.0,2.0))*1.2;
+      float twinkle = 0.68+0.32*sin(uTime*2.3 + aPhase);
+      vB=(aBase*twinkle + wave)*uFade;
+      vec4 mv=modelViewMatrix*vec4(position,1.0);
+      gl_PointSize=aSize*uPix*(4.6/-mv.z);
+      gl_Position=projectionMatrix*mv; }`,
+  fragmentShader:`
+    varying vec3 vCol; varying float vB;
+    void main(){ vec2 d=gl_PointCoord-0.5; float r=length(d);
+      float a=smoothstep(0.5,0.12,r); if(a<0.01)discard;
+      float core=smoothstep(0.28,0.0,r);
+      gl_FragColor=vec4(vCol*(vB+core*vB*0.5), a*min(1.0,vB*1.4)); }`
+});
+const iris=new THREE.Points(g,dotMat); world.add(iris);
+
+/* pupil void */
+const pupil=new THREE.Mesh(new THREE.CircleGeometry(PR*0.92,64),new THREE.MeshBasicMaterial({color:0x000000}));
+pupil.position.z=DOME*(1-(PR/R)*(PR/R))+0.01; world.add(pupil);
+
+/* N/S/E/W tick dot-clusters */
+for(let k=0;k<4;k++){const a=k*Math.PI/2;for(let j=-1;j<=1;j++){
+  const m=new THREE.Mesh(new THREE.CircleGeometry(0.012,12),new THREE.MeshBasicMaterial({color:0x8c8c99}));
+  m.position.set(Math.cos(a)*(1.12+j*0.03),Math.sin(a)*(1.12+j*0.03),0.02);world.add(m);}}
+
+/* starfield */
+{const sp=[];for(let i=0;i<500;i++)sp.push((Math.random()-.5)*30,(Math.random()-.5)*20,-8-Math.random()*16);
+ const sgg=new THREE.BufferGeometry();sgg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
+ scene.add(new THREE.Points(sgg,new THREE.PointsMaterial({color:0x6a6a80,size:0.02,transparent:true,opacity:0.55})));}
+
+/* ---------- signals: the dots that become your constellation ---------- */
+const SYS=[
+ {n:'Astrology',a:Math.PI*0.5},{n:'Tarot',a:Math.PI*0.16},{n:'Numbers',a:-Math.PI*0.16},
+ {n:'Dream',a:-Math.PI*0.5},{n:'Palm',a:-Math.PI*0.84},{n:'Face',a:Math.PI*0.84}];
+function sysAng(name){return SYS.find(s=>s.n===name).a;}
+const SIG=[
+ {t:'Sun · Virgo',s:'Astrology'},{t:'Moon · Aquarius',s:'Astrology'},{t:'Saturn, now',s:'Astrology'},{t:'Rising · Sagittarius',s:'Astrology'},
+ {t:'The Tower',s:'Tarot'},{t:'King of Cups',s:'Tarot'},
+ {t:'Life path 5',s:'Numbers'},{t:'Personal day 2',s:'Numbers'},
+ {t:'Water, recurring',s:'Dream'},
+ {t:'Long heart line',s:'Palm'},{t:'Broken fate line',s:'Palm'},
+ {t:'Guarded brow',s:'Face'},{t:'Tired eyes',s:'Face'}];
+// eye positions (scattered across the dome) + constellation positions (clustered by system)
+const eyePos=[], mapPos=[], cnt={};
+SIG.forEach((sg,i)=>{
+  const er=0.45+Math.random()*0.45, ea=i*2.399; // golden-angle scatter
+  const ez=DOME*(1-(er/R)*(er/R))+0.03;
+  eyePos.push(new THREE.Vector3(Math.cos(ea)*er,Math.sin(ea)*er,ez));
+  const base=sysAng(sg.s); cnt[sg.s]=(cnt[sg.s]||0);
+  const idx=cnt[sg.s]++; const spread=(idx-0.9)*0.5;
+  const cr=2.05+(Math.random()-.5)*0.45, ca=base+spread*0.42;
+  const jx=(Math.random()-.5)*0.12, jy=(Math.random()-.5)*0.12;
+  mapPos.push(new THREE.Vector3(Math.cos(ca)*cr+jx,Math.sin(ca)*cr+jy,0.04));
+});
+// node points (amber), positions lerp between eye and map
+const npos=new Float32Array(SIG.length*3);
+const ngeo=new THREE.BufferGeometry(); ngeo.setAttribute('position',new THREE.BufferAttribute(npos,3));
+const nMat=new THREE.PointsMaterial({color:0xff9d2e,size:0.05,map:softDot(),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
+const nodes=new THREE.Points(ngeo,nMat); world.add(nodes);
+// bright halo nodes (bigger, dimmer) for glow
+const nMat2=new THREE.PointsMaterial({color:0xff9d2e,size:0.13,map:softDot(),transparent:true,opacity:0.5,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true});
+const nodes2=new THREE.Points(ngeo,nMat2); world.add(nodes2);
+
+function softDot(){const cv=document.createElement('canvas');cv.width=cv.height=64;const x=cv.getContext('2d');
+  const gr=x.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.25,'rgba(255,220,180,0.9)');gr.addColorStop(1,'rgba(255,157,46,0)');
+  x.fillStyle=gr;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(cv);}
+
+/* edges: convergence between systems */
+const EDGES=[[1,11,1],[11,5,1],[5,8,0],[2,12,1],[12,7,0],[4,10,1],[6,3,0],[0,9,0]];
+const epos=new Float32Array(EDGES.length*2*3);
+const egeo=new THREE.BufferGeometry(); egeo.setAttribute('position',new THREE.BufferAttribute(epos,3));
+const eMat=new THREE.LineBasicMaterial({color:0xff9d2e,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending});
+const edges=new THREE.LineSegments(egeo,eMat); world.add(edges);
+
+/* labels */
+const labWrap=document.getElementById('labels'); const labEls=SIG.map(sg=>{
+  const d=document.createElement('div'); d.className='lab';
+  d.innerHTML='<span class="lt">'+sg.t+'</span><span class="ls">'+sg.s+'</span>';
+  labWrap.appendChild(d); return d;});
+
+/* ---------- interaction & state ---------- */
+let mode=0, mTarget=0; // 0 eye, 1 constellation
+let mx=0,my=0,tmx=0,tmy=0;
+addEventListener('pointermove',e=>{tmx=(e.clientX/innerWidth-.5)*2;tmy=(e.clientY/innerHeight-.5)*2;});
+let readT=-9; const stateEl=document.getElementById('state'), hintEl=document.getElementById('hint');
+addEventListener('pointerdown',e=>{ if(e.target.id==='cta')return; if(mode<0.5) readT=clock.getElapsedTime(); });
+document.getElementById('cta').addEventListener('click',()=>{ mTarget=mTarget?0:1;
+  document.getElementById('cta').textContent = mTarget? 'Back to the eye ←' : 'Reveal your constellation →';
+});
+
+const clock=new THREE.Clock(); const tmpV=new THREE.Vector3();
+function frame(){
+  const t=clock.getElapsedTime(); uni.uTime.value=t;
+  mode += (mTarget-mode)*0.06;
+  // read pulse (eye)
+  const since=t-readT; let pulse=0, wave=-1;
+  if(since>=0 && since<2.2){ const p=since/2.2; wave=PR + (R-PR+0.15)*p; pulse=Math.sin(p*Math.PI); }
+  if((!readT||since>7) && mode<0.3){ readT=t; } // auto-read in eye mode
+  uni.uWave.value=wave; uni.uPulse.value=pulse*(1-mode);
+  uni.uFade.value=1-mode*0.82;
+  stateEl.classList.toggle('on', pulse>0.4 && mode<0.4);
+
+  // look toward pointer (eye), settle when constellation
+  mx+=(tmx-mx)*0.06; my+=(tmy-my)*0.06;
+  const look=1-mode;
+  world.rotation.y = mx*0.4*look + mode*Math.sin(t*0.08)*0.14;
+  world.rotation.x = -my*0.32*look + Math.sin(t*0.13)*0.02*look;
+  const zoom = 4.6 + mode*2.2; cam.position.z += (zoom-cam.position.z)*0.06;
+
+  // node positions lerp eye<->map; edges + labels follow
+  const m=easeInOut(mode);
+  for(let i=0;i<SIG.length;i++){ tmpV.lerpVectors(eyePos[i],mapPos[i],m);
+    npos[i*3]=tmpV.x; npos[i*3+1]=tmpV.y; npos[i*3+2]=tmpV.z; }
+  ngeo.attributes.position.needsUpdate=true;
+  nMat.opacity=0.85; nMat.size=0.03+0.03*m; nMat2.opacity=0.25+0.35*m;
+  for(let k=0;k<EDGES.length;k++){ const [a,b]=EDGES[k];
+    epos[k*6]=npos[a*3];epos[k*6+1]=npos[a*3+1];epos[k*6+2]=npos[a*3+2];
+    epos[k*6+3]=npos[b*3];epos[k*6+4]=npos[b*3+1];epos[k*6+5]=npos[b*3+2]; }
+  egeo.attributes.position.needsUpdate=true;
+  eMat.opacity = Math.max(mode*0.8, (0.14 + pulse*0.5)*(1-mode));
+
+  // project labels
+  if(m>0.03){ for(let i=0;i<SIG.length;i++){ tmpV.set(npos[i*3],npos[i*3+1],npos[i*3+2]).applyMatrix4(world.matrixWorld).project(cam);
+    const x=(tmpV.x*0.5+0.5)*innerWidth, y=(-tmpV.y*0.5+0.5)*innerHeight;
+    labEls[i].style.left=x+'px'; labEls[i].style.top=(y-16)+'px'; labEls[i].style.opacity=(tmpV.z<1?m:0); } }
+  else labEls.forEach(l=>l.style.opacity=0);
+  hintEl.style.opacity = mode>0.4?0:1;
+
+  composer.render(); requestAnimationFrame(frame);
+}
+function easeInOut(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+addEventListener('resize',()=>{renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+  composer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();uni.uPix.value=renderer.getPixelRatio();});
+load.style.display='none'; frame();
+}catch(err){ load.textContent='three.js failed to load'; console.error(err); }
+</script>
