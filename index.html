@@ -736,6 +736,23 @@
   .hct{font-size:17px;line-height:1.2;margin-top:auto}
   .hcs{font-size:12.5px;color:var(--g1);line-height:1.42}
   .practicelead{font-size:15px;color:var(--g1);line-height:1.65;max-width:58ch;margin:0 0 clamp(24px,4vh,40px)}
+  .moodlead,.songlead{font-size:15px;color:var(--g1);line-height:1.65;max-width:58ch;margin:0 0 22px}
+  .moodlead b{color:var(--ink);font-weight:400}
+  .moodchips{display:flex;flex-wrap:wrap;gap:1px;background:var(--g3);border:1px solid var(--g3);width:fit-content;max-width:100%}
+  .moodchips button{background:#000;border:none;color:var(--g1);font-family:inherit;font-size:13px;padding:13px 20px;cursor:pointer}
+  .moodchips button:hover{color:var(--ink)}
+  .moodrec{font-size:clamp(16px,2vw,19px);line-height:1.6;color:var(--ink);max-width:62ch;margin:0 0 24px}
+  .moodacts{display:flex;flex-wrap:wrap;gap:12px}
+  .moodstream{font-size:15px;color:var(--g1);line-height:1.65;white-space:pre-wrap;margin-top:16px;max-width:62ch}
+  .moodtalk{margin-top:20px}
+  .songgroup{margin-top:26px}
+  .songgroup .lb{margin-bottom:12px}
+  .song{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:13px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .songt{font-size:16px;color:var(--ink)}
+  .songd{font-size:12.5px;color:var(--g1);margin-top:3px;line-height:1.4}
+  .songlinks{display:flex;gap:14px;flex-shrink:0}
+  .slink{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--g1);text-decoration:none;border-bottom:1px solid var(--g3);padding-bottom:2px}
+  .slink:hover{color:var(--sig);border-color:var(--sig)}
   .breathe{position:relative;width:min(300px,74vw);height:min(300px,74vw);margin:10px auto clamp(20px,4vh,34px);display:flex;align-items:center;justify-content:center}
   .breathring{position:absolute;inset:0;border:1px solid var(--sig);transform:scale(.62);transition:transform 4s ease-in-out;box-shadow:0 0 70px -22px var(--sig)}
   .breathmid{position:relative;text-align:center;z-index:2}
@@ -1045,6 +1062,16 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
         <div id="levers"></div>
       </div>
     </div>
+  </section>
+
+  <section class="blk" id="mood">
+    <div class="shead rv"><h2>How are you, really?</h2><span class="lb dim">A check-in, then a remedy</span></div>
+    <div class="moodwrap rv" id="moodWrap"></div>
+  </section>
+
+  <section class="blk" id="songs">
+    <div class="shead rv"><h2>Sound for tonight</h2><span class="lb dim">Chant, devotion &amp; healing tones</span></div>
+    <div class="songswrap rv" id="songsWrap"></div>
   </section>
 
   <section class="blk" id="practice">
@@ -2144,7 +2171,7 @@ function aiSystemPrompt(){
         '. Read '+(PROPHEXY_MEDIA.palm?'the palm (heart, head, life and fate lines, and the mounts) ':'')+(PROPHEXY_MEDIA.face?(PROPHEXY_MEDIA.palm?'and the face (physiognomy)':'the face (physiognomy)'):'')+
         ' and let what you see there confirm, sharpen or complicate the chart - weave it in, do not analyse it separately. '
       : '')+
-    calibNote()+dreamNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
+    calibNote()+dreamNote()+moodNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
 }
 function localOptionHTML(){
   if(!LocalAI.supported())return '';
@@ -2385,6 +2412,8 @@ var HUBCARDS=[
  {t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
  {t:'Let me see you',s:'palm &amp; face',go:'capture'},
  {t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
+ {t:'How are you?',s:'a check-in &amp; a remedy',go:'mood'},
+ {t:'Sound for tonight',s:'chant &amp; frequencies',go:'songs'},
  {t:'A practice tonight',s:'breath &amp; sound',go:'practice'},
  {t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
  {t:'The week ahead',s:'strong and weak days',go:'week'},
@@ -2481,6 +2510,114 @@ function renderPractice(){
   var btn=$('breathBtn');if(btn)btn.addEventListener('click',function(){if(BREATH)stopBreath(false);else startBreath();});
 }
 function trunc(x,n){x=String(x||'');return x.length>n?x.slice(0,n-1).replace(/\s+\S*$/,'')+'&hellip;':x;}
+
+/* ===================== mood check-in ===================== */
+var MOODS=[
+ {k:'anxious',label:'Anxious',freq:'396 Hz',rem:'Slow the breath before anything else &mdash; the breathing card downshifts the whole system in about three minutes. Then name the one thing you can actually act on, and let the rest wait.'},
+ {k:'low',label:'Low',freq:'528 Hz',rem:'Low is usually depletion, not laziness. Warmth and one small finished thing lift it more than a big plan. A short walk and 528 Hz beats forcing yourself to feel better.'},
+ {k:'restless',label:'Restless',freq:'432 Hz',rem:'Restlessness is energy with no channel. Give it one &mdash; a walk, a workout, one bold message you have been sitting on. Do not scroll it away; that just traps it.'},
+ {k:'angry',label:'Angry',freq:'396 Hz',rem:'Anger is information about a boundary that got crossed. Move your body first, then say the one true sentence calmly. The feeling is valid even if the first reaction is not the move.'},
+ {k:'flat',label:'Flat',freq:'639 Hz',rem:'Flatness is often protection, not emptiness. Do not force joy &mdash; do one sensory thing (music, warmth, cold water on the face) to come back into your body first.'},
+ {k:'heavy',label:'Overwhelmed',freq:'432 Hz',rem:'Overwhelm means too many open loops at once. Close the single smallest one, and let the ring breathe you down before you look at the rest.'},
+ {k:'good',label:'Good',freq:'528 Hz',rem:'Good is worth marking. Notice what actually got you here &mdash; that is the map back. Bank it in your journal so future-you can find the way.'}
+];
+var CAUSES=[{k:'person',label:'A person'},{k:'work',label:'Work'},{k:'body',label:'My body'},{k:'self',label:'Myself'},{k:'unknown',label:'Can’t name it'}];
+var causeNote={
+ person:'Since it is a person: the move is one honest sentence to them, not a long story about them told to yourself.',
+ work:'Since it is work: separate the task from your worth &mdash; a hard day is not a verdict on you.',
+ body:'Since it is your body: check sleep, food and water before anything cosmic. Tend the body first; the mood often follows.',
+ self:'Since it is about you: speak to yourself the way you would to someone you love, not like a critic with a clipboard.',
+ unknown:'You cannot name it, and that is fine &mdash; the body knows before the mind does. Start with the breath and let it surface.'};
+var MKEY='prophexy.mood';
+function loadMoods(){try{return JSON.parse(localStorage.getItem(MKEY))||[];}catch(e){return [];}}
+function saveMoods(a){try{localStorage.setItem(MKEY,JSON.stringify(a.slice(-30)));}catch(e){}}
+function addMood(mood,cause){var a=loadMoods();a.push({m:mood,c:cause||'',d:todayKey()});saveMoods(a);return a;}
+function todaysMood(){var a=loadMoods(),last=a[a.length-1];return (last&&last.d===todayKey())?last:null;}
+function moodNote(){var a=loadMoods();if(!a.length)return '';
+  var recent=a.slice(-6).map(function(x){return '- '+x.m+(x.c?' (about '+x.c+')':'')+' on '+x.d;});
+  return '\n\nMOOD CHECK-INS they have logged (use to understand their emotional pattern and what tends to move them; be gentle and human, never clinical):\n'+recent.join('\n');}
+function moodLabel(k){for(var i=0;i<MOODS.length;i++)if(MOODS[i].k===k)return MOODS[i].label;return k;}
+function renderMood(){
+  var host=$('moodWrap');if(!host)return;
+  var tm=todaysMood();
+  if(tm){renderMoodResult(host,tm.m,tm.c);return;}
+  host.innerHTML='<p class="moodlead">How are you, really? No wrong answer &mdash; this is how I learn what actually moves you.</p>'+
+    '<div class="moodchips" id="moodChips">'+MOODS.map(function(m){return '<button type="button" data-m="'+m.k+'">'+m.label+'</button>';}).join('')+'</div>';
+  host.querySelectorAll('#moodChips button').forEach(function(b){b.addEventListener('click',function(){try{A();blip(600,0.06,0.07);}catch(e){}askCause(host,b.dataset.m);});});
+}
+function askCause(host,mood){
+  host.innerHTML='<p class="moodlead"><b>'+moodLabel(mood)+'.</b> What&rsquo;s it closest to?</p>'+
+    '<div class="moodchips" id="causeChips">'+CAUSES.map(function(c){return '<button type="button" data-c="'+c.k+'">'+c.label+'</button>';}).join('')+'</div>';
+  host.querySelectorAll('#causeChips button').forEach(function(b){b.addEventListener('click',function(){
+    try{A();blip(660,0.06,0.07);}catch(e){}
+    addMood(mood,b.dataset.c);renderMoodResult(host,mood,b.dataset.c);
+    if(typeof renderHub==='function')renderHub();
+  });});
+}
+function renderMoodResult(host,moodK,causeK){
+  var m=null;for(var i=0;i<MOODS.length;i++)if(MOODS[i].k===moodK)m=MOODS[i];if(!m)m=MOODS[0];
+  var rec=m.rem+(causeK&&causeNote[causeK]?(' '+causeNote[causeK]):'');
+  host.innerHTML='<div class="lb" style="color:var(--sig);margin-bottom:12px">What might be under it</div>'+
+    '<p class="moodrec">'+rec+'</p>'+
+    '<div class="moodacts">'+
+      '<button type="button" class="aibtn" data-open="practice">Breathe it down</button>'+
+      '<button type="button" class="aibtn ghost" data-open="songs">'+m.freq+' &amp; sound</button>'+
+    '</div>'+
+    '<div class="moodtalk" id="moodTalk"></div>'+
+    '<button type="button" class="linkbtn" id="moodAgain" style="margin-top:18px">check in again</button>';
+  host.querySelectorAll('[data-open]').forEach(function(b){b.addEventListener('click',function(){
+    var g=b.dataset.open,h=null;for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===g)h=HUBCARDS[i];
+    openCard(g,h?decodeTitle(h.t):'');});});
+  var again=$('moodAgain');if(again)again.addEventListener('click',function(){renderMood();});
+  var talk=$('moodTalk');
+  if(talk&&aiUsable()){
+    talk.innerHTML='<button type="button" class="linkbtn" id="moodAI">talk it through with me</button><div class="moodstream" id="moodStream"></div>';
+    var ai=$('moodAI');if(ai)ai.addEventListener('click',function(){
+      aiStreamInto($('moodStream'),{loadLabel:'sitting with it&hellip;',system:aiSystemPrompt(),
+        messages:[{role:'user',content:'I feel '+moodK+(causeK?', and it is about '+causeK:'')+'. Gently help me see what is really under it, using what you know about me and today, and give me one small thing to do right now. A few warm, human sentences &mdash; not clinical.'}],
+        model:'claude-sonnet-5',maxTokens:360});
+    });
+  }
+}
+
+/* ===================== sound / songs ===================== */
+var SONGS={
+ chant:[
+  {t:'Om Namah Shivaya',d:'the five-syllable Shiva mantra &mdash; steadies the mind',q:'Om Namah Shivaya chant'},
+  {t:'Gayatri Mantra',d:'the dawn prayer for clarity and light',q:'Gayatri Mantra'},
+  {t:'Mahamrityunjaya Mantra',d:'for healing, courage and protection',q:'Mahamrityunjaya Mantra'},
+  {t:'Hare Krishna kirtan',d:'call-and-response devotion, lifts a low mood',q:'Hare Krishna kirtan'},
+  {t:'Om Mani Padme Hum',d:'the compassion mantra (Tibetan)',q:'Om Mani Padme Hum'}
+ ],
+ newage:[
+  {t:'Deva Premal',d:'modern mantra, crystal clear',q:'Deva Premal'},
+  {t:'Snatam Kaur',d:'kundalini devotional',q:'Snatam Kaur'},
+  {t:'Krishna Das',d:'western kirtan, deep and warm',q:'Krishna Das'},
+  {t:'East Forest',d:'ceremony ambient',q:'East Forest ambient'},
+  {t:'Nils Frahm',d:'wordless, spacious, for focus',q:'Nils Frahm'}
+ ],
+ freq:[
+  {t:'396 Hz',d:'release fear and guilt',q:'396 Hz solfeggio'},
+  {t:'432 Hz',d:'a gentler tuning &mdash; ease and calm',q:'432 Hz music'},
+  {t:'528 Hz',d:'the &ldquo;repair&rdquo; tone &mdash; renewal',q:'528 Hz'},
+  {t:'639 Hz',d:'for connection and relationships',q:'639 Hz'},
+  {t:'Schumann 7.83 Hz',d:'earth resonance &mdash; grounding',q:'7.83 Hz Schumann resonance'}
+ ]
+};
+function songLinks(q){var e=encodeURIComponent(q);
+  return '<a class="slink" href="https://open.spotify.com/search/'+e+'" target="_blank" rel="noopener">Spotify</a>'+
+    '<a class="slink" href="https://music.apple.com/us/search?term='+e+'" target="_blank" rel="noopener">Apple</a>'+
+    '<a class="slink" href="https://www.youtube.com/results?search_query='+e+'" target="_blank" rel="noopener">YouTube</a>';}
+function renderSongs(){
+  var host=$('songsWrap');if(!host)return;
+  function grp(title,items){return '<div class="songgroup"><div class="lb">'+title+'</div>'+
+    items.map(function(it){return '<div class="song"><div class="songmeta"><div class="songt">'+it.t+'</div><div class="songd">'+it.d+'</div></div><div class="songlinks">'+songLinks(it.q)+'</div></div>';}).join('')+'</div>';}
+  host.innerHTML='<p class="songlead">Sound is the fastest remedy there is &mdash; chant to steady the mind, frequencies to shift the body. Tap through to your player.</p>'+
+    grp('Chant &mdash; traditional',SONGS.chant)+
+    grp('Devotional &mdash; new age',SONGS.newage)+
+    grp('Healing frequencies',SONGS.freq);
+}
+
 function cardSummary(go){
   try{
     var dt=new Date(),pp=PROF.dob.split('-'),by=+pp[0],bm=+pp[1],bd=+pp[2];
@@ -2499,6 +2636,8 @@ function cardSummary(go){
     if(go==='week'){var F=forecast(),ds=F.days.slice().sort(function(a,b){return b.total-a.total;}),WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return 'strongest '+WD[ds[0].dt.getDay()]+' &middot; weakest '+WD[ds[ds.length-1].dt.getDay()];}
     if(go==='matrix'){var F2=forecast(),d0=F2.days[0],best=CATS.slice().sort(function(a,b){return d0.sc[b.k].s-d0.sc[a.k].s;})[0];return best.label+' is strongest today';}
     if(go==='learn'){var c=loadCalib();return c&&c.n?(c.n+' reading'+(c.n>1?'s':'')+' rated'):'rate a reading to teach me';}
+    if(go==='mood'){var tm=todaysMood();return tm?('today: '+moodLabel(tm.m).toLowerCase()+' &mdash; remedy ready'):'check in &mdash; how are you, really?';}
+    if(go==='songs'){return 'chant, devotion &amp; healing frequencies';}
     if(go==='practice'){return 'box breathing &middot; settle before the day';}
     if(go==='cards'){return 'a yes/no, a choice, a block';}
   }catch(e){}
@@ -2579,6 +2718,8 @@ function build(){
   renderChain();
   renderCapture();
   renderDream();
+  renderMood();
+  renderSongs();
   renderPractice();
   renderHub();
   wireNav();
