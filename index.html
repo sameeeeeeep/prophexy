@@ -173,7 +173,7 @@
   .acqmain .seqlist .sq .dots{display:none}
   .acqmain .seqlist .sq .v{grid-column:2;grid-row:2;text-align:left;font-size:15px;white-space:normal}
   @media(max-width:860px){.acqmain{flex-direction:column;align-items:stretch}.acqmain .seqviz{flex:none}}
-  @media(max-width:520px){.acqmain .seqlist{grid-template-columns:1fr}}
+  @media(max-width:360px){.acqmain .seqlist{grid-template-columns:1fr}}
   .seqfoot{margin-top:26px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
   .seqfoot .msg{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--g1)}
   .seqbtn{background:var(--ink);color:#000;border:none;padding:15px 30px;font-size:10px;
@@ -706,6 +706,11 @@
   #backBtn{background:none;border:1px solid var(--g3);color:var(--ink);font-family:inherit;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:9px 15px;cursor:pointer}
   #backBtn:hover{border-color:var(--ink)}
   #backTitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--g1)}
+  .cardnav{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .cardnav button{background:none;border:1px solid var(--g3);color:var(--ink);font-family:inherit;font-size:15px;line-height:1;width:34px;height:34px;cursor:pointer;transition:.15s}
+  .cardnav button:hover:not(:disabled){border-color:var(--sig);color:var(--sig)}
+  .cardnav button:disabled{opacity:.28;cursor:default}
+  #cardPos{font-size:10px;letter-spacing:.14em;color:var(--g2);min-width:50px;text-align:center}
   .blk{display:none}
   .blk.open{display:block;animation:cardin .32s ease both}
   body.focused .blk.open{padding-top:clamp(18px,3vh,34px)}
@@ -925,7 +930,7 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
 
 <div class="wrap">
 
-  <div id="backbar"><button type="button" id="backBtn">&lsaquo; all cards</button><span id="backTitle"></span></div>
+  <div id="backbar"><button type="button" id="backBtn">&lsaquo; all</button><span id="backTitle"></span><span class="cardnav"><button type="button" id="cardPrev" aria-label="previous card">&lsaquo;</button><span id="cardPos"></span><button type="button" id="cardNext" aria-label="next card">&rsaquo;</button></span></div>
 
   <div id="home">
     <div class="hero">
@@ -2369,15 +2374,29 @@ var HUBCARDS=[
  {t:'What I&rsquo;ve learned',s:'what I got right',go:'learn'},
  {t:'Ask the cards',s:'a yes/no, a choice',go:'cards'}
 ];
+var CARDIDX=-1;
+function decodeTitle(t){return String(t).replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,'&');}
 function openCard(id,title){
   document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
   var el=document.getElementById(id);if(!el)return;
   el.classList.add('open');
   el.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});
   document.body.classList.add('focused');
-  var bt=$('backTitle');if(bt)bt.textContent=title||'';
+  var ord=HUBCARDS.map(function(c){return c.go;});
+  CARDIDX=ord.indexOf(id);
+  var bt=$('backTitle');if(bt)bt.textContent=title||(CARDIDX>=0?decodeTitle(HUBCARDS[CARDIDX].t):'');
+  var cp=$('cardPos');if(cp)cp.textContent=CARDIDX>=0?(CARDIDX+1)+' / '+ord.length:'';
+  var pv=$('cardPrev'),nx=$('cardNext');
+  if(pv)pv.disabled=(CARDIDX<=0);
+  if(nx)nx.disabled=(CARDIDX<0||CARDIDX>=ord.length-1);
   window.scrollTo(0,0);
   try{A();blip(680,0.08,0.09);}catch(e){}
+}
+function stepCard(dir){
+  var ord=HUBCARDS.map(function(c){return c.go;});
+  if(CARDIDX<0)return;
+  var ni=CARDIDX+dir; if(ni<0||ni>=ord.length)return;
+  openCard(HUBCARDS[ni].go, decodeTitle(HUBCARDS[ni].t));
 }
 function showHome(){
   document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
@@ -2387,6 +2406,12 @@ function showHome(){
 }
 function wireNav(){
   var bb=$('backBtn');if(bb&&!bb.dataset.w){bb.dataset.w='1';bb.addEventListener('click',showHome);}
+  var pv=$('cardPrev');if(pv&&!pv.dataset.w){pv.dataset.w='1';pv.addEventListener('click',function(){stepCard(-1);});}
+  var nx=$('cardNext');if(nx&&!nx.dataset.w){nx.dataset.w='1';nx.addEventListener('click',function(){stepCard(1);});}
+  if(!window.__cardKeys){window.__cardKeys=1;document.addEventListener('keydown',function(e){
+    if(!document.body.classList.contains('focused'))return;
+    if(e.key==='ArrowRight')stepCard(1); else if(e.key==='ArrowLeft')stepCard(-1); else if(e.key==='Escape')showHome();
+  });}
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
     a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home')showHome();else openCard(g,a.textContent);});});
 }
