@@ -700,6 +700,8 @@
   .band{display:none}
   .srcbadge{display:inline-block;margin-top:16px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:4px 11px;border:1px solid var(--g3);color:var(--g2)}
   .srcbadge.ai{border-color:var(--sig);color:var(--sig)}
+  .srcbadge.computed{cursor:pointer}
+  .srcbadge.computed:hover{border-color:var(--sig);color:var(--sig)}
   /* hub filmstrip + focused cards */
   #backbar{display:none;position:sticky;top:0;z-index:60;background:#000;border-bottom:1px solid var(--line);padding:14px 0;align-items:center;gap:16px}
   body.focused #backbar{display:flex}
@@ -2497,6 +2499,7 @@ function showHome(){
 }
 function wireNav(){
   var bb=$('backBtn');if(bb&&!bb.dataset.w){bb.dataset.w='1';bb.addEventListener('click',showHome);}
+  var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){if(sb.classList.contains('computed'))openCard('reading-ai',decodeTitle('Today&rsquo;s reading'));});}
   var pv=$('cardPrev');if(pv&&!pv.dataset.w){pv.dataset.w='1';pv.addEventListener('click',function(){stepCard(-1);});}
   var nx=$('cardNext');if(nx&&!nx.dataset.w){nx.dataset.w='1';nx.addEventListener('click',function(){stepCard(1);});}
   if(!window.__cardKeys){window.__cardKeys=1;document.addEventListener('keydown',function(e){
