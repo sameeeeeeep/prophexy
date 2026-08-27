@@ -13,6 +13,7 @@
   :root{
     --black:#000;--ink:#f0f0fa;--g1:#8c8c99;--g2:#54545f;--g3:#33333d;--line:#1c1c23;
     --sig:#ff9d2e;
+    --gold:#ffb257;--gold2:#ffc98a;
     --gut:clamp(14px,2.2vw,30px);
     --pad:clamp(20px,5vw,56px);
   }
@@ -715,6 +716,45 @@
   .aitaste p{font-family:"Archivo",sans-serif;font-size:clamp(16px,2vw,20px);line-height:1.55;color:var(--g1);margin:12px 0 0;max-width:60ch}
   .tastecut{color:var(--g2)}
   .aireading{font-size:clamp(17px,2.1vw,22px);line-height:1.65;letter-spacing:-.008em;white-space:pre-wrap;max-width:64ch}
+  /* which mind is reading you — always visible in the reading */
+  .aimodebar{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .amcur{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--g2)}
+  .amcur b{color:var(--g1);font-weight:400}
+  .amacts{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+  .ambtn{display:inline-block;background:none;border:1px solid var(--sig);color:var(--sig);font-family:inherit;
+    font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;padding:9px 15px;cursor:pointer;text-decoration:none;transition:.15s}
+  .ambtn:hover{background:var(--sig);color:#000}
+  .ambtn.ghost{border-color:var(--g3);color:var(--g1)}
+  .ambtn.ghost:hover{border-color:var(--ink);background:none;color:var(--ink)}
+  .ambtn:disabled{opacity:.5;cursor:default}
+  /* ===== new landing: the reading leads ===== */
+  .todayzone{padding-top:clamp(4px,1.6vw,12px)}
+  .movezone{margin-top:clamp(22px,3.5vw,34px);border:1px solid var(--line);border-left:2px solid var(--sig);padding:clamp(16px,2.4vw,22px)}
+  .movezone:empty{display:none;border:none;padding:0;margin:0}
+  .whyline{width:100%;background:none;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink);font-family:inherit;text-align:left;display:flex;align-items:center;gap:16px;padding:clamp(16px,2.2vw,20px) 2px;cursor:pointer;margin-top:clamp(22px,3vw,32px)}
+  .whyline .whytxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .whyline .whytxt .lb{color:var(--g2)}
+  .whyline .whylead{font-size:14px;color:var(--g1);line-height:1.42}
+  .whyline:hover .whylead{color:var(--ink)}
+  .whyline:hover .whychev{color:var(--sig)}
+  .whyline .whychev{color:var(--g2);font-size:19px;line-height:1;flex:none}
+  .explorehead{margin-top:clamp(28px,4.5vw,44px);margin-bottom:14px}
+  .explorehead .lb{color:var(--g2)}
+  .computedread p{font-size:clamp(16px,2vw,20px);line-height:1.6;color:var(--ink);margin:0 0 14px;max-width:64ch}
+  .computedread .cr2{color:var(--g1);font-size:15px;line-height:1.6}
+  .personalise{margin-top:18px;background:none;border:1px solid var(--g3);color:var(--g1);font-family:inherit;display:inline-flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;transition:.16s}
+  .personalise:hover{border-color:var(--sig);color:var(--ink)}
+  .personalise .lb{color:var(--g2)}
+  .personalise .pmore{color:var(--sig);font-size:12px;letter-spacing:.04em}
+  /* ===== source screen tiers ===== */
+  .srctier{border:1px solid var(--line);padding:clamp(15px,2vw,22px);margin-bottom:14px}
+  .srctierhd{margin-bottom:6px}
+  .srcopt{display:flex;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+  .srctierhd + .srcopt{border-top:none;padding-top:6px}
+  .srcoptxt{flex:1;min-width:0}
+  .srcopt .son{font-size:16px}
+  .srcopt .sos{font-size:12.5px;color:var(--g1);line-height:1.45;margin-top:5px;max-width:46ch}
+  .srcopt .aibtn{margin-top:0;white-space:nowrap;flex:none;padding:12px 20px}
   .aireading.streaming::after{content:'\258c';color:var(--sig);animation:blink 1s steps(2) infinite}
   @keyframes blink{50%{opacity:0}}
   .aichat{margin-top:clamp(30px,4vw,44px);border-top:1px solid var(--line);padding-top:24px}
@@ -753,6 +793,8 @@
   /* hub filmstrip + focused cards */
   #backbar{display:none;position:sticky;top:0;z-index:60;background:#000;border-bottom:1px solid var(--line);padding:14px 0;align-items:center;gap:16px}
   body.focused #backbar{display:flex}
+  body.focused header,body.focused .hnav{display:none}
+  #backbar{background:#000}
   #backBtn{background:none;border:1px solid var(--g3);color:var(--ink);font-family:inherit;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:9px 15px;cursor:pointer}
   #backBtn:hover{border-color:var(--ink)}
   #backTitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--g1)}
@@ -773,26 +815,34 @@
   .hubstrip::-webkit-scrollbar-track{background:#000}
   .hubstrip::-webkit-scrollbar-thumb{background:var(--g3)}
   .hubstrip .hubcard{flex:0 0 216px;scroll-snap-align:start;min-height:150px}
-  .hubsection{margin-bottom:clamp(20px,3vh,34px)}
-  .hubseclabel{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:8px}
-  .acc{border-bottom:1px solid var(--line)}
-  .acchead{width:100%;background:none;border:none;color:var(--ink);font-family:inherit;text-align:left;display:flex;align-items:center;gap:16px;padding:clamp(15px,2vh,20px) 2px;cursor:pointer}
-  .acn{font-size:10px;color:var(--g2);letter-spacing:.14em;flex:none;width:26px}
-  .acmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-  .act{font-size:clamp(17px,2.1vw,21px);line-height:1.15}
-  .acs{font-size:13px;color:var(--g1);line-height:1.4}
+  .hubsection{margin-bottom:clamp(28px,4.5vh,48px)}
+  .hubseclabel{display:flex;align-items:baseline;gap:12px;margin-bottom:14px}
+  .hubseclabel .lb{color:var(--g2)}
+  /* card grid: two columns, content-heavy sections span full width; any open card goes full width */
+  .hubgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  @media(max-width:680px){.hubgrid{grid-template-columns:1fr}}
+  .acc{border:1px solid var(--line);background:#060609;display:flex;flex-direction:column;min-height:104px;
+    transition:border-color .18s ease,background .18s ease}
+  .acc:hover{border-color:var(--g3)}
+  .acc.wide{grid-column:1 / -1}
+  .acc.open{grid-column:1 / -1;border-color:var(--g3);background:#000}
+  .acchead{width:100%;background:none;border:none;color:var(--ink);font-family:inherit;text-align:left;
+    display:flex;align-items:flex-start;gap:14px;padding:clamp(17px,2.1vw,23px);cursor:pointer}
+  .acn{font-size:9.5px;color:var(--g2);letter-spacing:.16em;flex:none;width:22px;padding-top:6px}
+  .acmain{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+  .act{font-size:clamp(18px,2vw,22px);line-height:1.13;letter-spacing:-.01em}
+  .acs{font-size:13px;color:var(--g1);line-height:1.45}
   .acc.open .acs{color:var(--sig)}
-  .acchead:hover .acs{color:var(--ink)}
-  .acchev{flex:none;width:13px;height:13px;position:relative}
+  .acc:hover .acs{color:var(--ink)}
+  .acchev{flex:none;width:14px;height:14px;position:relative;margin-top:5px}
   .acchev:before,.acchev:after{content:"";position:absolute;background:var(--g2);transition:.2s}
-  .acchev:before{top:6px;left:0;width:13px;height:1.5px}
-  .acchev:after{left:6px;top:0;height:13px;width:1.5px}
+  .acchev:before{top:6.25px;left:0;width:14px;height:1.5px}
+  .acchev:after{left:6.25px;top:0;height:14px;width:1.5px}
   .acc.open .acchev:after{transform:scaleY(0)}
   .acc.open .acchev:before{background:var(--sig)}
   .blk.inacc{padding:0}
-  .blk.inacc.open{display:block;padding:2px 0 26px 42px}
+  .blk.inacc.open{display:block;padding:0 clamp(17px,2.1vw,23px) 28px;animation:cardin .3s ease both}
   .blk.inacc .shead{display:none}
-  @media(max-width:600px){.blk.inacc.open{padding-left:0}}
   #chapter{display:none}
   .hubsection-legacy{margin-bottom:clamp(26px,4vh,42px)}
   .hubseclabel{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px}
@@ -1169,7 +1219,7 @@ window.PXEMBLEM={};
       <span>Prophexy</span>
     </div>
     <nav class="hnav">
-      <a href="#" data-go="home">Home</a><a href="#" data-go="reading-ai">Reading</a><a href="#" data-go="sky">Chart</a>
+      <a href="#" data-go="home">Home</a><a href="#" data-go="home">Reading</a><a href="#" data-go="sky">Chart</a>
     </nav>
   </div>
 </header>
@@ -1188,14 +1238,25 @@ window.PXEMBLEM={};
       </div>
       <div class="rail" id="rail"></div>
     </div>
-    <div class="hubdeck rv" id="hubDeck"></div>
+
+    <div class="todayzone" id="todayZone">
+      <div class="aibody" id="aiBody"></div>
+    </div>
+
+    <div class="movezone" id="moveZone">
+      <div class="dosteps" id="doSteps"></div>
+      <div class="doact" id="doAct"></div>
+    </div>
+
+    <button type="button" class="whyline" id="whyLine">
+      <span class="whytxt"><span class="lb">WHY TODAY</span><span class="whylead" id="whyLead">&mdash;</span></span>
+      <span class="whychev" aria-hidden="true">&rsaquo;</span>
+    </button>
+
+    <div class="explorehead"><span class="lb">EXPLORE &middot; GO DEEPER</span></div>
+    <div class="hubdeck" id="hubDeck"></div>
   </div>
 
-  <section class="blk" id="do">
-    <div class="shead rv"><h2>Do this today</h2><span class="lb dim">One move, and when to make it</span></div>
-    <div class="dosteps rv" id="doSteps"></div>
-    <div class="doact rv" id="doAct"></div>
-  </section>
 
   <section class="blk" id="why">
     <div class="shead rv"><h2>Why today says this</h2><span class="lb dim">The signals, and how they combine</span></div>
@@ -1227,11 +1288,6 @@ window.PXEMBLEM={};
     <div class="dreamwrap rv" id="dreamWrap"></div>
   </section>
 
-  <section class="blk" id="reading-ai">
-    <div class="shead rv"><h2>Your reading</h2><span class="lb dim">In your own words</span></div>
-    <div class="aibody rv" id="aiBody"></div>
-    <p class="bandnote rv" style="padding:0;margin-top:22px">The evidence &mdash; the exact chart this reading is built from.</p>
-  </section>
 
   <section class="blk" id="sky">
     <div class="shead rv"><h2>Where everything is right now</h2><span class="lb dim" id="chartStamp"></span></div>
@@ -1404,6 +1460,11 @@ window.PXEMBLEM={};
       </div>
       <p class="qecho" id="qecho"></p>
     </div>
+  </section>
+
+  <section class="blk" id="source">
+    <div class="shead rv"><h2>Who writes your reading</h2><span class="lb dim">Change this any time</span></div>
+    <div class="srcwrap rv" id="srcWrap"></div>
   </section>
 
   <footer><div class="fin">
@@ -2370,12 +2431,16 @@ var LocalAI=(function(){
     engine=await webllm.CreateMLCEngine(MODEL,{initProgressCallback:function(r){progressCb&&progressCb(r);}});
     ready=true;loading=false;return true;
   }
+  var FORMAT=' Write plainly for a phone screen: 2 to 4 short paragraphs, complete sentences, no markdown, no headings, no bullet points, no asterisks. Stop when the thought is done.';
   async function *stream(opts){
-    var msgs=[{role:'system',content:opts.system}].concat((opts.messages||[]).map(function(m){return {role:m.role,content:m.content};}));
-    var it=await engine.chat.completions.create({messages:msgs,stream:true,temperature:0.7,max_tokens:opts.maxTokens||800});
+    var sys=opts.system+FORMAT;
+    var msgs=[{role:'system',content:sys}].concat((opts.messages||[]).map(function(m){return {role:m.role,content:m.content};}));
+    /* a 1.5B model rambles with a long budget - keep it tight and cooler so structure holds */
+    var it=await engine.chat.completions.create({messages:msgs,stream:true,temperature:0.5,top_p:0.9,max_tokens:Math.min(opts.maxTokens||800,460)});
     for await (var chunk of it){var t=chunk&&chunk.choices&&chunk.choices[0]&&chunk.choices[0].delta&&chunk.choices[0].delta.content; if(t) yield {type:'text',text:t};}
   }
-  return {supported:supported,load:load,stream:stream,isReady:function(){return ready;}};
+  async function unload(){ try{ if(engine&&engine.unload) await engine.unload(); }catch(e){} engine=null; ready=false; loading=false; return true; }
+  return {supported:supported,load:load,stream:stream,unload:unload,isReady:function(){return ready;}};
 })();
 function activeAI(){ if(AIMODE==='local'&&LocalAI.isReady())return {stream:LocalAI.stream,connected:true}; return window.PROPHEXY_AI; }
 
@@ -2432,12 +2497,54 @@ function wireLocal(){
       .catch(function(e){if(txt)txt.textContent='The on-device reader needs the app running on its own site &mdash; this preview can&rsquo;t fetch it.';b.disabled=false;b.textContent='Read on this device';});
   });
 }
+function sbDeepLink(){return 'switchboard://open?url='+encodeURIComponent(location.href.split('#')[0])+'&name=Prophexy';}
+function wireSBLink(a){
+  if(!a)return;
+  a.addEventListener('click',function(){
+    if(window.claude&&window.claude.isRelay)return;
+    var left=false,onHide=function(){left=true;};
+    document.addEventListener('visibilitychange',onHide,{once:true});
+    window.addEventListener('blur',onHide,{once:true});
+    setTimeout(function(){
+      document.removeEventListener('visibilitychange',onHide);
+      window.removeEventListener('blur',onHide);
+      if(!left)location.href='https://thelastprompt.ai/switchboard/';
+    },1400);
+  });
+}
+/* one always-present control in the reading: which mind is reading you, and how to change it */
+function renderModeBar(){
+  var el=$('aiModeBar'); if(!el) return;
+  var AI=window.PROPHEXY_AI||null;
+  var onSB=!!(AI&&AI.connected&&AIMODE==='switchboard');
+  var onLocal=(AIMODE==='local'&&LocalAI.isReady());
+  var cur=onLocal?'this device':onSB?'your Claude':'a preview';
+  var out='<span class="amcur">Reading on <b>'+cur+'</b></span><span class="amacts">';
+  if(!onSB){
+    if(AI&&AI.installed){ out+='<button type="button" class="ambtn" id="amConnect">Use my Claude</button>'; }
+    else { out+='<a class="ambtn" id="amOpenSB" href="'+sbDeepLink()+'">Open in Switchboard</a>'; }
+  }
+  if(LocalAI.isReady()){ out+='<button type="button" class="ambtn ghost" id="amUnload">Unload device model</button>'; }
+  else if(LocalAI.supported()&&!onSB){ out+='<button type="button" class="ambtn ghost" id="amLoad">Read on this device</button>'; }
+  out+='</span>';
+  el.innerHTML=out;
+  var c=$('amConnect'); if(c) c.addEventListener('click',function(){c.textContent='Connecting…';c.disabled=true;
+    AI.connect().then(function(){AI.connected=true;AIMODE='switchboard';mountReading();}).catch(function(){renderModeBar();});});
+  wireSBLink($('amOpenSB'));
+  var u=$('amUnload'); if(u) u.addEventListener('click',function(){u.textContent='Unloading…';u.disabled=true;
+    LocalAI.unload().then(function(){ if(!(window.PROPHEXY_AI&&window.PROPHEXY_AI.connected)){AIMODE='switchboard';} renderAI(); });});
+  var l=$('amLoad'); if(l) l.addEventListener('click',function(){l.textContent='On its way…';l.disabled=true;
+    LocalAI.load(function(r){var pct=Math.round((r&&r.progress||0)*100);l.textContent='Loading '+pct+'%';})
+      .then(function(){AIMODE='local';mountReading();})
+      .catch(function(){l.textContent='Read on this device';l.disabled=false;});});
+}
 function mountReading(){
   var host=$('aiBody');if(!host)return;
-  host.innerHTML='<div class="sealed" id="sealed" hidden></div><div class="aireading" id="aiText"></div><div class="calib" id="calibBar"></div>'+
+  host.innerHTML='<div class="aimodebar" id="aiModeBar"></div><div class="sealed" id="sealed" hidden></div><div class="aireading" id="aiText"></div><div class="calib" id="calibBar"></div>'+
     '<div class="aichat"><div class="ainote">Ask anything &mdash; a decision, a person, a fear.</div>'+
     '<div class="aiqrow"><input id="aiQ" placeholder="Should I go full-time on this?"><button id="aiAsk">Ask</button></div>'+
     '<div class="aithread" id="aiThread"></div></div>';
+  renderModeBar();
   $('aiAsk').addEventListener('click',aiAsk);
   $('aiQ').addEventListener('keydown',function(e){if(e.key==='Enter')aiAsk();});
   var locked=todaysBase();
@@ -2457,30 +2564,57 @@ function restoreReading(d){
 }
 function renderAI(){
   var host=$('aiBody');if(!host)return;
-  if(AIMODE==='local'&&LocalAI.isReady()){mountReading();return;}
-  var AI=window.PROPHEXY_AI;
-  if(AI===undefined){host.innerHTML='<p class="aiload">Connecting&hellip;</p>';return;}
-  if(!AI){ /* no Switchboard SDK here - preview, or not deployed with it */
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Your real reading is written live &mdash; on your own Claude.</p>'+
-      localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste, for now</div><p id="aiTaste"></p></div></div>';
-    wireLocal();renderTaste();return;
-  }
-  if(AI.installed===false){
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Open me in Switchboard and I&rsquo;ll read your whole chart on your own Claude.</p>'+
-      '<a class="aibtn" id="aiOpenSB" href="'+(AI.installUrl||'#')+'">Open in Switchboard</a>'+
-      localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste, for now</div><p id="aiTaste"></p></div></div>';
-    wireOpenSB();wireLocal();renderTaste();return;
-  }
-  if(!AI.connected){
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Connect your Claude and I&rsquo;ll read your whole chart, then talk it through with you.</p>'+
-      '<button class="aibtn" id="aiConnect">Connect &amp; read my chart</button>'+localOptionHTML()+'</div>';
-    $('aiConnect').addEventListener('click',function(){this.textContent='Connecting…';this.disabled=true;
-      AI.connect().then(function(){AI.connected=true;AIMODE='switchboard';renderAI();}).catch(function(){renderAI();});});
-    wireLocal();return;
-  }
-  AIMODE='switchboard';mountReading();
+  if(aiUsable()){ AIMODE=(AIMODE==='local'&&LocalAI.isReady())?'local':'switchboard'; mountReading(); return; }
+  /* not personalised yet -> the computed reading leads; the source choice lives on its own screen */
+  host.innerHTML='<div class="computedread" id="computedRead"></div>'+
+    '<button type="button" class="personalise" id="personalise"><span class="lb">Computed reading</span><span class="pmore">Personalise this &rsaquo;</span></button>';
+  renderComputedReading();
+  var p=$('personalise'); if(p) p.addEventListener('click',function(){openSourceChoice();});
+}
+/* a plain, honest reading built from the numbers alone — no AI voice */
+function renderComputedReading(){
+  var el=$('computedRead'); if(!el) return;
+  var dt=new Date(),pp=(PROF.dob||'2000-1-1').split('-'),pd=pDay(+pp[1],+pp[2],dt);
+  var TR=(typeof todayReading==='function')?todayReading():null;
+  var area='your inner weather',verb='is quietly shifting';
+  if(TR&&TR.transit){ area=NAT_AREA[TR.transit.np]||area;
+    verb=({flows:'is opening up',tense:'is under real pressure',act:'is lit up and asking for action'}[TR.transit.tone]||'is stirring'); }
+  var dayw=''; try{ if(typeof N==='function'&&N(pd)) dayw=N(pd).w; }catch(e){}
+  el.innerHTML='<p>Today, '+cap(area)+' '+verb+'. Don&rsquo;t force it &mdash; notice what shifts on its own, then move with it.</p>'+
+    '<p class="cr2">On your own numbers it&rsquo;s a '+pd+'-day'+(dayw?' &mdash; '+dayw:'')+'. Small, deliberate moves land better than big swings today.</p>';
+}
+/* the reading source lives on its own screen, reached from the badge — never mid-reading */
+function openSourceChoice(){ if(typeof renderSource==='function')renderSource(); openCard('source','Reading source'); }
+function renderSource(){
+  var el=$('srcWrap'); if(!el) return;
+  var AI=window.PROPHEXY_AI||null;
+  var cur=(AIMODE==='local'&&LocalAI.isReady())?'device':(AI&&AI.connected)?'switchboard':'none';
+  el.innerHTML=
+    '<div class="srctier">'+
+      '<div class="srctierhd"><span class="lb" style="color:var(--sig)">PERSONALISED &middot; WRITTEN FOR YOU</span></div>'+
+      '<div class="srcopt"><div class="srcoptxt"><div class="son">Run with Switchboard</div><div class="sos">Your own Claude writes it. Nothing on a server.</div></div><button type="button" class="aibtn" id="srcSB">'+(cur==='switchboard'?'Connected':'Connect')+'</button></div>'+
+      '<div class="srcopt"><div class="srcoptxt"><div class="son">Run on this device</div><div class="sos">A small model on your phone &mdash; about a gigabyte once, then fully offline.</div></div><button type="button" class="aibtn ghost" id="srcDev">'+(cur==='device'?'Loaded':'Load')+'</button></div>'+
+      '<div class="srcopt"><div class="srcoptxt"><div class="son">Subscribe</div><div class="sos">We host the reading for you &mdash; no connection, no setup.</div></div><button type="button" class="aibtn ghost" id="srcSub" disabled>Soon</button></div>'+
+    '</div>'+
+    '<div class="srctier plain">'+
+      '<div class="srctierhd"><span class="lb">NOT PERSONALISED</span></div>'+
+      '<div class="srcopt"><div class="srcoptxt"><div class="son">Read on the chart</div><div class="sos">The computed reading &mdash; the numbers and the sky, no AI voice on top.</div></div><button type="button" class="aibtn ghost" id="srcNone">'+(cur==='none'?'Current':'Use this')+'</button></div>'+
+    '</div>';
+  var sb=$('srcSB'); if(sb) sb.addEventListener('click',function(){
+    if(AI&&AI.installed&&AI.connect){ sb.textContent='Connecting…';sb.disabled=true;
+      AI.connect().then(function(){AI.connected=true;AIMODE='switchboard';showHome();renderAI();}).catch(function(){renderSource();}); }
+    else { var a=document.createElement('a'); a.href=sbDeepLink(); wireSBLink(a); document.body.appendChild(a); a.click(); a.remove(); }
+  });
+  var dv=$('srcDev'); if(dv) dv.addEventListener('click',function(){
+    if(LocalAI.isReady()){AIMODE='local';showHome();renderAI();return;}
+    if(!LocalAI.supported()){dv.textContent='Not on this browser';dv.disabled=true;return;}
+    dv.textContent='Loading…';dv.disabled=true;
+    LocalAI.load(function(r){var pct=Math.round((r&&r.progress||0)*100);dv.textContent='Loading '+pct+'%';})
+      .then(function(){AIMODE='local';showHome();renderAI();}).catch(function(){dv.textContent='Load';dv.disabled=false;});
+  });
+  var nn=$('srcNone'); if(nn) nn.addEventListener('click',function(){
+    if(window.PROPHEXY_AI)window.PROPHEXY_AI.connected=false; AIMODE='switchboard'; showHome(); renderAI();
+  });
 }
 function aiStreamInto(el,opts){
   var AI=activeAI();el.innerHTML=eyeLoader((opts&&opts.loadLabel)||'reading you&hellip;');el.classList.add('loading');
@@ -2555,7 +2689,7 @@ function chartReason(){
     if(!TR||!TR.transit) return 'No planet is closely lined up with your birth chart today, so nothing in the sky is pulling on you.';
     var t=TR.transit,nc=natalChart();
     var nsign=(nc&&nc[t.np])?signOf(nc[t.np].lon).sign:'';
-    return cap(TP_PLAIN[t.tp])+' is passing over the spot where '+NPNAME[t.np]+' sat when you were born'+
+    return cap(TP_PLAIN[t.tp])+' is passing over the spot where your '+NPNAME[t.np]+' sat when you were born'+
       (nsign?', in '+nsign:'')+' &mdash; the part of you that runs '+NAT_AREA[t.np]+'.';
   }catch(e){ return ''; }
 }
@@ -2628,12 +2762,9 @@ function renderDream(){
   host.querySelectorAll('[data-dream]').forEach(function(b){b.addEventListener('click',function(){readDream(+b.dataset.dream);});});
 }
 
-var HUBGROUPS=[{k:'today',label:'Today'},{k:'chart',label:'Your chart'},{k:'you',label:'You'},{k:'cures',label:'Cures'},{k:'ahead',label:'Ahead'}];
+var HUBGROUPS=[{k:'chart',label:'Your chart'},{k:'you',label:'You'},{k:'cures',label:'Tonight &middot; the solve'},{k:'ahead',label:'Ahead'}];
 var hubGroup='today';
 var HUBCARDS=[
- {g:'today',t:'Today&rsquo;s reading',s:'the one thing, in your words',go:'reading-ai'},
- {g:'today',t:'Do this today',s:'one move, and when',go:'do'},
- {g:'today',t:'Why today',s:'the signals behind it',go:'why'},
  {g:'chart',t:'Your chart',s:'the sky right now',go:'sky'},
  {g:'chart',t:'Your numbers',s:'how today reduces',go:'reading'},
  {g:'chart',t:'What you&rsquo;re here for',s:'the part that never moves',go:'purpose'},
@@ -2685,11 +2816,32 @@ function showHome(){
   window.scrollTo(0,0);
   try{A();blip(520,0.07,0.08);}catch(e){}
 }
-function jumpTo(go){var acc=document.querySelector('.acc[data-go="'+go+'"]');if(acc){openAcc(acc);acc.scrollIntoView({behavior:'smooth',block:'start'});}}
+function jumpTo(go){var h=null;for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go)h=HUBCARDS[i];if(h)openCard(go,decodeTitle(h.t));}
 function wireNav(){
-  var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){if(sb.classList.contains('computed'))jumpTo('reading-ai');});}
+  var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){openSourceChoice();});}
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
-    a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home'){window.scrollTo({top:0,behavior:'smooth'});}else jumpTo(g);});});
+    a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home'){showHome();}else jumpTo(g);});});
+  /* focused-view chrome: back to the deck, slide between open sections */
+  var bb=$('backBtn');if(bb&&!bb.dataset.w){bb.dataset.w='1';bb.addEventListener('click',showHome);}
+  var wl=$('whyLine');if(wl&&!wl.dataset.w){wl.dataset.w='1';wl.addEventListener('click',function(){openCard('why','Why today');});}
+  var pv=$('cardPrev');if(pv&&!pv.dataset.w){pv.dataset.w='1';pv.addEventListener('click',function(){stepCard(-1);});}
+  var nx=$('cardNext');if(nx&&!nx.dataset.w){nx.dataset.w='1';nx.addEventListener('click',function(){stepCard(1);});}
+  if(!window._hubKeys){window._hubKeys=true;
+    document.addEventListener('keydown',function(e){
+      if(!document.body.classList.contains('focused'))return;
+      if(e.key==='ArrowRight')stepCard(1);
+      else if(e.key==='ArrowLeft')stepCard(-1);
+      else if(e.key==='Escape')showHome();
+    });
+    /* swipe between open sections on touch */
+    var x0=null,y0=null;
+    document.addEventListener('touchstart',function(e){if(!document.body.classList.contains('focused'))return;var t=e.changedTouches[0];x0=t.clientX;y0=t.clientY;},{passive:true});
+    document.addEventListener('touchend',function(e){
+      if(x0===null||!document.body.classList.contains('focused'))return;
+      var t=e.changedTouches[0],dx=t.clientX-x0,dy=t.clientY-y0;x0=null;
+      if(Math.abs(dx)>64&&Math.abs(dx)>Math.abs(dy)*1.6)stepCard(dx<0?1:-1);
+    },{passive:true});
+  }
 }
 var BREATH=null;
 function startBreath(){
@@ -2973,28 +3125,30 @@ function cardSummary(go){
   return '';
 }
 function cardEmblem(go){var m=window.PXEMBLEM||{};return m[go]||'';}
+/* sections that carry their own picture on the card face */
+var HUBPIC={'cards':'tarot','intent':'vision'};
 var _hubBuilt=false;
 function renderHub(){
   var host=$('hubDeck');if(!host)return;
-  if(_hubBuilt){HUBCARDS.forEach(function(c){var el=document.querySelector('.acs[data-sum="'+c.go+'"]');if(el)el.innerHTML=cardSummary(c.go)||c.s;});return;}
+  if(_hubBuilt){HUBCARDS.forEach(function(c){var el=host.querySelector('.hcs[data-sum="'+c.go+'"]');if(el)el.innerHTML=cardSummary(c.go)||c.s;});return;}
   _hubBuilt=true;
   host.innerHTML=HUBGROUPS.map(function(g){
     var cards=HUBCARDS.filter(function(c){return c.g===g.k;});
-    return '<div class="hubsection"><div class="hubseclabel"><span class="lb">'+g.label+'</span></div>'+
+    return '<div class="hubsection"><div class="hubseclabel"><span class="lb">'+g.label+'</span>'+
+      '<span class="hubhint">swipe &rsaquo;</span></div>'+
+      '<div class="hubstrip">'+
       cards.map(function(c){var gi=HUBCARDS.indexOf(c);
-        return '<div class="acc" data-go="'+c.go+'"><button type="button" class="acchead">'+
-          '<span class="acn">'+String(gi+1).padStart(2,'0')+'</span>'+
-          '<span class="acmain"><span class="act">'+c.t+'</span><span class="acs" data-sum="'+c.go+'">'+(cardSummary(c.go)||c.s)+'</span></span>'+
-          '<span class="acchev" aria-hidden="true"></span></button>'+
-          '<div class="accbody" id="accbody-'+c.go+'"></div></div>';
-      }).join('')+'</div>';
+        return '<button type="button" class="hubcard" data-go="'+c.go+'">'+
+          '<span class="hcn">'+String(gi+1).padStart(2,'0')+'</span>'+
+          '<span class="hct">'+c.t+'</span>'+
+          '<span class="hcs" data-sum="'+c.go+'">'+(cardSummary(c.go)||c.s)+'</span>'+
+          '<span class="hcarrow" aria-hidden="true">&rsaquo;</span></button>';
+      }).join('')+'</div></div>';
   }).join('');
-  HUBCARDS.forEach(function(c){var blk=document.getElementById(c.go),body=document.getElementById('accbody-'+c.go);if(blk&&body){blk.classList.add('inacc');body.appendChild(blk);}});
-  host.querySelectorAll('.acchead').forEach(function(h){h.addEventListener('click',function(){toggleAcc(h.parentNode);});});
-  ['reading-ai','do'].forEach(function(go){var a=host.querySelector('.acc[data-go="'+go+'"]');if(a)openAcc(a);});
+  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
+    var go=b.dataset.go,h=null;for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go)h=HUBCARDS[i];
+    openCard(go,h?decodeTitle(h.t):'');});});
 }
-function openAcc(acc){if(!acc)return;acc.classList.add('open');var blk=acc.querySelector('.blk');if(blk){blk.classList.add('open');blk.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});}}
-function toggleAcc(acc){if(!acc)return;if(acc.classList.contains('open')){acc.classList.remove('open');var blk=acc.querySelector('.blk');if(blk)blk.classList.remove('open');}else{openAcc(acc);try{A();blip(660,0.06,0.07);}catch(e){}}}
 function build(){
   var dt=new Date(),p=PROF.dob.split('-'),by=+p[0],bm=+p[1],bd=+p[2];
   var b=skyNow(dt,PROF.lat,PROF.lng);
@@ -3090,6 +3244,7 @@ function build(){
     lever('Stone',RP.gem)+lever('Colour',RP.color)+lever('Metal',RP.metal)+
     lever('Window',WD[dt.getDay()]+', while '+ruler+' rules');
    applyDailyLine();
+   var _wl=$('whyLead'); if(_wl){ try{ _wl.innerHTML=trunc(String(chartReason()).replace(/<[^>]+>/g,'').replace(/\.$/,''),70); }catch(e){} }
 }
 /* ================= the day's fixed windows =================
    Rahu Kalam, Abhijit and Brahma Muhurta all fall out of sunrise/sunset alone. */
