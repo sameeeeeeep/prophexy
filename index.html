@@ -753,6 +753,28 @@
   .songlinks{display:flex;gap:14px;flex-shrink:0}
   .slink{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--g1);text-decoration:none;border-bottom:1px solid var(--g3);padding-bottom:2px}
   .slink:hover{color:var(--sig);border-color:var(--sig)}
+  .jprompt,.intlead{font-size:clamp(17px,2.2vw,21px);line-height:1.5;color:var(--ink);max-width:60ch;margin:0 0 22px}
+  .intlead{font-size:15px;color:var(--g1);line-height:1.65}
+  .journalin{width:100%;min-height:150px;background:#000;border:1px solid var(--g3);color:var(--ink);font-family:"Archivo",sans-serif;font-size:16px;line-height:1.6;padding:16px;resize:vertical;box-sizing:border-box;margin-bottom:14px}
+  .journalin:focus{outline:none;border-color:var(--g1);background:#07070c}
+  .jlist{margin-top:32px;border-top:1px solid var(--line);padding-top:22px}
+  .jlist .lb{margin-bottom:16px}
+  .jentry{padding:14px 0;border-bottom:1px solid var(--line)}
+  .jedate{font-size:10px;letter-spacing:.14em;color:var(--g2);text-transform:uppercase}
+  .jeq{font-size:12.5px;color:var(--g2);margin:6px 0 8px;font-style:italic}
+  .jetext{font-size:15px;color:var(--g1);line-height:1.6;margin:0;white-space:pre-wrap}
+  .introw{display:flex;gap:1px;background:var(--g3);border:1px solid var(--g3);max-width:640px}
+  .intentin{flex:1;background:#000;border:none;color:var(--ink);font-family:"Archivo",sans-serif;font-size:16px;padding:15px 17px;min-width:0}
+  .intentin:focus{outline:none;background:#07070c}
+  .intlist{margin-top:30px;border-top:1px solid var(--line);padding-top:22px}
+  .intlist .lb{margin-bottom:16px}
+  .intent{display:flex;align-items:center;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .intdot{flex:none;width:16px;height:16px;border:1px solid var(--g2);background:none;cursor:pointer;border-radius:50%;transition:.2s}
+  .intdot:hover{border-color:var(--sig)}
+  .intent.landed .intdot{background:var(--sig);border-color:var(--sig)}
+  .inttext{flex:1;font-size:16px;color:var(--ink)}
+  .intent.landed .inttext{color:var(--g2);text-decoration:line-through}
+  .intdate{font-size:11px;color:var(--g2);letter-spacing:.04em}
   .breathe{position:relative;width:min(300px,74vw);height:min(300px,74vw);margin:10px auto clamp(20px,4vh,34px);display:flex;align-items:center;justify-content:center}
   .breathring{position:absolute;inset:0;border:1px solid var(--sig);transform:scale(.62);transition:transform 4s ease-in-out;box-shadow:0 0 70px -22px var(--sig)}
   .breathmid{position:relative;text-align:center;z-index:2}
@@ -1077,6 +1099,16 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   <section class="blk" id="practice">
     <div class="shead rv"><h2>A practice tonight</h2><span class="lb dim">Breath &amp; sound</span></div>
     <div class="practicewrap rv" id="practiceWrap"></div>
+  </section>
+
+  <section class="blk" id="journal">
+    <div class="shead rv"><h2>Journal</h2><span class="lb dim">Today&rsquo;s prompt, and your thread</span></div>
+    <div class="journalwrap rv" id="journalWrap"></div>
+  </section>
+
+  <section class="blk" id="intent">
+    <div class="shead rv"><h2>What you&rsquo;re calling in</h2><span class="lb dim">Set it in the present tense</span></div>
+    <div class="intentwrap rv" id="intentWrap"></div>
   </section>
 
   <section class="blk" id="prescribe">
@@ -2171,7 +2203,7 @@ function aiSystemPrompt(){
         '. Read '+(PROPHEXY_MEDIA.palm?'the palm (heart, head, life and fate lines, and the mounts) ':'')+(PROPHEXY_MEDIA.face?(PROPHEXY_MEDIA.palm?'and the face (physiognomy)':'the face (physiognomy)'):'')+
         ' and let what you see there confirm, sharpen or complicate the chart - weave it in, do not analyse it separately. '
       : '')+
-    calibNote()+dreamNote()+moodNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
+    calibNote()+dreamNote()+moodNote()+journalNote()+intentionNote()+'\n\nHere is their computed chart across every system:\n\n'+buildDossier();
 }
 function localOptionHTML(){
   if(!LocalAI.supported())return '';
@@ -2414,6 +2446,8 @@ var HUBCARDS=[
  {t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
  {t:'How are you?',s:'a check-in &amp; a remedy',go:'mood'},
  {t:'Sound for tonight',s:'chant &amp; frequencies',go:'songs'},
+ {t:'Journal',s:'today&rsquo;s prompt',go:'journal'},
+ {t:'What you&rsquo;re calling in',s:'set an intention',go:'intent'},
  {t:'A practice tonight',s:'breath &amp; sound',go:'practice'},
  {t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
  {t:'The week ahead',s:'strong and weak days',go:'week'},
@@ -2618,6 +2652,62 @@ function renderSongs(){
     grp('Healing frequencies',SONGS.freq);
 }
 
+
+/* ===================== journal ===================== */
+var JKEY='prophexy.journal';
+function loadJournal(){try{return JSON.parse(localStorage.getItem(JKEY))||[];}catch(e){return [];}}
+function saveJournal(a){try{localStorage.setItem(JKEY,JSON.stringify(a.slice(-40)));}catch(e){}}
+function journalPrompt(){
+  try{
+    var tm=todaysMood&&todaysMood();
+    if(tm)return 'You checked in as '+moodLabel(tm.m).toLowerCase()+' today'+(tm.c?', about '+tm.c:'')+'. What&rsquo;s the story you&rsquo;re telling yourself about it &mdash; and is it actually true?';
+    var a=actionFor&&actionFor();
+    if(a&&(a.t||a.d))return 'Today asks one thing of you &mdash; '+trunc(cap((a.t||a.d).replace(/\s*\.\s*$/,'')),60)+'. What&rsquo;s honestly stopping you?';
+  }catch(e){}
+  var day=new Date().getDate();
+  var ps=['What are you pretending not to know?','What would you do today if you weren&rsquo;t afraid?','Who do you need to forgive &mdash; maybe yourself?','What is the kindest true thing you could tell yourself right now?','What did today quietly try to teach you?'];
+  return ps[day%ps.length];
+}
+function journalNote(){var a=loadJournal();if(!a.length)return '';var recent=a.slice(-3).map(function(x){return '- ('+x.d+') '+x.t;});return '\n\nJOURNAL entries they have written (private reflections &mdash; use to understand them deeply; never quote back coldly):\n'+recent.join('\n');}
+function renderJournal(){
+  var host=$('journalWrap');if(!host)return;
+  var a=loadJournal(),prompt=journalPrompt();
+  var past=a.slice().reverse().slice(0,6).map(function(x){return '<div class="jentry"><div class="jedate">'+escapeHTML(x.d)+'</div><div class="jeq">'+(x.p||'')+'</div><p class="jetext">'+escapeHTML(x.t)+'</p></div>';}).join('');
+  host.innerHTML='<p class="jprompt">'+prompt+'</p>'+
+    '<textarea id="journalIn" class="journalin" placeholder="Write freely &mdash; no one else sees this&hellip;"></textarea>'+
+    '<button type="button" class="aibtn ghost" id="journalSave">Save it</button>'+
+    (a.length?'<div class="jlist"><div class="lb">Your thread</div>'+past+'</div>':'');
+  var sv=$('journalSave');if(sv)sv.addEventListener('click',function(){
+    var t=($('journalIn').value||'').trim();if(!t)return;
+    var arr=loadJournal();arr.push({p:prompt,t:t.slice(0,2000),d:todayKey()});saveJournal(arr);
+    try{A();blip(680,0.08,0.09);}catch(e){}renderJournal();if(typeof renderHub==='function')renderHub();
+  });
+}
+
+/* ===================== intention / manifestation ===================== */
+var IKEY='prophexy.intentions';
+function loadIntentions(){try{return JSON.parse(localStorage.getItem(IKEY))||[];}catch(e){return [];}}
+function saveIntentions(a){try{localStorage.setItem(IKEY,JSON.stringify(a.slice(-30)));}catch(e){}}
+function intentionNote(){var a=loadIntentions().filter(function(x){return !x.landed;});if(!a.length)return '';var recent=a.slice(-4).map(function(x){return '- '+x.t;});return '\n\nINTENTIONS they are holding (what they are calling in &mdash; encourage honestly toward these):\n'+recent.join('\n');}
+function renderIntention(){
+  var host=$('intentWrap');if(!host)return;
+  var a=loadIntentions();
+  var support='';try{var ruler=DR[(new Date()).getDay()],RP=PL[ruler];if(RP)support=' Today runs on '+ruler+' &mdash; good energy for '+RP.tone+'.';}catch(e){}
+  var list=a.slice().reverse().map(function(x,ri){var i=a.length-1-ri;return '<div class="intent'+(x.landed?' landed':'')+'"><button type="button" class="intdot" data-int="'+i+'" aria-label="mark landed"></button><span class="inttext">'+escapeHTML(x.t)+'</span><span class="intdate">'+escapeHTML(x.d)+'</span></div>';}).join('');
+  host.innerHTML='<p class="intlead">Name what you&rsquo;re calling in &mdash; in the present tense, as if it is already true. That is the whole technique: the mind moves toward what it can already picture.'+support+'</p>'+
+    '<div class="introw"><input id="intentIn" class="intentin" placeholder="I am&hellip;  /  I have&hellip;  /  I am becoming&hellip;"><button type="button" class="aibtn" id="intentAdd">Hold it</button></div>'+
+    (a.length?'<div class="intlist"><div class="lb">What you&rsquo;re holding &mdash; tap the dot when it lands</div>'+list+'</div>':'');
+  var add=$('intentAdd');if(add)add.addEventListener('click',function(){
+    var t=($('intentIn').value||'').trim();if(!t)return;
+    var arr=loadIntentions();arr.push({t:t.slice(0,160),d:todayKey(),landed:false});saveIntentions(arr);
+    try{A();bell(392,0.06);}catch(e){}renderIntention();if(typeof renderHub==='function')renderHub();
+  });
+  var ii=$('intentIn');if(ii)ii.addEventListener('keydown',function(e){if(e.key==='Enter'&&add)add.click();});
+  host.querySelectorAll('[data-int]').forEach(function(b){b.addEventListener('click',function(){
+    var arr=loadIntentions(),i=+b.dataset.int;if(arr[i]){arr[i].landed=!arr[i].landed;saveIntentions(arr);try{A();resolveTone();}catch(e){}renderIntention();}
+  });});
+}
+
 function cardSummary(go){
   try{
     var dt=new Date(),pp=PROF.dob.split('-'),by=+pp[0],bm=+pp[1],bd=+pp[2];
@@ -2638,6 +2728,8 @@ function cardSummary(go){
     if(go==='learn'){var c=loadCalib();return c&&c.n?(c.n+' reading'+(c.n>1?'s':'')+' rated'):'rate a reading to teach me';}
     if(go==='mood'){var tm=todaysMood();return tm?('today: '+moodLabel(tm.m).toLowerCase()+' &mdash; remedy ready'):'check in &mdash; how are you, really?';}
     if(go==='songs'){return 'chant, devotion &amp; healing frequencies';}
+    if(go==='journal'){var j=loadJournal();return j.length?(j.length+' entr'+(j.length>1?'ies':'y')+' &middot; a prompt waits'):'today&rsquo;s prompt is waiting';}
+    if(go==='intent'){var it=loadIntentions().filter(function(x){return !x.landed;});return it.length?(it.length+' intention'+(it.length>1?'s':'')+' held'):'name what you&rsquo;re calling in';}
     if(go==='practice'){return 'box breathing &middot; settle before the day';}
     if(go==='cards'){return 'a yes/no, a choice, a block';}
   }catch(e){}
@@ -2720,6 +2812,8 @@ function build(){
   renderDream();
   renderMood();
   renderSongs();
+  renderJournal();
+  renderIntention();
   renderPractice();
   renderHub();
   wireNav();
