@@ -723,6 +723,12 @@
   .hubstrip::-webkit-scrollbar-track{background:#000}
   .hubstrip::-webkit-scrollbar-thumb{background:var(--g3)}
   .hubstrip .hubcard{flex:0 0 216px;scroll-snap-align:start;min-height:150px}
+  .hubtabs{display:flex;flex-wrap:wrap;gap:1px;margin-bottom:16px;background:var(--g3);border:1px solid var(--g3);width:fit-content;max-width:100%}
+  .hubpill{background:#000;border:none;color:var(--g1);font-family:inherit;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:10px 15px;cursor:pointer;transition:color .15s,background .15s;display:flex;align-items:center;gap:7px}
+  .hubpill i{font-style:normal;font-size:9px;color:var(--g2);letter-spacing:0}
+  .hubpill:hover{color:var(--ink)}
+  .hubpill.on{background:var(--sig);color:#000;font-weight:700}
+  .hubpill.on i{color:#000;opacity:.6}
   @media(max-width:440px){.hubstrip .hubcard{flex:0 0 78%}}
   /* hub deck */
   .hubdeck{margin:clamp(16px,3vh,30px) 0 clamp(6px,2vh,16px)}
@@ -2432,28 +2438,30 @@ function renderDream(){
   host.querySelectorAll('[data-dream]').forEach(function(b){b.addEventListener('click',function(){readDream(+b.dataset.dream);});});
 }
 
+var HUBGROUPS=[{k:'today',label:'Today'},{k:'chart',label:'Your chart'},{k:'you',label:'You'},{k:'cures',label:'Cures'},{k:'ahead',label:'Ahead'}];
+var hubGroup='today';
 var HUBCARDS=[
- {t:'Today&rsquo;s reading',s:'the one thing, in your words',go:'reading-ai'},
- {t:'Do this today',s:'one move, and when',go:'do'},
- {t:'Why today',s:'the signals behind it',go:'why'},
- {t:'Your chart',s:'the sky right now',go:'sky'},
- {t:'Your numbers',s:'how today reduces',go:'reading'},
- {t:'The Vedic view',s:'the Indian system',go:'vedic'},
- {t:'Chinese',s:'animal, element, core',go:'chinese'},
- {t:'What you&rsquo;re here for',s:'the part that never moves',go:'purpose'},
- {t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
- {t:'Let me see you',s:'palm &amp; face',go:'capture'},
- {t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
- {t:'How are you?',s:'a check-in &amp; a remedy',go:'mood'},
- {t:'Sound for tonight',s:'chant &amp; frequencies',go:'songs'},
- {t:'Journal',s:'today&rsquo;s prompt',go:'journal'},
- {t:'What you&rsquo;re calling in',s:'set an intention',go:'intent'},
- {t:'A practice tonight',s:'breath &amp; sound',go:'practice'},
- {t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
- {t:'The week ahead',s:'strong and weak days',go:'week'},
- {t:'Each part of life',s:'six areas, seven days',go:'matrix'},
- {t:'What I&rsquo;ve learned',s:'what I got right',go:'learn'},
- {t:'Ask the cards',s:'a yes/no, a choice',go:'cards'}
+ {g:'today',t:'Today&rsquo;s reading',s:'the one thing, in your words',go:'reading-ai'},
+ {g:'today',t:'Do this today',s:'one move, and when',go:'do'},
+ {g:'today',t:'Why today',s:'the signals behind it',go:'why'},
+ {g:'chart',t:'Your chart',s:'the sky right now',go:'sky'},
+ {g:'chart',t:'Your numbers',s:'how today reduces',go:'reading'},
+ {g:'chart',t:'What you&rsquo;re here for',s:'the part that never moves',go:'purpose'},
+ {g:'chart',t:'The Vedic view',s:'the Indian system',go:'vedic'},
+ {g:'chart',t:'Chinese',s:'animal, element, core',go:'chinese'},
+ {g:'you',t:'How are you?',s:'a check-in &amp; a remedy',go:'mood'},
+ {g:'you',t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
+ {g:'you',t:'Journal',s:'today&rsquo;s prompt',go:'journal'},
+ {g:'you',t:'What you&rsquo;re calling in',s:'set an intention',go:'intent'},
+ {g:'you',t:'Let me see you',s:'palm &amp; face',go:'capture'},
+ {g:'you',t:'What I&rsquo;ve learned',s:'what I got right',go:'learn'},
+ {g:'cures',t:'A practice tonight',s:'breath &amp; sound',go:'practice'},
+ {g:'cures',t:'Sound for tonight',s:'chant &amp; frequencies',go:'songs'},
+ {g:'cures',t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
+ {g:'cures',t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
+ {g:'ahead',t:'The week ahead',s:'strong and weak days',go:'week'},
+ {g:'ahead',t:'Each part of life',s:'six areas, seven days',go:'matrix'},
+ {g:'ahead',t:'Ask the cards',s:'a yes/no, a choice',go:'cards'}
 ];
 var CARDIDX=-1;
 function decodeTitle(t){return String(t).replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,'&');}
@@ -2737,16 +2745,18 @@ function cardSummary(go){
 }
 function renderHub(){
   var host=$('hubDeck');if(!host)return;
-  host.innerHTML='<div class="hublb"><span class="lb">Your cards</span><span class="hubhint">swipe &rarr;</span></div>'+
-   '<div class="hubstrip">'+HUBCARDS.map(function(c,i){
-     return '<button type="button" class="hubcard" data-go="'+c.go+'" data-title="'+c.t.replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,"&").replace(/"/g,'')+'">'+
-       '<span class="hcn">'+String(i+1).padStart(2,'0')+'</span>'+
+  var pills=HUBGROUPS.map(function(g){var n=HUBCARDS.filter(function(c){return c.g===g.k;}).length;
+    return '<button type="button" class="hubpill'+(g.k===hubGroup?' on':'')+'" data-g="'+g.k+'">'+g.label+'<i>'+n+'</i></button>';}).join('');
+  var cards=HUBCARDS.filter(function(c){return c.g===hubGroup;});
+  host.innerHTML='<div class="hubtabs">'+pills+'</div>'+
+   '<div class="hubstrip">'+cards.map(function(c){var gi=HUBCARDS.indexOf(c);
+     return '<button type="button" class="hubcard" data-go="'+c.go+'" data-title="'+decodeTitle(c.t).replace(/"/g,'')+'">'+
+       '<span class="hcn">'+String(gi+1).padStart(2,'0')+'</span>'+
        '<span class="hct">'+c.t+'</span><span class="hcs">'+(cardSummary(c.go)||c.s)+'</span>'+
        '<span class="hcarrow">&rarr;</span></button>';
    }).join('')+'</div>';
-  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
-    openCard(b.dataset.go,b.dataset.title);
-  });});
+  host.querySelectorAll('.hubpill').forEach(function(b){b.addEventListener('click',function(){hubGroup=b.dataset.g;renderHub();try{A();blip(640,0.06,0.07);}catch(e){}});});
+  host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){openCard(b.dataset.go,b.dataset.title);});});
 }
 function build(){
   var dt=new Date(),p=PROF.dob.split('-'),by=+p[0],bm=+p[1],bd=+p[2];
