@@ -665,6 +665,17 @@
   .aiprogbar{height:2px;background:var(--g3);overflow:hidden}
   .aiprogbar i{display:block;height:100%;width:0;background:var(--sig);transition:width .35s ease}
   .aiprogtxt{font-size:11px;letter-spacing:.03em;color:var(--g2);margin-top:9px}
+  /* eye loader */
+  .eyeload{display:inline-flex;align-items:center;gap:13px;color:var(--g1);font-size:13px;letter-spacing:.06em}
+  .eyesvg{width:42px;height:42px;overflow:visible;flex:none}
+  .eyesvg .iris,.eyesvg .pupil,.eyesvg .scan{transform-box:fill-box;transform-origin:center}
+  .eyesvg .iris{animation:eyescan 2.6s ease-in-out infinite}
+  .eyesvg .pupil{animation:eyepulse 1.5s ease-in-out infinite}
+  .eyesvg .scan{animation:eyespin 1.7s linear infinite}
+  .eyelabel{opacity:.85}
+  @keyframes eyepulse{0%,100%{transform:scale(.65)}50%{transform:scale(1.4)}}
+  @keyframes eyescan{0%,100%{transform:translateX(-3.5px)}50%{transform:translateX(3.5px)}}
+  @keyframes eyespin{to{transform:rotate(360deg)}}
   /* hub deck */
   .hubdeck{margin:clamp(30px,5vh,58px) 0 clamp(6px,2vh,18px)}
   .hublb{margin-bottom:15px}
@@ -903,8 +914,8 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </div>
 
   <section class="blk" id="capture">
-    <div class="shead rv"><h2>Let it see you</h2><span class="lb dim">Palm &amp; face &middot; optional</span></div>
-    <p class="rxlead rv">The chart says who you were born as. Your palm and face say who you have become. Add them and the reading reads them too &mdash; they go straight to the AI, nothing is stored on a server.</p>
+    <div class="shead rv"><h2>Let me see you</h2><span class="lb dim">Palm &amp; face &middot; optional</span></div>
+    <p class="rxlead rv">The chart says who you were born as. Your palm and face say who you have become. Show me both and I&rsquo;ll read those too &mdash; they come straight to me, and nothing about you is stored on a server.</p>
     <div class="capgrid rv">
       <div class="capslot"><div class="lb" style="margin-bottom:12px">Your palm</div><div id="cap_palm"></div></div>
       <div class="capslot"><div class="lb" style="margin-bottom:12px">Your face</div><div id="cap_face"></div></div>
@@ -912,7 +923,7 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
   </section>
 
   <section class="blk" id="dream">
-    <div class="shead rv"><h2>Tell it a dream</h2><span class="lb dim">When you remember one</span></div>
+    <div class="shead rv"><h2>Tell me a dream</h2><span class="lb dim">When you remember one</span></div>
     <div class="dreamwrap rv" id="dreamWrap"></div>
   </section>
 
@@ -1993,7 +2004,7 @@ function renderCalib(){
     '<div class="calibbtns"><button type="button" data-v="spot">Spot on</button>'+
       '<button type="button" data-v="partly">Half right</button>'+
       '<button type="button" data-v="off">Missed me</button></div>'+
-    '<div class="calibnote"><input id="calibIn" placeholder="Tell it what it got wrong, or what it nailed &mdash; it remembers"><button type="button" id="calibSave">Teach it</button></div>'+
+    '<div class="calibnote"><input id="calibIn" placeholder="Tell me what I got wrong, or what I nailed &mdash; I&rsquo;ll remember"><button type="button" id="calibSave">Teach me</button></div>'+
     (c.n?'<div class="calibmeta">It is reading you for the '+ordinal(c.n+1)+' time, carrying your last '+Math.min(c.notes.length,8)+' corrections into this one.</div>':'<div class="calibmeta">Your corrections train it to read you specifically. Nothing leaves your device.</div>');
   var sel='partly';
   el.querySelectorAll('.calibbtns button').forEach(function(b){b.addEventListener('click',function(){
@@ -2020,7 +2031,7 @@ function todaysLine(){var d=loadDaily();return (d&&d.day===todayKey()&&d.line)?d
 function setDailyAct(a){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.act=a;saveDaily(d);}
 function todaysAct(){var d=loadDaily();return (d&&d.day===todayKey()&&d.act)?d:null;}
 function appendThread(role,content){var d=loadDaily();if(!d||d.day!==todayKey())return;d.thread=d.thread||[];d.thread.push({r:role,c:content});saveDaily(d);}
-function sealText(){return 'Today&rsquo;s reading is set. It won&rsquo;t change again until tomorrow &mdash; only the day around it can. Ask it anything; tell it what it got right.';}
+function sealText(){return 'Today&rsquo;s reading is set &mdash; it won&rsquo;t change again until tomorrow. Ask me anything, and tell me what I got right.';}
 
 /* ---- on-device mind: a real reading with no Switchboard, nothing leaving the phone ---- */
 var LocalAI=(function(){
@@ -2042,6 +2053,14 @@ var LocalAI=(function(){
 })();
 function activeAI(){ if(AIMODE==='local'&&LocalAI.isReady())return {stream:LocalAI.stream,connected:true}; return window.PROPHEXY_AI; }
 
+function eyeLoader(label){
+  return '<span class="eyeload"><svg viewBox="0 0 40 40" class="eyesvg" aria-hidden="true">'+
+    '<ellipse cx="20" cy="20" rx="18" ry="11" fill="none" stroke="var(--g3)" stroke-width="1.2"/>'+
+    '<circle class="iris" cx="20" cy="20" r="7" fill="none" stroke="var(--ink)" stroke-width="1.2"/>'+
+    '<circle class="pupil" cx="20" cy="20" r="2.4" fill="var(--sig)"/>'+
+    '<circle class="scan" cx="20" cy="20" r="11" fill="none" stroke="var(--sig)" stroke-width="1.4" stroke-dasharray="14 55" stroke-linecap="round"/>'+
+    '</svg><span class="eyelabel">'+(label||'reading you&hellip;')+'</span></span>';
+}
 function aiSystemPrompt(){
   return 'You are Prophexy, a warm, sharp master astrologer who reads Western, Vedic, Chinese astrology, numerology, palmistry and face-reading as one craft. '+
     'You are giving a private reading to '+ (firstName(PROF.name)||'this person') +'. '+
@@ -2141,18 +2160,20 @@ function renderAI(){
   AIMODE='switchboard';mountReading();
 }
 function aiStreamInto(el,opts){
-  var AI=activeAI();el.textContent='';
+  var AI=activeAI();el.innerHTML=eyeLoader((opts&&opts.loadLabel)||'reading you&hellip;');el.classList.add('loading');
+  var started=false;
   return (async function(){
     try{
       var it=AI.stream(opts);
-      for await (var d of it){ if(d.type==='text'){el.textContent+=d.text;} }
-    }catch(e){ el.textContent='(The reading could not be reached. '+(AIMODE==='local'?'The on-device reader stalled &mdash; try again.':'Is Switchboard still running?')+')'; }
+      for await (var d of it){ if(d.type==='text'){ if(!started){started=true;el.classList.remove('loading');el.textContent='';} el.textContent+=d.text; } }
+      if(!started){el.classList.remove('loading');el.textContent='';}
+    }catch(e){ el.classList.remove('loading'); el.textContent='(Could not reach the reading. '+(AIMODE==='local'?'The on-device reader stalled &mdash; try again.':'Is Switchboard still running?')+')'; }
   })();
 }
 function aiReveal(){
   var el=$('aiText');if(!el)return;el.classList.add('streaming');
   AIchat=[{role:'user',content:CORE_Q}];
-  aiStreamInto(el,{system:aiSystemPrompt(),messages:AIchat,attachments:(AIMODE==='local'?[]:aiAttachments()),model:'claude-sonnet-5',maxTokens:900}).then(function(){
+  aiStreamInto(el,{loadLabel:'reading your whole chart&hellip;',system:aiSystemPrompt(),messages:AIchat,attachments:(AIMODE==='local'?[]:aiAttachments()),model:'claude-sonnet-5',maxTokens:900}).then(function(){
     el.classList.remove('streaming');
     var txt=el.textContent;
     var ft=txt.trim();
@@ -2233,12 +2254,12 @@ function readDream(idx){
   var a=loadDreams(),dr=a[idx];if(!dr)return;
   var box=document.getElementById('dreamRead'+idx);if(!box)return;
   if(!aiUsable()){
-    box.innerHTML='<p class="dreamsaved">Saved. This dream now feeds your reading &mdash; open your reading (your own Claude, or the on-device mind) and it will read it for you.</p>';
+    box.innerHTML='<p class="dreamsaved">Got it &mdash; I&rsquo;ll carry this into your reading. Open your reading (on your own Claude, or the on-device mind) and I&rsquo;ll read the dream for you.</p>';
     return;
   }
   box.classList.add('streaming');box.textContent='';
   var msg=[{role:'user',content:'I had this dream'+(dr.r?' and it keeps coming back':'')+(dr.f?', it felt '+dr.f:'')+': "'+dr.t+'". Read it for me - plainly, tied to my chart and what I am living through right now. What is it really about? A few honest sentences, no generic symbol lookup.'}];
-  aiStreamInto(box,{system:aiSystemPrompt(),messages:msg,attachments:(AIMODE==='local'?[]:aiAttachments()),model:'claude-sonnet-5',maxTokens:420}).then(function(){
+  aiStreamInto(box,{loadLabel:'reading your dream&hellip;',system:aiSystemPrompt(),messages:msg,attachments:(AIMODE==='local'?[]:aiAttachments()),model:'claude-sonnet-5',maxTokens:420}).then(function(){
     box.classList.remove('streaming');
     var a2=loadDreams();if(a2[idx]){a2[idx].reading=box.textContent;saveDreams(a2);}
   });
@@ -2253,15 +2274,15 @@ function renderDream(){
       '<p class="dreamtext">&ldquo;'+escapeHTML(dr.t)+'&rdquo;</p>'+
       (dr.reading
         ? '<div class="dreamread">'+escapeHTML(dr.reading)+'</div>'
-        : '<div class="dreamread" id="dreamRead'+i+'"></div><button type="button" class="linkbtn" data-dream="'+i+'">read this dream</button>')+
+        : '<div class="dreamread" id="dreamRead'+i+'"></div><button type="button" class="linkbtn" data-dream="'+i+'">read this one</button>')+
       '</div>';
   }).reverse().join('');
   host.innerHTML=
-    '<p class="dreamlead">A dream is the most honest thing you can hand it. Write one down while you still have it &mdash; it reads the dream against your chart, and it remembers, so every reading after this knows you a little better.</p>'+
+    '<p class="dreamlead">A dream is the most honest thing you can hand me. Write one down while you still have it &mdash; I&rsquo;ll read it against your chart, and I&rsquo;ll remember, so every reading after this knows you a little better.</p>'+
     '<textarea id="dreamIn" class="dreamin" placeholder="I was somewhere I half-recognised&hellip;"></textarea>'+
     '<div class="dreamchips" id="dreamFeel">'+['uneasy','vivid','calm','strange','sad','charged'].map(function(f){return '<button type="button" data-feel="'+f+'">'+f+'</button>';}).join('')+'</div>'+
     '<label class="dreamrec"><input type="checkbox" id="dreamRec"> This one keeps coming back</label>'+
-    '<button type="button" class="aibtn ghost" id="dreamSave">Log &amp; read it</button>'+
+    '<button type="button" class="aibtn ghost" id="dreamSave">Read my dream</button>'+
     (saved?'<div class="dreamlist">'+saved+'</div>':'');
   var feel='';
   host.querySelectorAll('#dreamFeel button').forEach(function(b){b.addEventListener('click',function(){
@@ -2284,7 +2305,7 @@ var HUBCARDS=[
  {t:'Your chart',s:'where everything sits right now',go:'sky'},
  {t:'Every system',s:'Vedic, Chinese, your numbers',go:'vedic'},
  {t:'What you are here for',s:'the part that never changes',go:'purpose'},
- {t:'Tell it a dream',s:'log one while you remember it',go:'dream'},
+ {t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
  {t:'Tonight&rsquo;s remedy',s:'one small thing to do',go:'remedy'},
  {t:'The week ahead',s:'your strong and weak days',go:'week'},
  {t:'Ask the cards',s:'a yes / no, a choice, a block',go:'cards'}
@@ -3044,7 +3065,7 @@ function renderLearned(){
   var c=loadCalib(),stat=$('learnStat'),body=$('learned');
   if(!c||!c.n||!c.notes||!c.notes.length){
     if(stat)stat.innerHTML='';
-    if(body)body.innerHTML='<p class="emptythread">This fills in from your readings. After each one, tell it what it got right and what it missed &mdash; it carries every correction into the next reading, so it stops giving you generic lines and learns to read <b>you</b>.</p>';
+    if(body)body.innerHTML='<p class="emptythread">This fills in from your readings. After each one, tell me what I got right and what I missed &mdash; I carry every correction into the next reading, so I stop handing you generic lines and learn to read <b>you</b>.</p>';
     return;
   }
   var spot=0,partly=0,off=0;
@@ -3058,8 +3079,8 @@ function renderLearned(){
     var tag=x.v==='spot'?'It landed':x.v==='off'?'It missed':'Half right';
     return pt(tag,'&ldquo;'+String(x.t).replace(/[<>]/g,'')+'&rdquo;');
   }).join('');
-  if(body)body.innerHTML=(corr||pt('Learning','You have rated it, but not told it what to fix yet &mdash; add a note next time and it sharpens.'))+
-    pt('How this works','Every correction rides into the brief for your next reading, so the voice keeps getting closer to the real you.');
+  if(body)body.innerHTML=(corr||pt('Learning','You&rsquo;ve rated me, but not told me what to fix yet &mdash; add a note next time and I&rsquo;ll sharpen.'))+
+    pt('How this works','Every correction rides into your next reading, so I keep getting closer to the real you.');
 }
 
 function renderJourney(){
