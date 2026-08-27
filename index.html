@@ -735,6 +735,14 @@
   .hcn{font-size:10px;letter-spacing:.2em;color:var(--g2)}
   .hct{font-size:17px;line-height:1.2;margin-top:auto}
   .hcs{font-size:12.5px;color:var(--g1);line-height:1.42}
+  .practicelead{font-size:15px;color:var(--g1);line-height:1.65;max-width:58ch;margin:0 0 clamp(24px,4vh,40px)}
+  .breathe{position:relative;width:min(300px,74vw);height:min(300px,74vw);margin:10px auto clamp(20px,4vh,34px);display:flex;align-items:center;justify-content:center}
+  .breathring{position:absolute;inset:0;border:1px solid var(--sig);transform:scale(.62);transition:transform 4s ease-in-out;box-shadow:0 0 70px -22px var(--sig)}
+  .breathmid{position:relative;text-align:center;z-index:2}
+  .breathlabel{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+  .breathcount{font-size:clamp(28px,7vw,38px);color:var(--sig);margin-top:8px;line-height:1}
+  .breathfoot{text-align:center}
+  .breathnote{display:block;margin-top:14px;font-size:11.5px;color:var(--g2);letter-spacing:.03em}
   .hubcard .hcs{color:var(--ink)}
   .geohere{margin-top:9px;background:none;border:none;color:var(--sig);font-family:inherit;font-size:11px;letter-spacing:.04em;cursor:pointer;padding:2px 0;text-align:left}
   .geohere:hover{text-decoration:underline}
@@ -1037,6 +1045,11 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
         <div id="levers"></div>
       </div>
     </div>
+  </section>
+
+  <section class="blk" id="practice">
+    <div class="shead rv"><h2>A practice tonight</h2><span class="lb dim">Breath &amp; sound</span></div>
+    <div class="practicewrap rv" id="practiceWrap"></div>
   </section>
 
   <section class="blk" id="prescribe">
@@ -2372,6 +2385,7 @@ var HUBCARDS=[
  {t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
  {t:'Let me see you',s:'palm &amp; face',go:'capture'},
  {t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
+ {t:'A practice tonight',s:'breath &amp; sound',go:'practice'},
  {t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
  {t:'The week ahead',s:'strong and weak days',go:'week'},
  {t:'Each part of life',s:'six areas, seven days',go:'matrix'},
@@ -2381,6 +2395,7 @@ var HUBCARDS=[
 var CARDIDX=-1;
 function decodeTitle(t){return String(t).replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,'&');}
 function openCard(id,title){
+  if(BREATH)stopBreath(false);
   document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
   var el=document.getElementById(id);if(!el)return;
   el.classList.add('open');
@@ -2403,6 +2418,7 @@ function stepCard(dir){
   openCard(HUBCARDS[ni].go, decodeTitle(HUBCARDS[ni].t));
 }
 function showHome(){
+  if(BREATH)stopBreath(false);
   document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
   document.body.classList.remove('focused');
   window.scrollTo(0,0);
@@ -2419,6 +2435,51 @@ function wireNav(){
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
     a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home')showHome();else openCard(g,a.textContent);});});
 }
+var BREATH=null;
+function startBreath(){
+  if(BREATH)return;
+  try{A();if(typeof AC!=='undefined'&&AC&&AC.state==='suspended')AC.resume();}catch(e){}
+  var circle=$('breathCircle'),label=$('breathLabel'),count=$('breathCount'),btn=$('breathBtn');
+  var phases=[['Breathe in',4,1.0,329.63],['Hold',4,1.0,246.94],['Breathe out',4,0.62,196.00],['Hold',4,0.62,246.94]];
+  var round=0,MAX=6,pi=0,ivc=null;
+  try{bed(true);}catch(e){}
+  function step(){
+    var ph=phases[pi];
+    if(label)label.textContent=ph[0];
+    if(circle){circle.style.transition='transform '+ph[1]+'s ease-in-out';circle.style.transform='scale('+ph[2]+')';}
+    try{bell(ph[3],0.05);}catch(e){}
+    var n=ph[1];if(count)count.textContent=n;
+    if(ivc)clearInterval(ivc);
+    ivc=setInterval(function(){n--;if(count)count.textContent=n>0?n:'';if(n<=0)clearInterval(ivc);},1000);
+    BREATH=setTimeout(function(){
+      pi++;if(pi>=phases.length){pi=0;round++;}
+      if(round>=MAX){stopBreath(true);return;}
+      step();
+    },ph[1]*1000);
+  }
+  if(btn)btn.textContent='Stop';
+  step();
+}
+function stopBreath(done){
+  if(BREATH){clearTimeout(BREATH);BREATH=null;}
+  try{bed(false);}catch(e){}
+  var circle=$('breathCircle'),label=$('breathLabel'),count=$('breathCount'),btn=$('breathBtn');
+  if(circle){circle.style.transition='transform 1.2s ease';circle.style.transform='scale(0.62)';}
+  if(label)label.textContent=done?'Done — notice how you feel.':'Box breathing';
+  if(count)count.textContent='';
+  if(btn)btn.textContent=done?'Again':'Start';
+  if(done){try{resolveTone();}catch(e){}}
+}
+function renderPractice(){
+  var host=$('practiceWrap');if(!host)return;
+  var lead='A few minutes to settle before the day asks anything of you. Follow the ring — in, hold, out, hold.';
+  try{var a=actionFor();if(a&&(a.t||a.d))lead='Today asks one thing of you — '+trunc(cap((a.t||a.d).replace(/\s*\.\s*$/,'')),64)+'. First, settle. Follow the ring.';}catch(e){}
+  host.innerHTML=
+    '<p class="practicelead">'+lead+'</p>'+
+    '<div class="breathe"><div class="breathring" id="breathCircle"></div><div class="breathmid"><div class="breathlabel" id="breathLabel">Box breathing</div><div class="breathcount" id="breathCount"></div></div></div>'+
+    '<div class="breathfoot"><button type="button" class="aibtn" id="breathBtn">Start</button><span class="breathnote">In 4 &middot; hold 4 &middot; out 4 &middot; hold 4 — six rounds, with sound.</span></div>';
+  var btn=$('breathBtn');if(btn)btn.addEventListener('click',function(){if(BREATH)stopBreath(false);else startBreath();});
+}
 function trunc(x,n){x=String(x||'');return x.length>n?x.slice(0,n-1).replace(/\s+\S*$/,'')+'&hellip;':x;}
 function cardSummary(go){
   try{
@@ -2430,7 +2491,7 @@ function cardSummary(go){
     if(go==='reading'){var pd=pDay(bm,bd,dt),lp=lifePath(by,bm,bd);return 'Day '+pd+' &middot; '+N(pd).w+' &middot; life path '+lp;}
     if(go==='vedic'){var b2=natalChart(),ay=ayanamsa(by);return signOf(rev(b2.Sun.lon-ay)).sign+' Sun, the Vedic way';}
     if(go==='chinese'){var Y=chineseYear(by,bm,bd);return (Y.yang?'Yang':'Yin')+' '+Y.element+' '+Y.animal;}
-    if(go==='purpose'){try{var ns=nodesFor();return trunc(NODE_AIM[ns.sign],60);}catch(e){return 'the part that never moves';}}
+    if(go==='purpose'){try{var Nd=nodesFor();return trunc(NODE_AIM[signOf(Nd.north).sign],60);}catch(e){return 'the part that never moves';}}
     if(go==='dream'){var d=loadDreams();return d.length?(d.length+' dream'+(d.length>1?'s':'')+' logged'):'none yet &mdash; log one while it&rsquo;s fresh';}
     if(go==='capture'){var m=(window.PROPHEXY_MEDIA||{});return (m.palm||m.face)?((m.palm&&m.face)?'palm + face added':(m.palm?'palm added':'face added')):'not added yet';}
     if(go==='remedy'){var ruler=DR[dt.getDay()],RP=PL[ruler];return trunc(cap(RP.act),56);}
@@ -2438,6 +2499,7 @@ function cardSummary(go){
     if(go==='week'){var F=forecast(),ds=F.days.slice().sort(function(a,b){return b.total-a.total;}),WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];return 'strongest '+WD[ds[0].dt.getDay()]+' &middot; weakest '+WD[ds[ds.length-1].dt.getDay()];}
     if(go==='matrix'){var F2=forecast(),d0=F2.days[0],best=CATS.slice().sort(function(a,b){return d0.sc[b.k].s-d0.sc[a.k].s;})[0];return best.label+' is strongest today';}
     if(go==='learn'){var c=loadCalib();return c&&c.n?(c.n+' reading'+(c.n>1?'s':'')+' rated'):'rate a reading to teach me';}
+    if(go==='practice'){return 'box breathing &middot; settle before the day';}
     if(go==='cards'){return 'a yes/no, a choice, a block';}
   }catch(e){}
   return '';
@@ -2517,6 +2579,7 @@ function build(){
   renderChain();
   renderCapture();
   renderDream();
+  renderPractice();
   renderHub();
   wireNav();
   renderAI();
