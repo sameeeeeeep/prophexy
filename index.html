@@ -768,6 +768,13 @@
   .reasontog .rzchev{margin-left:auto;color:var(--g2);font-size:17px;transition:transform .18s,color .18s}
   .reasontog.open .rzchev{transform:rotate(90deg);color:var(--sig)}
   .reasonwrap{padding-top:14px}
+  /* ===== explore laid out open in sections ===== */
+  .exgrouphd{margin:clamp(36px,5.5vw,58px) 0 2px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .exgrouphd .lb{color:var(--g2)}
+  .blk.instack{display:block;padding:clamp(30px,4.2vw,46px) 0 0}
+  .blk.instack .shead{padding-bottom:18px}
+  .navcta{color:var(--sig) !important;border:1px solid rgba(255,157,46,.55);padding:7px 15px;transition:.18s}
+  .navcta:hover{background:rgba(255,157,46,.14)}
   .aireading.streaming::after{content:'\258c';color:var(--sig);animation:blink 1s steps(2) infinite}
   @keyframes blink{50%{opacity:0}}
   .aichat{margin-top:clamp(30px,4vw,44px);border-top:1px solid var(--line);padding-top:24px}
@@ -1232,7 +1239,7 @@ window.PXEMBLEM={};
       <span>Prophexy</span>
     </div>
     <nav class="hnav">
-      <a href="#" data-go="home">Home</a><a href="#" data-go="home">Reading</a><a href="#" data-go="sky">Chart</a>
+      <a href="#" data-go="home">Home</a><a href="#" data-go="home">Reading</a><a href="#" data-go="sky">Chart</a><a href="#" id="navConnect" class="navcta">Connect</a>
     </nav>
   </div>
 </header>
@@ -1269,9 +1276,7 @@ window.PXEMBLEM={};
     </button>
 
     <div class="explorehead"><span class="lb">EXPLORE &middot; GO DEEPER</span></div>
-    <div class="tabbar" id="tabBar"></div>
-    <div class="tabpanel" id="tabPanel"></div>
-    <div id="blkStore" hidden></div>
+    <div id="exploreList"></div>
   </div>
 
 
@@ -2833,13 +2838,14 @@ function showHome(){
   try{A();blip(520,0.07,0.08);}catch(e){}
 }
 function jumpTo(go){
-  var isTab=false; for(var i=0;i<HUBCARDS.length;i++)if(HUBCARDS[i].go===go){isTab=true;break;}
-  if(isTab){ if(document.body.classList.contains('focused'))showHome(); showTab(go); var ex=$('explorehead')||$('tabBar'); if(ex&&ex.scrollIntoView)ex.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  var blk=document.getElementById(go);
+  if(blk&&blk.classList.contains('instack')){ if(document.body.classList.contains('focused'))showHome(); blk.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   var h=null;for(var j=0;j<HUBCARDS.length;j++)if(HUBCARDS[j].go===go)h=HUBCARDS[j];
   if(h)openCard(go,decodeTitle(h.t));
 }
 function wireNav(){
   var sb=$('srcBadge');if(sb&&!sb.dataset.w){sb.dataset.w='1';sb.addEventListener('click',function(){openSourceChoice();});}
+  var nc=$('navConnect');if(nc&&!nc.dataset.w){nc.dataset.w='1';nc.addEventListener('click',function(ev){ev.preventDefault();openSourceChoice();});}
   document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
     a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home'){showHome();}else jumpTo(g);});});
   /* focused-view chrome: back to the deck, slide between open sections */
@@ -3150,34 +3156,22 @@ function cardEmblem(go){var m=window.PXEMBLEM||{};return m[go]||'';}
 var HUBPIC={'cards':'tarot','intent':'vision'};
 var _hubBuilt=false;
 function renderHub(){
-  var bar=$('tabBar'); if(!bar) return;
+  var host=$('exploreList'); if(!host) return;
   if(_hubBuilt) return;
   _hubBuilt=true;
-  var store=$('blkStore');
-  HUBCARDS.forEach(function(c){var blk=document.getElementById(c.go); if(blk&&store) store.appendChild(blk);});
-  bar.innerHTML=HUBGROUPS.map(function(g){
-    var cards=HUBCARDS.filter(function(c){return c.g===g.k;});
-    if(!cards.length) return '';
-    return '<span class="tabgroup"><span class="tglb lb">'+g.label+'</span>'+
-      cards.map(function(c){return '<button type="button" class="tab" data-go="'+c.go+'">'+c.t+'</button>';}).join('')+
-      '</span>';
-  }).join('');
-  bar.querySelectorAll('.tab').forEach(function(b){b.addEventListener('click',function(){showTab(b.dataset.go);});});
-  if(HUBCARDS.length) showTab(HUBCARDS[0].go);
-}
-var _activeTab=null;
-function showTab(go){
-  var panel=$('tabPanel'),bar=$('tabBar'),store=$('blkStore'); if(!panel||!bar) return;
-  bar.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('on',b.dataset.go===go);});
-  if(_activeTab&&_activeTab!==go){var prev=document.getElementById(_activeTab); if(prev&&store){prev.classList.remove('open','intab'); store.appendChild(prev);}}
-  var blk=document.getElementById(go); if(!blk) return;
-  blk.classList.add('open','intab');
-  blk.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});
-  panel.appendChild(blk);
-  collapseReasoning(blk);
-  _activeTab=go;
-  var t=bar.querySelector('.tab[data-go="'+go+'"]'); if(t)t.scrollIntoView({inline:'center',block:'nearest'});
-  try{A();blip(640,0.04,0.05);}catch(e){}
+  HUBGROUPS.forEach(function(gp){
+    var cards=HUBCARDS.filter(function(c){return c.g===gp.k;});
+    if(!cards.length) return;
+    var gh=document.createElement('div'); gh.className='exgrouphd'; gh.innerHTML='<span class="lb">'+gp.label+'</span>';
+    host.appendChild(gh);
+    cards.forEach(function(c){
+      var blk=document.getElementById(c.go); if(!blk) return;
+      blk.classList.add('open','instack');
+      blk.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});
+      host.appendChild(blk);
+      collapseReasoning(blk);
+    });
+  });
 }
 /* the reading stays open; the mechanism folds away behind one toggle */
 function collapseReasoning(blk){
