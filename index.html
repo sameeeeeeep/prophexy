@@ -153,6 +153,20 @@
   .sq .dots{border-bottom:1px dotted var(--g3);height:1px;align-self:center;min-width:16px}
   .sq .v{font-size:14px;text-align:right;color:var(--ink);white-space:nowrap}
   .sq.hit .v{color:var(--sig)}
+  /* acquisition: one fold, horizontal — canvas dominant, readouts beside it */
+  #seq.acquiring{overflow:hidden}
+  #seq.acquiring .seqin{max-width:1200px}
+  .acqmain{display:flex;gap:clamp(24px,3.4vw,48px);align-items:center;margin-top:20px}
+  .acqmain .seqviz{flex:1.7;margin-top:0;min-width:0;display:flex;align-items:center}
+  .acqmain .seqviz svg{width:100%;height:auto}
+  .acqmain .seqlist{flex:1;margin-top:0;display:grid;grid-template-columns:1fr 1fr;gap:0 clamp(18px,2vw,32px);align-content:center;min-width:0}
+  .acqmain .seqlist .sq{display:grid;grid-template-columns:24px 1fr;grid-template-rows:auto auto;column-gap:10px;row-gap:3px;padding:10px 0}
+  .acqmain .seqlist .sq .n{grid-column:1;grid-row:1 / span 2;align-self:center;color:var(--g2)}
+  .acqmain .seqlist .sq .k{grid-column:2;grid-row:1;font-size:10px}
+  .acqmain .seqlist .sq .dots{display:none}
+  .acqmain .seqlist .sq .v{grid-column:2;grid-row:2;text-align:left;font-size:15px;white-space:normal}
+  @media(max-width:860px){.acqmain{flex-direction:column;align-items:stretch}.acqmain .seqviz{flex:none}}
+  @media(max-width:520px){.acqmain .seqlist{grid-template-columns:1fr}}
   .seqfoot{margin-top:26px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap}
   .seqfoot .msg{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--g1)}
   .seqbtn{background:var(--ink);color:#000;border:none;padding:15px 30px;font-size:10px;
@@ -676,6 +690,27 @@
   @keyframes eyepulse{0%,100%{transform:scale(.65)}50%{transform:scale(1.4)}}
   @keyframes eyescan{0%,100%{transform:translateX(-3.5px)}50%{transform:translateX(3.5px)}}
   @keyframes eyespin{to{transform:rotate(360deg)}}
+  .band{display:none}
+  .srcbadge{display:inline-block;margin-top:16px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:4px 11px;border:1px solid var(--g3);color:var(--g2)}
+  .srcbadge.ai{border-color:var(--sig);color:var(--sig)}
+  /* hub filmstrip + focused cards */
+  #backbar{display:none;position:sticky;top:0;z-index:60;background:#000;border-bottom:1px solid var(--line);padding:14px 0;align-items:center;gap:16px}
+  body.focused #backbar{display:flex}
+  #backBtn{background:none;border:1px solid var(--g3);color:var(--ink);font-family:inherit;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:9px 15px;cursor:pointer}
+  #backBtn:hover{border-color:var(--ink)}
+  #backTitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--g1)}
+  .blk{display:none}
+  .blk.open{display:block;animation:cardin .32s ease both}
+  @keyframes cardin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  body.focused #home{display:none}
+  .hublb{display:flex;align-items:center}
+  .hubhint{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--g2);margin-left:auto}
+  .hubstrip{display:flex;gap:1px;overflow-x:auto;scroll-snap-type:x mandatory;background:var(--line);border:1px solid var(--line);-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .hubstrip::-webkit-scrollbar{height:6px}
+  .hubstrip::-webkit-scrollbar-track{background:#000}
+  .hubstrip::-webkit-scrollbar-thumb{background:var(--g3)}
+  .hubstrip .hubcard{flex:0 0 216px;scroll-snap-align:start;min-height:150px}
+  @media(max-width:440px){.hubstrip .hubcard{flex:0 0 78%}}
   /* hub deck */
   .hubdeck{margin:clamp(30px,5vh,58px) 0 clamp(6px,2vh,18px)}
   .hublb{margin-bottom:15px}
@@ -830,8 +865,10 @@
 
     <!-- acquisition -->
     <div id="acq" style="display:none">
-      <div class="seqviz"><span class="vzlabel">Live plot</span><svg id="seqSvg" viewBox="0 0 760 300"></svg></div>
-      <div class="seqlist" id="seqList"></div>
+      <div class="acqmain">
+        <div class="seqviz"><span class="vzlabel">Live plot</span><svg id="seqSvg" viewBox="0 0 760 300"></svg></div>
+        <div class="seqlist" id="seqList"></div>
+      </div>
       <div class="seqfoot">
         <span class="msg" id="seqMsg">Standing by</span>
         <div style="display:flex;gap:20px;align-items:center">
@@ -873,35 +910,39 @@ window.PXELEM={"wood": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQABLAEsAAD/4QCAR
       <span>Prophexy</span>
     </div>
     <nav class="hnav">
-      <a href="#sky">The sky</a><a href="#reading">Reading</a><a href="#remedy">Remedy</a>
+      <a href="#" data-go="home">Home</a><a href="#" data-go="reading-ai">Reading</a><a href="#" data-go="sky">Chart</a>
     </nav>
   </div>
 </header>
 
 <div class="wrap">
 
-  <div class="hero">
-    <div class="heromid">
-      <div class="lb" id="stamp">&mdash;</div>
-      <h1 id="headline">&mdash;</h1>
-      <p class="hsub" id="hsub">&mdash;</p>
+  <div id="backbar"><button type="button" id="backBtn">&lsaquo; all cards</button><span id="backTitle"></span></div>
+
+  <div id="home">
+    <div class="hero">
+      <div class="heromid">
+        <div class="lb" id="stamp">&mdash;</div>
+        <h1 id="headline">&mdash;</h1>
+        <p class="hsub" id="hsub">&mdash;</p>
+        <div class="srcbadge computed" id="srcBadge">Computed</div>
+      </div>
+      <div class="rail" id="rail"></div>
     </div>
-    <div class="rail" id="rail"></div>
+    <div class="hubdeck rv" id="hubDeck"></div>
   </div>
 
-  <div class="hubdeck rv" id="hubDeck"></div>
-
   <section class="blk" id="do">
-    <div class="shead rv"><h2>Do this today</h2><span class="lb dim">One thing, three steps</span></div>
+    <div class="shead rv"><h2>Do this today</h2><span class="lb dim">One move, and when to make it</span></div>
     <div class="dosteps rv" id="doSteps"></div>
     <div class="doact rv" id="doAct"></div>
+  </section>
 
-    <button type="button" class="whytoggle rv" id="whyToggle">why today says this</button>
-    <div class="whypanel" id="whyPanelWrap">
-      <div class="chaingrid" id="chainGrid"></div>
-      <div class="chainjoin" id="chainJoin"></div>
-      <div class="chainout" id="chainOut"></div>
-    </div>
+  <section class="blk" id="why">
+    <div class="shead rv"><h2>Why today says this</h2><span class="lb dim">The signals, and how they combine</span></div>
+    <div class="chaingrid rv" id="chainGrid"></div>
+    <div class="chainjoin rv" id="chainJoin"></div>
+    <div class="chainout rv" id="chainOut"></div>
   </section>
 
 
@@ -1308,7 +1349,7 @@ function todayReading(){
   var TP=['Moon','Sun','Mercury','Venus','Mars','Jupiter','Saturn'];
   var NP=['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','ASC'];
   var ASP=[[0,7,'act'],[60,4,'flows'],[90,5,'tense'],[120,5,'flows'],[180,6,'tense']];
-  var speed={Moon:5,Sun:2,Mercury:2.2,Venus:2,Mars:1.5,Jupiter:1,Saturn:1};
+  var speed={Moon:1.0,Sun:1.6,Mercury:1.5,Venus:1.6,Mars:1.9,Jupiter:2.3,Saturn:2.5};
   var pers={Sun:1.6,Moon:1.6,ASC:1.5};
   var best=null;
   TP.forEach(function(tp){if(!trans[tp])return;
@@ -2026,7 +2067,7 @@ function loadDaily(){try{return JSON.parse(localStorage.getItem(DKEY))||{};}catc
 function saveDaily(o){try{localStorage.setItem(DKEY,JSON.stringify(o));}catch(e){}}
 function todaysBase(){var d=loadDaily();return (d&&d.day===todayKey()&&d.base)?d:null;}
 function lockBase(text){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.base=text;saveDaily(d);}
-function setDailyLine(line){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.line=line;saveDaily(d);}
+function setDailyLine(line,src){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.line=line;if(src)d.src=src;saveDaily(d);}
 function todaysLine(){var d=loadDaily();return (d&&d.day===todayKey()&&d.line)?d:null;}
 function setDailyAct(a){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.act=a;saveDaily(d);}
 function todaysAct(){var d=loadDaily();return (d&&d.day===todayKey()&&d.act)?d:null;}
@@ -2135,23 +2176,20 @@ function renderAI(){
   var AI=window.PROPHEXY_AI;
   if(AI===undefined){host.innerHTML='<p class="aiload">Connecting&hellip;</p>';return;}
   if(!AI){ /* no Switchboard SDK here - preview, or not deployed with it */
-    host.innerHTML='<div class="aigate"><p class="aigatelead">This is the part that actually understands you. '+
-      'A real reading &mdash; written live by an AI that has read your whole chart across every system, and that you can ask anything.</p>'+
-      '<p class="aigatesub">Best on <b>your own Claude</b> through Switchboard &mdash; no account, no fee &mdash; which unlocks once the app runs on the web with Switchboard installed.</p>'+
+    host.innerHTML='<div class="aigate"><p class="aigatelead">Your real reading is written live &mdash; on your own Claude.</p>'+
       localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste</div><p id="aiTaste"></p></div></div>';
+      '<div class="aitaste"><div class="lb">A taste, for now</div><p id="aiTaste"></p></div></div>';
     wireLocal();renderTaste();return;
   }
   if(AI.installed===false){
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Your reading is written live by an AI that has read your whole chart &mdash; on <b>your own Claude</b>, through Switchboard. No account, no fee.</p>'+
-      '<p class="aigatesub">Open Prophexy inside Switchboard and it gains your Claude; every grant is still asked for on your own machine.</p>'+
+    host.innerHTML='<div class="aigate"><p class="aigatelead">Open me in Switchboard and I&rsquo;ll read your whole chart on your own Claude.</p>'+
       '<a class="aibtn" id="aiOpenSB" href="'+(AI.installUrl||'#')+'">Open in Switchboard</a>'+
       localOptionHTML()+
-      '<div class="aitaste"><div class="lb">A taste</div><p id="aiTaste"></p></div></div>';
+      '<div class="aitaste"><div class="lb">A taste, for now</div><p id="aiTaste"></p></div></div>';
     wireOpenSB();wireLocal();renderTaste();return;
   }
   if(!AI.connected){
-    host.innerHTML='<div class="aigate"><p class="aigatelead">Ready. Connect your Claude and Prophexy will read your whole chart and speak to you directly.</p>'+
+    host.innerHTML='<div class="aigate"><p class="aigatelead">Connect your Claude and I&rsquo;ll read your whole chart, then talk it through with you.</p>'+
       '<button class="aibtn" id="aiConnect">Connect &amp; read my chart</button>'+localOptionHTML()+'</div>';
     $('aiConnect').addEventListener('click',function(){this.textContent='Connecting…';this.disabled=true;
       AI.connect().then(function(){AI.connected=true;AIMODE='switchboard';renderAI();}).catch(function(){renderAI();});});
@@ -2185,7 +2223,7 @@ function aiReveal(){
     el.textContent=body;
     AIchat.push({role:'assistant',content:body});
     lockBase(body);
-    if(line)setDailyLine(line);
+    if(line)setDailyLine(line,AIMODE);
     if(act)setDailyAct(act);
     applyDailyLine(); if(typeof renderDo==='function')renderDo();
     var sl=$('sealed');if(sl){sl.hidden=false;sl.innerHTML=sealText();}
@@ -2218,8 +2256,11 @@ function specificHeadline(){
   try{
     var TR=todayReading();
     if(!TR||!TR.transit) return 'A quiet, steady day &mdash; nothing is pulling hard at you.';
-    var verb={flows:'is opening up',tense:'is under real pressure',act:'is lit up'}[TR.transit.tone]||'is stirring';
-    return cap(NAT_AREA[TR.transit.np])+' '+verb+' today.';
+    var t=TR.transit, fast=(t.tp==='Moon'||t.tp==='Sun');
+    var verb=fast
+      ? ({flows:'gets a light lift',tense:'feels a passing strain',act:'catches a quick charge'}[t.tone]||'stirs a little')
+      : ({flows:'is opening up',tense:'is under real pressure',act:'is lit up'}[t.tone]||'is stirring');
+    return cap(NAT_AREA[t.np])+' '+verb+' today.';
   }catch(e){ return 'Your day is being read.'; }
 }
 /* The reasoning behind that answer, in plain words - THIS is where the mechanism belongs. */
@@ -2234,9 +2275,12 @@ function chartReason(){
   }catch(e){ return ''; }
 }
 function applyDailyLine(){
-  var d=todaysLine();if(!d)return;
+  var d=todaysLine();
+  var badge=$('srcBadge');
+  if(!d){ if(badge){badge.textContent='Computed';badge.className='srcbadge computed';} return; }
   var h=$('headline');if(h){h.textContent=d.line;h.classList.add('aiwritten');}
   var co=$('chainOut');if(co){var cs=co.querySelector('.chainhead');if(cs)cs.textContent=d.line;}
+  if(badge){var src=d.src; badge.textContent=(src==='local')?'On your device':(src==='switchboard')?'Your Claude':'AI reading'; badge.className='srcbadge ai'; }
 }
 function escapeHTML(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function aiUsable(){ try{ return (AIMODE==='local'&&LocalAI.isReady())||(window.PROPHEXY_AI&&window.PROPHEXY_AI.connected); }catch(e){ return false; } }
@@ -2300,30 +2344,55 @@ function renderDream(){
 }
 
 var HUBCARDS=[
- {t:'Today&rsquo;s reading',s:'the one thing, in your own words',go:'reading-ai'},
- {t:'Why today says this',s:'the signals behind the line',go:'do',why:true},
- {t:'Your chart',s:'where everything sits right now',go:'sky'},
- {t:'Every system',s:'Vedic, Chinese, your numbers',go:'vedic'},
- {t:'What you are here for',s:'the part that never changes',go:'purpose'},
+ {t:'Today&rsquo;s reading',s:'the one thing, in your words',go:'reading-ai'},
+ {t:'Do this today',s:'one move, and when',go:'do'},
+ {t:'Why today',s:'the signals behind it',go:'why'},
+ {t:'Your chart',s:'the sky right now',go:'sky'},
+ {t:'Your numbers',s:'how today reduces',go:'reading'},
+ {t:'The Vedic view',s:'the Indian system',go:'vedic'},
+ {t:'Chinese',s:'animal, element, core',go:'chinese'},
+ {t:'What you&rsquo;re here for',s:'the part that never moves',go:'purpose'},
  {t:'Tell me a dream',s:'log one while it&rsquo;s fresh',go:'dream'},
- {t:'Tonight&rsquo;s remedy',s:'one small thing to do',go:'remedy'},
- {t:'The week ahead',s:'your strong and weak days',go:'week'},
- {t:'Ask the cards',s:'a yes / no, a choice, a block',go:'cards'}
+ {t:'Let me see you',s:'palm &amp; face',go:'capture'},
+ {t:'Tonight&rsquo;s remedy',s:'one small thing',go:'remedy'},
+ {t:'The day&rsquo;s timing',s:'good hours, dead hours',go:'prescribe'},
+ {t:'The week ahead',s:'strong and weak days',go:'week'},
+ {t:'Each part of life',s:'six areas, seven days',go:'matrix'},
+ {t:'What I&rsquo;ve learned',s:'what I got right',go:'learn'},
+ {t:'Ask the cards',s:'a yes/no, a choice',go:'cards'}
 ];
+function openCard(id,title){
+  document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
+  var el=document.getElementById(id);if(!el)return;
+  el.classList.add('open');
+  el.querySelectorAll('.rv,.rvw,.chartbox').forEach(function(x){x.classList.add('in');});
+  document.body.classList.add('focused');
+  var bt=$('backTitle');if(bt)bt.textContent=title||'';
+  window.scrollTo(0,0);
+  try{A();blip(680,0.08,0.09);}catch(e){}
+}
+function showHome(){
+  document.querySelectorAll('.blk').forEach(function(sx){sx.classList.remove('open');});
+  document.body.classList.remove('focused');
+  window.scrollTo(0,0);
+  try{A();blip(520,0.07,0.08);}catch(e){}
+}
+function wireNav(){
+  var bb=$('backBtn');if(bb&&!bb.dataset.w){bb.dataset.w='1';bb.addEventListener('click',showHome);}
+  document.querySelectorAll('.hnav a[data-go]').forEach(function(a){if(a.dataset.w)return;a.dataset.w='1';
+    a.addEventListener('click',function(ev){ev.preventDefault();var g=a.dataset.go;if(g==='home')showHome();else openCard(g,a.textContent);});});
+}
 function renderHub(){
   var host=$('hubDeck');if(!host)return;
-  host.innerHTML='<div class="hublb"><span class="lb">Where to go</span></div>'+
-   '<div class="hubgrid">'+HUBCARDS.map(function(c,i){
-     return '<button type="button" class="hubcard" data-go="'+c.go+'"'+(c.why?' data-why="1"':'')+'>'+
+  host.innerHTML='<div class="hublb"><span class="lb">Your cards</span><span class="hubhint">swipe &rarr;</span></div>'+
+   '<div class="hubstrip">'+HUBCARDS.map(function(c,i){
+     return '<button type="button" class="hubcard" data-go="'+c.go+'" data-title="'+c.t.replace(/&rsquo;/g,String.fromCharCode(8217)).replace(/&amp;/g,"&").replace(/"/g,'')+'">'+
        '<span class="hcn">'+String(i+1).padStart(2,'0')+'</span>'+
        '<span class="hct">'+c.t+'</span><span class="hcs">'+c.s+'</span>'+
        '<span class="hcarrow">&rarr;</span></button>';
    }).join('')+'</div>';
   host.querySelectorAll('.hubcard').forEach(function(b){b.addEventListener('click',function(){
-    var id=b.dataset.go,el=document.getElementById(id);
-    if(b.dataset.why){var wp=$('whyPanelWrap'),wt=$('whyToggle');if(wp&&wt&&!wp.classList.contains('open'))wt.click();}
-    if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
-    try{A();blip(680,0.08,0.09);}catch(e){}
+    openCard(b.dataset.go,b.dataset.title);
   });});
 }
 function build(){
@@ -2389,15 +2458,8 @@ function build(){
   renderCapture();
   renderDream();
   renderHub();
+  wireNav();
   renderAI();
-  (function(){
-    var t=$('whyToggle'),w=$('whyPanelWrap');
-    if(t&&!t.dataset.b){t.dataset.b='1';
-      t.addEventListener('click',function(){
-        var open=w.classList.toggle('open');t.classList.toggle('open',open);
-        A();blip(open?620:520,0.09,0.09);
-      });}
-  })();
   renderPrescription();
   renderTiming();
   slider('rxGrid','rxDots');
@@ -3653,7 +3715,7 @@ setInterval(build,60000);
     saveProf(PROF);
     build();                                   /* recompute everything for this subject */
     $('ident').style.display='none';
-    $('acq').style.display='';
+    $('acq').style.display='';document.getElementById('seq').classList.add('acquiring');
     $('seqTitle').innerHTML='Acquiring for '+firstName(PROF.name);
     A();if(AC&&AC.state==='suspended')AC.resume();
     runSequence();
@@ -3663,13 +3725,13 @@ setInterval(build,60000);
     $(id).addEventListener('keydown',function(e){if(e.key==='Enter')commit();});});
   $('seqReset').addEventListener('click',function(){
     try{localStorage.removeItem(PKEY);}catch(e){}
-    $('acq').style.display='none';$('ident').style.display='';
+    $('acq').style.display='none';$('ident').style.display='';document.getElementById('seq').classList.remove('acquiring');
     $('seqTitle').textContent='Identify';$('seqState').textContent='Awaiting subject';
     $('seqBar').style.width='0%';$('inName').value='';$('inName').focus();
   });
   /* returning subject: skip straight to acquisition */
   if(known){
-    $('ident').style.display='none';$('acq').style.display='';
+    $('ident').style.display='none';$('acq').style.display='';document.getElementById('seq').classList.add('acquiring');
     $('seqTitle').innerHTML='Acquiring for '+firstName(known.name);
     setTimeout(runSequence,600);
   }
