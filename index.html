@@ -2270,7 +2270,7 @@ function build(){
   drawCascade(bm,bd,dt,pd);
 
   $('rxRuler').innerHTML=ruler+' &middot; '+WD[dt.getDay()];
-  $('rxMain').innerHTML=cap(RP.act)+'. A <b>'+pd+'</b> day rewards exactly one act &mdash; <b>'+N(pd).d+'</b>.';
+  $('rxMain').innerHTML=cap(RP.act)+'. Today rewards one small act &mdash; <b>'+N(pd).d+'</b>.';
   $('levers').innerHTML=
     lever('Mantra','&ldquo;'+RP.mantra+'&rdquo; &times;108')+
     lever('Stone',RP.gem)+lever('Colour',RP.color)+lever('Metal',RP.metal)+
@@ -2427,12 +2427,12 @@ function drawChart(b,mn){
    Every score is derived: transiting Moon's aspect to the natal significator,
    + the weekday's planetary ruler, + the personal day number's affinity. */
 var CATS=[
- {k:'career', label:'Career',        p:'Saturn',  sig:'Saturn &middot; 10th'},
- {k:'money',  label:'Money',         p:'Jupiter', sig:'Jupiter &middot; 2nd'},
- {k:'love',   label:'Relationships', p:'Venus',   sig:'Venus &middot; 7th'},
- {k:'home',   label:'Home',          p:'Moon',    sig:'Moon &middot; 4th'},
- {k:'travel', label:'Travel',        p:'Mercury', sig:'Mercury &middot; 9th'},
- {k:'chance', label:'Opportunity',   p:'Sun',     sig:'Sun &middot; 11th'}
+ {k:'career', label:'Career',        p:'Saturn',  sig:'work, status, the long climb'},
+ {k:'money',  label:'Money',         p:'Jupiter', sig:'income, worth, what you keep'},
+ {k:'love',   label:'Relationships', p:'Venus',   sig:'closeness, honesty, bonds'},
+ {k:'home',   label:'Home',          p:'Moon',    sig:'family, space, rest'},
+ {k:'travel', label:'Travel',        p:'Mercury', sig:'movement, plans, new ground'},
+ {k:'chance', label:'Opportunity',   p:'Sun',     sig:'luck, visibility, openings'}
 ];
 var ASPW=[[0,8,2.0],[60,6,1.5],[90,6,-1.5],[120,7,2.0],[180,8,-1.0]];
 function aspectW(a,b){
@@ -2533,7 +2533,7 @@ function renderForecast(){
   var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   $('weekStamp').innerHTML='From '+pad(days[0].dt.getDate())+' '+MO[days[0].dt.getMonth()].toUpperCase()+
-    ' &middot; scored against your natal chart';
+    ' &middot; measured against your own birth chart';
   $('weekStrip').innerHTML=days.map(function(d){
     var isPeak=(d===peak),isTro=(d===trough);
     var h=Math.max(4,Math.min(100,(d.total/maxT)*100));
