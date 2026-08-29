@@ -2252,11 +2252,26 @@ var CITIES=[['New Delhi, India',28.61,77.21],['Mumbai, India',19.08,72.88],['Ben
 ['Dhaka, Bangladesh',23.81,90.41],['Kathmandu, Nepal',27.72,85.32],['Colombo, Sri Lanka',6.93,79.86]];
 
 var PKEY='prophexy.subject', TKEY='prophexy.thread';
+/* ---- many people on one device, each with their OWN data (no mixing) ---- */
+var PLKEY='prophexy.people', AIDKEY='prophexy.activeId';
+function personId(p){return (((p&&p.name)||'')+'|'+((p&&p.dob)||'')).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,28)||'anon';}
+function loadPeople(){try{var v=JSON.parse(localStorage.getItem(PLKEY));return Array.isArray(v)?v:[];}catch(e){return [];}}
+function savePeople(a){try{localStorage.setItem(PLKEY,JSON.stringify(a));}catch(e){}}
+function activeId(){try{return localStorage.getItem(AIDKEY)||'';}catch(e){return '';}}
+function setActiveId(id){try{localStorage.setItem(AIDKEY,id);}catch(e){}}
+function upsertPerson(p){var a=loadPeople(),id=personId(p),i=-1,k;p.id=id;for(k=0;k<a.length;k++)if(a[k].id===id)i=k;if(i>=0)a[i]=p;else a.push(p);savePeople(a);setActiveId(id);return id;}
+function activePerson(){var a=loadPeople(),id=activeId(),k;for(k=0;k<a.length;k++)if(a[k].id===id)return a[k];return a.length?a[a.length-1]:null;}
+function _px(base){return base+'::'+(activeId()||'_');}
+/* one-time migration: fold a pre-multi single profile + its global data into that person's namespace */
+(function(){try{ if(!loadPeople().length){ var old=JSON.parse(localStorage.getItem(PKEY));
+  if(old&&old.name){ var id=upsertPerson(old);
+    ['prophexy.thread','prophexy.calib','prophexy.daily','prophexy.dreams','prophexy.mood','prophexy.journal','prophexy.intentions','prophexy.vision'].forEach(function(b){
+      var g=localStorage.getItem(b); if(g!=null && localStorage.getItem(b+'::'+id)==null){ try{localStorage.setItem(b+'::'+id,g);}catch(e){} } }); } } }catch(e){}})();
 var DEFAULT_PROF={name:'',dob:'1992-10-01',tob:'09:41',tmode:'exact',lat:28.61,lng:77.21,place:'New Delhi'};
 
 /* ---- the thread: kept on this device, no account required ---- */
-function loadThread(){try{var v=JSON.parse(localStorage.getItem(TKEY));return Array.isArray(v)?v:[];}catch(e){return [];}}
-function saveThread(t){try{localStorage.setItem(TKEY,JSON.stringify(t.slice(-400)));}catch(e){}}
+function loadThread(){try{var v=JSON.parse(localStorage.getItem(_px(TKEY)));return Array.isArray(v)?v:[];}catch(e){return [];}}
+function saveThread(t){try{localStorage.setItem(_px(TKEY),JSON.stringify(t.slice(-400)));}catch(e){}}
 var THREAD=loadThread();
 function todayKey(d){d=d||new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
 function logToday(did,meta){
@@ -2285,8 +2300,8 @@ function streaks(){
   });
   return{cur:cur,best:best,total:THREAD.length};
 }
-function loadProf(){try{var v=JSON.parse(localStorage.getItem(PKEY));return (v&&v.name)?v:null;}catch(e){return null;}}
-function saveProf(p){try{localStorage.setItem(PKEY,JSON.stringify(p));}catch(e){}}
+function loadProf(){return activePerson();}
+function saveProf(p){upsertPerson(p);}
 var PROF=loadProf()||DEFAULT_PROF;
 function firstName(n){var f=(n||'').trim().split(/\s+/)[0]||'';return f;}
 function possessive(n){return n?(n+(/s$/i.test(n)?'&rsquo;':'&rsquo;s')):'your';}
@@ -2395,8 +2410,8 @@ window.PROPHEXY={dossier:buildDossier, name:function(){return firstName(PROF.nam
    That gets fed back into every future reading, so the AI learns to read THIS person -
    not "did you do the task", but "did this understand you". */
 var CKEY='prophexy.calib';
-function loadCalib(){try{return JSON.parse(localStorage.getItem(CKEY))||{n:0,notes:[]};}catch(e){return {n:0,notes:[]};}}
-function saveCalib(c){try{localStorage.setItem(CKEY,JSON.stringify(c));}catch(e){}}
+function loadCalib(){try{return JSON.parse(localStorage.getItem(_px(CKEY)))||{n:0,notes:[]};}catch(e){return {n:0,notes:[]};}}
+function saveCalib(c){try{localStorage.setItem(_px(CKEY),JSON.stringify(c));}catch(e){}}
 function addCalib(verdict,text){var c=loadCalib();c.n=(c.n||0)+1;c.notes=c.notes||[];
   c.notes.push({v:verdict,t:(text||'').slice(0,240),d:todayKey()});c.notes=c.notes.slice(-24);saveCalib(c);}
 function calibNote(){var c=loadCalib();if(!c.n||!(c.notes&&c.notes.length))return '';
@@ -2431,8 +2446,8 @@ var CORE_Q='Open with ONE vivid sentence that is my single prediction or piece o
 
 /* ---- one sealed base reading per day; the day around it can still grow ---- */
 var DKEY='prophexy.daily';
-function loadDaily(){try{return JSON.parse(localStorage.getItem(DKEY))||{};}catch(e){return {};}}
-function saveDaily(o){try{localStorage.setItem(DKEY,JSON.stringify(o));}catch(e){}}
+function loadDaily(){try{return JSON.parse(localStorage.getItem(_px(DKEY)))||{};}catch(e){return {};}}
+function saveDaily(o){try{localStorage.setItem(_px(DKEY),JSON.stringify(o));}catch(e){}}
 function todaysBase(){var d=loadDaily();return (d&&d.day===todayKey()&&d.base)?d:null;}
 function lockBase(text){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.base=text;saveDaily(d);}
 function setDailyLine(line,src){var d=loadDaily();if(!d||d.day!==todayKey())d={day:todayKey(),thread:[]};d.line=line;if(src)d.src=src;saveDaily(d);}
@@ -2726,8 +2741,8 @@ function escapeHTML(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace
 function aiUsable(){ try{ return (AIMODE==='local'&&LocalAI.isReady())||(window.PROPHEXY_AI&&window.PROPHEXY_AI.connected); }catch(e){ return false; } }
 
 var DRKEY='prophexy.dreams';
-function loadDreams(){try{return JSON.parse(localStorage.getItem(DRKEY))||[];}catch(e){return [];}}
-function saveDreams(a){try{localStorage.setItem(DRKEY,JSON.stringify(a.slice(-12)));}catch(e){}}
+function loadDreams(){try{return JSON.parse(localStorage.getItem(_px(DRKEY)))||[];}catch(e){return [];}}
+function saveDreams(a){try{localStorage.setItem(_px(DRKEY),JSON.stringify(a.slice(-12)));}catch(e){}}
 function addDream(text,feel,recurring){var a=loadDreams();a.push({t:String(text).slice(0,1400),f:feel||'',r:!!recurring,d:todayKey(),reading:''});saveDreams(a);return a;}
 function dreamNote(){
   var a=loadDreams();if(!a.length)return '';
@@ -2935,8 +2950,8 @@ var causeNote={
  self:'Since it is about you: speak to yourself the way you would to someone you love, not like a critic with a clipboard.',
  unknown:'You cannot name it, and that is fine &mdash; the body knows before the mind does. Start with the breath and let it surface.'};
 var MKEY='prophexy.mood';
-function loadMoods(){try{return JSON.parse(localStorage.getItem(MKEY))||[];}catch(e){return [];}}
-function saveMoods(a){try{localStorage.setItem(MKEY,JSON.stringify(a.slice(-30)));}catch(e){}}
+function loadMoods(){try{return JSON.parse(localStorage.getItem(_px(MKEY)))||[];}catch(e){return [];}}
+function saveMoods(a){try{localStorage.setItem(_px(MKEY),JSON.stringify(a.slice(-30)));}catch(e){}}
 function addMood(mood,cause){var a=loadMoods();a.push({m:mood,c:cause||'',d:todayKey()});saveMoods(a);return a;}
 function todaysMood(){var a=loadMoods(),last=a[a.length-1];return (last&&last.d===todayKey())?last:null;}
 function moodNote(){var a=loadMoods();if(!a.length)return '';
@@ -3027,8 +3042,8 @@ function renderSongs(){
 
 /* ===================== journal ===================== */
 var JKEY='prophexy.journal';
-function loadJournal(){try{return JSON.parse(localStorage.getItem(JKEY))||[];}catch(e){return [];}}
-function saveJournal(a){try{localStorage.setItem(JKEY,JSON.stringify(a.slice(-40)));}catch(e){}}
+function loadJournal(){try{return JSON.parse(localStorage.getItem(_px(JKEY)))||[];}catch(e){return [];}}
+function saveJournal(a){try{localStorage.setItem(_px(JKEY),JSON.stringify(a.slice(-40)));}catch(e){}}
 function journalPrompt(){
   try{
     var tm=todaysMood&&todaysMood();
@@ -3058,13 +3073,13 @@ function renderJournal(){
 
 /* ===================== intention / manifestation ===================== */
 var IKEY='prophexy.intentions';
-function loadIntentions(){try{return JSON.parse(localStorage.getItem(IKEY))||[];}catch(e){return [];}}
-function saveIntentions(a){try{localStorage.setItem(IKEY,JSON.stringify(a.slice(-30)));}catch(e){}}
+function loadIntentions(){try{return JSON.parse(localStorage.getItem(_px(IKEY)))||[];}catch(e){return [];}}
+function saveIntentions(a){try{localStorage.setItem(_px(IKEY),JSON.stringify(a.slice(-30)));}catch(e){}}
 function intentionNote(){var a=loadIntentions().filter(function(x){return !x.landed;});if(!a.length)return '';var recent=a.slice(-4).map(function(x){return '- '+x.t;});return '\n\nINTENTIONS they are holding (what they are calling in &mdash; encourage honestly toward these):\n'+recent.join('\n');}
 var VBKEY='prophexy.vision';
 function PXCUTMAP(){var m={};(window.PXCUTOUTS||[]).forEach(function(t){m[t.k]=t;});return m;}
-function loadVision(){try{return JSON.parse(localStorage.getItem(VBKEY))||[];}catch(e){return [];}}
-function saveVision(a){try{localStorage.setItem(VBKEY,JSON.stringify(a.slice(-40)));}catch(e){}}
+function loadVision(){try{return JSON.parse(localStorage.getItem(_px(VBKEY)))||[];}catch(e){return [];}}
+function saveVision(a){try{localStorage.setItem(_px(VBKEY),JSON.stringify(a.slice(-40)));}catch(e){}}
 function visionNote(){var a=loadVision();if(!a.length)return '';var m=PXCUTMAP();var names=a.map(function(x){return (m[x.k]||{}).label||(x.up?'a personal photo':'a cut-out');});return '\n\nVISION BOARD — what they are calling into their life: '+names.join(', ')+'.';}
 var _vbz=1;
 function vbAdd(k,img){
