@@ -3177,8 +3177,10 @@ function renderHub(){
   if(sky){ var anchor=sky.nextSibling;
     [].slice.call(document.querySelectorAll('.bleed.band')).forEach(function(bd){
       sky.parentNode.insertBefore(bd, anchor); anchor=bd.nextSibling;
+      bd.style.display='block';
       bd.querySelectorAll('.rv,.rvw').forEach(function(x){x.classList.add('in');});
     });
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
   }
 }
 /* the reading stays open; the mechanism folds away behind one toggle */
