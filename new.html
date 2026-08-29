@@ -141,85 +141,60 @@
       <circle cx="20" cy="20" r="5.4"/><circle cx="20" cy="20" r="1.7" fill="#f0f0fa" stroke="none"/>
     </svg>
     <span class="mono"><b>Prophexy</b></span>
-    <span class="who mono">For Sameep<br>30 Aug · New Delhi</span>
+    <span class="who mono" id="who">For you<br>tonight</span>
   </header>
 
   <section class="hero" style="padding-top:64px">
     <div class="kicker"><span class="dot lit"></span><span class="mono"><b>Tonight&rsquo;s reading</b> · your Claude</span></div>
     <h1 class="display">
-      <span class="rl"><span>How you feel is</span></span>
-      <span class="rl"><span>opening up tonight.</span></span>
+<span class="rl"><span id="hl">The sky is being read.</span></span>
     </h1>
-    <p class="body">You&rsquo;ve been holding a decision at arm&rsquo;s length all week. The pressure you feel isn&rsquo;t a wall — it&rsquo;s the part of you that seeks meaning, impatient with the safe answer. <b>That tension is the whole point of today.</b></p>
+    <p class="body" id="lede">One honest paragraph about your day lands here — written on your Claude, sealed until tomorrow.</p>
 
-    <div class="evidence">
-      <span class="ev"><span class="dot lit"></span><span class="mono"><b>Jupiter</b> on your Moon</span></span>
-      <span class="ev"><span class="dot"></span><span class="mono">Full moon · 96%</span></span>
-      <span class="ev"><span class="dot"></span><span class="mono">Saturn&rsquo;s day</span></span>
-      <span class="ev"><span class="dot"></span><span class="mono">A 4-day</span></span>
-    </div>
+    <div class="evidence" id="evidence"></div>
   </section>
 
   <section>
     <div class="seclb"><span class="dot"></span><span class="mono">The move</span></div>
-    <h2 class="display">Act on the feeling you keep talking yourself out of.</h2>
-    <div class="movewhen"><span class="mono">Best between</span><span class="t">3:09 – 4:05 AM</span></div>
+    <h2 class="display" id="move">Act on the feeling you keep talking yourself out of.</h2>
+    <div class="movewhen"><span class="mono">Best stretch</span><span class="t" id="movewhen">tonight</span></div>
     <p class="movenote">Not a rule — just the stretch of tonight that suits this kind of move. Too big? Make it smaller until it isn&rsquo;t.</p>
   </section>
 
   <section>
     <div class="seclb"><span class="dot"></span><span class="mono">Behind this reading</span></div>
-    <a class="brow" href="#">
-      <span class="sig"><b>Jupiter</b> crossing your Moon</span>
-      <span class="meta mono">Feelings opening · today</span>
-    </a>
-    <a class="brow" href="#">
-      <span class="sig"><b>Full moon</b> in Pisces</span>
-      <span class="meta mono">96% lit · reveal</span>
-    </a>
-    <a class="brow" href="#">
-      <span class="sig"><b>Saturn</b> rules Saturday</span>
-      <span class="meta mono">Limit · discipline</span>
-    </a>
-    <a class="brow" href="#">
-      <span class="sig">A <b>4-day</b> on your numbers</span>
-      <span class="meta mono">Foundation · resets tmrw</span>
-    </a>
-    <button class="combine">See how they combine</button>
+    <div id="behindRows"></div>
+    <a class="combine" style="text-decoration:none" href="./#why">See how they combine</a>
   </section>
 
   <section>
     <div class="seclb"><span class="dot"></span><span class="mono">The moon tonight</span></div>
     <div class="moonrow">
       <div class="moon" role="img" aria-label="The moon, 96% lit"></div>
-      <div class="moonfacts">
-        <span class="mono"><b>Full moon</b> · 96% lit</span>
-        <span class="mono">In Pisces · 25.1°</span>
-        <span class="mono">Waning · a night for letting go</span>
-      </div>
+      <div class="moonfacts" id="moonfacts"></div>
     </div>
   </section>
 
   <section>
     <div class="seclb"><span class="dot lit"></span><span class="mono">Tonight, one thing</span></div>
     <div class="remedy">
-      <span class="mono">Because Saturn asks for stillness</span>
-      <h3>Six rounds of box breathing, then the Mahamrityunjaya once.</h3>
-      <p class="body">Settle the body before you name the feeling. Four in, four held, four out — then the chant, for courage.</p>
+      <span class="mono" id="rembecause">Because tonight asks for stillness</span>
+      <h3 id="remhead">Six rounds of box breathing.</h3>
+      <p class="body" id="remnote">Settle the body before you name the feeling.</p>
       <div class="remlinks">
-        <a href="#">Begin the breath</a>
-        <a href="#">Play the chant</a>
+        <a href="./#practice">Begin the breath</a>
+        <a id="chantlink" href="./#songs">Play the chant</a>
       </div>
     </div>
   </section>
 
   <div class="calib">
     <span class="mono">Did this read you right?</span>
-    <button class="cbtn">It did</button>
-    <button class="cbtn">Not quite</button>
+    <button class="cbtn" id="cyes">It did</button>
+    <button class="cbtn" id="cno">Not quite</button>
   </div>
 
-  <a class="deeper" href="#">
+  <a class="deeper" href="./">
     <span>
       <span class="mono" style="color:var(--dust)">Go deeper</span>
       <div class="d2">Your chart · the systems · ask the cards</div>
@@ -228,5 +203,77 @@
   </a>
 
 </div>
+
+<script>
+(function(){
+  function $(id){return document.getElementById(id)}
+  function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  /* ---- who: same on-device store as the app ---- */
+  var person=null, pid='';
+  try{ var ppl=JSON.parse(localStorage.getItem('prophexy.people'))||[]; pid=localStorage.getItem('prophexy.activeId')||'';
+    person=ppl.find(function(p){return p.id===pid;})||ppl[ppl.length-1]||null; if(person)pid=person.id; }catch(e){}
+  var name=person?String(person.name||'').split(/\s+/)[0]:'', place=person?person.place:'', dob=person?person.dob:'1992-10-01';
+  var now=new Date(), MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  $('who').innerHTML=(name?('For '+esc(name)+'<br>'):'')+now.getDate()+' '+MON[now.getMonth()]+(place?' · '+esc(place):'');
+  /* ---- numbers ---- */
+  function red(n){while(n>9&&n!==11&&n!==22){n=String(n).split('').reduce(function(a,c){return a+ +c;},0);}return n;}
+  var dp=dob.split('-'), pd=red(red(+dp[1])+red(+dp[2])+red(now.getFullYear())+red(now.getMonth()+1)+red(now.getDate()));
+  var NW={1:'a beginning',2:'patience',3:'expression',4:'foundation',5:'change',6:'care',7:'the inner life',8:'power',9:'completion',11:'insight',22:'building big'};
+  /* ---- moon: illum + age + approx sign ---- */
+  var jd=now.getTime()/86400000+2440587.5, fr=((jd-2451550.1)/29.530588853)%1; if(fr<0)fr+=1;
+  var age=fr*29.530588853, illum=Math.round((1-Math.cos(fr*2*Math.PI))/2*100);
+  var phase=age<1.85?'New moon':age<5.54?'Waxing crescent':age<9.23?'First quarter':age<12.91?'Waxing gibbous':age<16.61?'Full moon':age<20.30?'Waning gibbous':age<23.99?'Last quarter':age<27.68?'Waning crescent':'New moon';
+  var d0=jd-2451545.0, mlon=((218.316+13.176396*d0)%360+360)%360;
+  var SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  var msign=SIGNS[Math.floor(mlon/30)], waning=fr>0.5;
+  /* ---- ruler ---- */
+  var DR=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'], ruler=DR[now.getDay()];
+  var RTONE={Sun:'visibility · vitality',Moon:'feeling · tides',Mars:'drive · heat',Mercury:'words · exchange',Jupiter:'growth · luck',Venus:'love · ease',Saturn:'limit · discipline'};
+  /* ---- sealed reading, if the app wrote one today ---- */
+  function tk(d){d=d||new Date();var p=function(n){return n<10?'0'+n:''+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+  var daily=null; try{ var dj=JSON.parse(localStorage.getItem('prophexy.daily::'+pid)); if(dj&&dj.day===tk())daily=dj; }catch(e){}
+  function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'…';}
+  if(daily&&daily.line){ $('hl').textContent=capWords(daily.line,13);
+    if(daily.base){ var body=daily.base.split(/\n{2,}/).filter(Boolean); if(body[1])$('lede').textContent=body[1].replace(/^[^\n]*\n/,'').trim().slice(0,340); }
+  } else {
+    var HL={flowsish:'',1:'Start the thing — today rewards the first step.',2:'Hold steady; let it come to you today.',3:'Say the thing out loud today.',4:'Build one solid piece of it today.',5:'Let something change today — don’t grip.',6:'Tend to one person, including you.',7:'Go quiet and listen inward today.',8:'Claim the thing you already earned.',9:'Finish it — the ending is the gift.',11:'Trust the flash of knowing today.',22:'Lay one stone of the big thing.'};
+    $('hl').textContent=HL[pd]||'The day is being read.';
+    $('lede').innerHTML='On your numbers it’s a '+pd+'-day — '+NW[pd]+'. The '+phase.toLowerCase()+' leans '+(waning?'toward release — a night for letting go':'toward building — a night for beginnings')+', and '+ruler+' rules the day. <b>Connect yours: this sharpens once I write your reading.</b>';
+  }
+  /* ---- evidence + behind ---- */
+  function ev(lit,html){return '<span class="ev"><span class="dot'+(lit?' lit':'')+'"></span><span class="mono">'+html+'</span></span>';}
+  $('evidence').innerHTML=ev(true,'<b>'+phase+'</b> · '+illum+'%')+ev(false,ruler+'’s day')+ev(false,'a '+pd+'-day')+(name?ev(false,'read for '+esc(name)):'');
+  function brow(subj,meta){return '<a class="brow" href="./#why"><span class="sig">'+subj+'</span><span class="meta mono">'+meta+'</span></a>';}
+  $('behindRows').innerHTML=
+    brow('<b>'+phase+'</b> in '+msign, illum+'% lit · '+(waning?'reveal':'build'))+
+    brow('<b>'+ruler+'</b> rules today', RTONE[ruler])+
+    brow('A <b>'+pd+'-day</b> on your numbers', NW[pd]+' · resets tomorrow')+
+    (daily&&daily.src?brow('<b>Your reading</b>, written today','on '+(daily.src==='local'?'your device':'your Claude')):'');
+  $('moonfacts').innerHTML='<span class="mono"><b>'+phase+'</b> · '+illum+'% lit</span>'+
+    '<span class="mono">In '+msign+' · day '+age.toFixed(1)+'</span>'+
+    '<span class="mono">'+(waning?'Waning · a night for letting go':'Waxing · a night for building')+'</span>';
+  /* ---- the move + window ---- */
+  var MOVES={1:'Take the first concrete step on the thing you named.',2:'Wait one more day — and say so plainly.',3:'Send the message you drafted in your head.',4:'Finish one structural task, fully.',5:'Act on the feeling you keep talking yourself out of.',6:'Repair one small thing with one person.',7:'Sit alone with it for ten minutes, no phone.',8:'Ask for what it is actually worth.',9:'Close the loop you have been dragging.',11:'Write the flash down before it fades.',22:'Draw the plan for the big thing, one page.'};
+  $('move').textContent=(daily&&daily.act)?daily.act:(MOVES[pd]||MOVES[5]);
+  var W={Sun:'7 – 8 AM',Moon:'9 – 11 PM',Mars:'6 – 7 AM',Mercury:'10 – 11 AM',Jupiter:'5 – 6 PM',Venus:'8 – 9 PM',Saturn:'10 – 11 PM'};
+  $('movewhen').textContent=W[ruler]||'tonight';
+  /* ---- remedy by ruler ---- */
+  var REM={Sun:['Because the Sun asks to be seen','Three rounds of breath, then the Gayatri once.','Clarity first — the dawn prayer, for light.','Gayatri Mantra'],
+    Moon:['Because the Moon runs the feelings','Six rounds of box breathing, slow.','Settle the water before you read it.','Om Chandraya Namah'],
+    Mars:['Because Mars runs hot today','Exhale-heavy breathing — four in, eight out.','Burn it down to something usable.','Hanuman Chalisa'],
+    Mercury:['Because Mercury rules the words','Write three lines, then one chant.','Empty the head onto the page first.','Om Namah Shivaya'],
+    Jupiter:['Because Jupiter opens the door','Six rounds of breath, then one gratitude.','Name what is already growing.','Om Gurave Namah'],
+    Venus:['Because Venus softens the evening','Slow breath with music, lights low.','Let the evening be easy on purpose.','Deva Premal'],
+    Saturn:['Because Saturn asks for stillness','Six rounds of box breathing, then the Mahamrityunjaya once.','Settle the body before you name the feeling.','Mahamrityunjaya Mantra']};
+  var r=REM[ruler]||REM.Saturn;
+  $('rembecause').textContent=r[0]; $('remhead').textContent=r[1]; $('remnote').textContent=r[2];
+  $('chantlink').href='https://www.youtube.com/results?search_query='+encodeURIComponent(r[3]);
+  /* ---- calibration writes the app's scoped store ---- */
+  function cal(v,btn){try{var k='prophexy.calib::'+(pid||'_');var a=JSON.parse(localStorage.getItem(k))||[];a.push({d:tk(),v:v,src:'proto'});localStorage.setItem(k,JSON.stringify(a));}catch(e){}
+    btn.textContent=v?'Noted — it did':'Noted — I’ll learn'; btn.style.color='var(--amber)'; btn.style.borderColor='var(--amber)';}
+  $('cyes').addEventListener('click',function(){cal(1,this)});
+  $('cno').addEventListener('click',function(){cal(0,this)});
+})();
+</script>
 </body>
 </html>
