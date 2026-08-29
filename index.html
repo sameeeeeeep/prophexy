@@ -733,6 +733,26 @@
   .movehd .lb{color:var(--g2)}
   .movezone:empty{display:none;border:none;padding:0;margin:0}
   .whyline{width:100%;background:none;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--ink);font-family:inherit;text-align:left;display:flex;align-items:center;gap:16px;padding:clamp(16px,2.2vw,20px) 2px;cursor:pointer;margin-top:clamp(22px,3vw,32px)}
+  .whyline{display:none}
+  /* Behind this reading — the live signals, Co-Star style, in our amber/instrument look */
+  .behind{margin-top:clamp(26px,4vw,40px);border-top:1px solid var(--line)}
+  .behindlb{padding:20px 0 6px}
+  .behindlb .lb{color:var(--g2)}
+  .brow{width:100%;background:none;border:none;border-bottom:1px solid var(--line);color:var(--ink);
+    font-family:inherit;text-align:left;display:flex;align-items:baseline;gap:14px;
+    padding:16px 2px;cursor:pointer;transition:background .15s}
+  .brow:hover{background:#07070c}
+  .bmark{flex:none;width:6px;height:6px;border:1px solid var(--sig);border-radius:50%;transform:translateY(-1px)}
+  .brow:hover .bmark{background:var(--sig)}
+  .bmain{flex:1;min-width:0;font-size:clamp(15px,1.8vw,17px);line-height:1.35}
+  .bmain b{font-weight:500}
+  .bmeta{flex:none;font-size:11px;letter-spacing:.06em;color:var(--g2);text-transform:uppercase;text-align:right;max-width:44%}
+  @media(max-width:520px){.brow{flex-direction:column;gap:4px}.bmeta{text-align:left;max-width:none}}
+  .bmore{width:100%;background:none;border:none;color:var(--g1);font-family:inherit;display:flex;
+    align-items:center;gap:10px;padding:15px 2px;cursor:pointer}
+  .bmore .lb{color:var(--g2)}
+  .bmore:hover .lb{color:var(--sig)}
+  .bmore .whychev{margin-left:auto;color:var(--g2)}
   .whyline .whytxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
   .whyline .whytxt .lb{color:var(--g2)}
   .whyline .whylead{font-size:14px;color:var(--g1);line-height:1.42}
@@ -1277,6 +1297,7 @@ window.PXEMBLEM={};
       <div class="doact" id="doAct"></div>
     </div>
 
+    <div class="behind rv" id="behind"></div>
     <button type="button" class="whyline" id="whyLine">
       <span class="whytxt"><span class="lb">WHY TODAY</span><span class="whylead" id="whyLead">&mdash;</span></span>
       <span class="whychev" aria-hidden="true">&rsaquo;</span>
@@ -2736,6 +2757,23 @@ function chartReason(){
       (nsign?', in '+nsign:'')+' &mdash; the part of you that runs '+NAT_AREA[t.np]+'.';
   }catch(e){ return ''; }
 }
+function renderBehind(){
+  var host=$('behind'); if(!host) return; var dt=new Date(), rows=[];
+  try{ var TR=todayReading();
+    if(TR&&TR.transit){ var t=TR.transit; var tv=({flows:'opening up',tense:'under pressure',act:'lit up'}[t.tone])||'stirring';
+      rows.push(['<b>'+cap(TP_PLAIN[t.tp])+'</b> on '+NAT_PLAIN[t.np], NAT_AREA[t.np]+' '+tv+' \u00b7 today']); }
+  }catch(e){}
+  try{ var mn=moonPhase(dt), b=skyNow(dt,PROF.lat,PROF.lng), ms=signOf(b.Moon.lon).sign;
+    rows.push(['<b>'+mn.name+'</b>', mn.illum+'% lit \u00b7 in '+ms]); }catch(e){}
+  try{ var ruler=DR[dt.getDay()]; rows.push(['<b>'+ruler+'&rsquo;s day</b>', (PL[ruler]&&PL[ruler].tone)||'today&rsquo;s ruler']); }catch(e){}
+  try{ var pp=(PROF.dob||'2000-1-1').split('-'), pd=pDay(+pp[1],+pp[2],dt);
+    rows.push(['<b>A '+pd+'-day</b> \u00b7 '+N(pd).w, 'your number today \u00b7 resets tomorrow']); }catch(e){}
+  if(!rows.length){ host.innerHTML=''; return; }
+  host.innerHTML='<div class="behindlb"><span class="lb">Behind this reading</span></div>'+
+    rows.map(function(r){return '<button type="button" class="brow"><span class="bmark" aria-hidden="true"></span><span class="bmain">'+r[0]+'</span><span class="bmeta">'+r[1]+'</span></button>';}).join('')+
+    '<button type="button" class="bmore" id="bmore"><span class="lb">See how they combine</span><span class="whychev" aria-hidden="true">&rsaquo;</span></button>';
+  host.querySelectorAll('.brow, #bmore').forEach(function(bt){bt.addEventListener('click',function(){openCard('why','Why today');});});
+}
 function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'\u2026';}
 function fmtReading(text){var esc=escapeHTML;text=String(text||'').replace(/\r/g,'');var blocks=text.split(/\n{2,}/),html='';blocks.forEach(function(b){b=b.trim();if(!b)return;var lines=b.split('\n').map(function(l){return l.trim();}).filter(Boolean);var first=lines[0]||'';var head=first.split(/\s+/).length<=5 && !/[.!?,:;\u2014]$/.test(first) && first.length<=44;if(head&&lines.length>1){html+='<h4 class="rdh">'+esc(first)+'</h4><p>'+esc(lines.slice(1).join(' '))+'</p>';}else if(head){html+='<h4 class="rdh">'+esc(first)+'</h4>';}else{html+='<p>'+esc(lines.join(' '))+'</p>';}});return html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
 function stripHead(body){var nl=String(body||'').indexOf('\n');return nl>0?body.slice(nl).trim():body;}
@@ -3239,6 +3277,7 @@ function build(){
   $('cardWho').innerHTML=who?('Drawn for '+who):'Pick three';
   $('chartStamp').innerHTML='As seen from Earth &middot; '+PROF.lat.toFixed(2)+'&deg;N '+PROF.lng.toFixed(2)+'&deg;E';
   $('headline').innerHTML=specificHeadline();
+  try{renderBehind();}catch(e){}
   $('hsub').innerHTML='<b>'+mn.name+'</b> at <b>'+mn.illum+'%</b> &middot; <b>'+ruler+'</b>&rsquo;s day &middot; personal day <b>'+pd+'</b>';
 
   /* hero rail — the whole reading at a glance */
