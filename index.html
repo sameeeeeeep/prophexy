@@ -3172,6 +3172,14 @@ function renderHub(){
       collapseReasoning(blk);
     });
   });
+  /* the moon + galaxies (3D atmospheric breaks) got stranded by the move — pull them back into the flow, after the chart */
+  var sky=document.getElementById('sky');
+  if(sky){ var anchor=sky.nextSibling;
+    [].slice.call(document.querySelectorAll('.bleed.band')).forEach(function(bd){
+      sky.parentNode.insertBefore(bd, anchor); anchor=bd.nextSibling;
+      bd.querySelectorAll('.rv,.rvw').forEach(function(x){x.classList.add('in');});
+    });
+  }
 }
 /* the reading stays open; the mechanism folds away behind one toggle */
 function collapseReasoning(blk){
@@ -4929,21 +4937,33 @@ frame();
       if(msgs.length&&msgs[0].role==='user'){ msgs[0]={role:'user',content:o.system+'\n\n'+msgs[0].content}; }
       else { msgs.unshift({role:'user',content:o.system}); }
     }
-    var p={model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,messages:msgs};
+    var p={model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,max_tokens:o.maxTokens||800,messages:msgs};
     if(o.attachments&&o.attachments.length)p.attachments=o.attachments;
     return p;
+  }
+  function pickText(d){
+    if(d==null) return '';
+    if(typeof d==='string') return d;
+    if(typeof d.text==='string') return d.text;
+    if(d.delta){ if(typeof d.delta==='string')return d.delta; if(typeof d.delta.text==='string')return d.delta.text; }
+    if(typeof d.completion==='string') return d.completion;
+    if(typeof d.content==='string') return d.content;
+    if(Array.isArray(d.content)) return d.content.map(function(b){return (b&&(b.text||(b.delta&&b.delta.text)))||'';}).join('');
+    if(d.message) return pickText(d.message);
+    if(d.choices&&d.choices[0]){ var c=d.choices[0]; return pickText(c.delta||c.message||c); }
+    return '';
   }
   async function *streamOnce(o){
     var params=toWire(o),res=null;
     try{ res=window.claude.request({method:'claude_stream',params:params}); }catch(e){ res=null; }
     if(res&&typeof res.then==='function'){ try{ res=await res; }catch(e){ res=null; } }
     if(res&&res[Symbol.asyncIterator]){
-      for await (var d of res){ if(!d)continue;
-        if(d.type==='text'&&d.text) yield {type:'text',text:d.text}; }
-      return;
+      var any=false;
+      for await (var d of res){ if(!d)continue; var t=pickText(d); if(t){ any=true; yield {type:'text',text:t}; } }
+      if(any) return;
     }
     var out=await window.claude.request({method:'claude_complete',params:params});
-    var text=(out&&(out.text||out.completion||out.content))||'';
+    var text=pickText(out);
     if(text) yield {type:'text',text:text};
   }
   async function *streamWire(o){
