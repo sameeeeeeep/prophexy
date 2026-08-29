@@ -2645,7 +2645,7 @@ function aiStreamInto(el,opts){
       var it=AI.stream(opts);
       for await (var d of it){ if(d.type==='text'){ if(!started){started=true;el.classList.remove('loading');el.textContent='';} el.textContent+=d.text; } }
       if(!started){el.classList.remove('loading');el.textContent='';}
-    }catch(e){ el.classList.remove('loading'); el.textContent='(Could not reach the reading. '+(AIMODE==='local'?'The on-device reader stalled &mdash; try again.':'Is Switchboard still running?')+')'; }
+    }catch(e){ el.classList.remove('loading'); var _m=(e&&(e.message||e.code||e.error))||String(e||''); console.error('[prophexy] reading error:',e); el.textContent='(Reading failed'+(_m?': '+_m:'')+(AIMODE==='local'?' \u2014 on-device':' \u2014 via Switchboard')+')'; }
   })();
 }
 function aiReveal(){
@@ -4575,8 +4575,9 @@ setInterval(build,60000);
     for(var i=0;i<CITIES.length;i++){var full=CITIES[i][0],sh=full.split(',')[0];
       if(str.toLowerCase()===full.toLowerCase()||str.toLowerCase()===sh.toLowerCase())return {lat:CITIES[i][1],lng:CITIES[i][2],place:sh};}
     if(!str)return {lat:CITIES[0][1],lng:CITIES[0][2],place:CITIES[0][0].split(',')[0]};
-    try{var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(str),{headers:{Accept:'application/json'}});
-      var j=await r.json();if(j&&j[0])return {lat:+j[0].lat,lng:+j[0].lon,place:str.split(',')[0]};}catch(e){}
+    try{var ctrl=new AbortController(),to=setTimeout(function(){ctrl.abort();},4500);
+      var r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(str),{headers:{Accept:'application/json'},signal:ctrl.signal});
+      clearTimeout(to);var j=await r.json();if(j&&j[0])return {lat:+j[0].lat,lng:+j[0].lon,place:str.split(',')[0]};}catch(e){ console.error('[prophexy] geocode',e); }
     return null;
   }
   $('inPlace').addEventListener('input',function(){delete this.dataset.lat;delete this.dataset.lng;});
@@ -4627,11 +4628,11 @@ setInterval(build,60000);
     if(!$('inDob').value){$('identNote').innerHTML='A birth date is required.';return;}
     var tob = tmode==='range' ? $('inRange').value : (tmode==='unknown' ? '12:00' : ($('inTob').value||'12:00'));
     $('identNote').innerHTML='Finding that place&hellip;';
-    var loc=await resolvePlace($('inPlace').value.trim());
-    if(!loc){$('identNote').innerHTML='Couldn&rsquo;t find that place &mdash; try a bigger nearby city, or pick one from the list.';return;}
+    var loc=null; try{ loc=await resolvePlace($('inPlace').value.trim()); }catch(e){ console.error('[prophexy] geocode failed',e); }
+    if(!loc){ loc={lat:(known&&known.lat)||51.5,lng:(known&&known.lng)||-0.13,place:($('inPlace').value.trim()||'\u2014')}; }
     PROF={name:nm,dob:$('inDob').value,tob:tob,tmode:tmode,lat:loc.lat,lng:loc.lng,place:loc.place};
     saveProf(PROF);
-    build();                                   /* recompute everything for this subject */
+    try{ build(); }catch(e){ console.error('[prophexy] build failed',e); }   /* never block acquiring on a compute error */
     $('ident').style.display='none';
     $('acq').style.display='';document.getElementById('seq').classList.add('acquiring');
     $('seqTitle').innerHTML='Acquiring for '+firstName(PROF.name);
@@ -4977,6 +4978,7 @@ frame();
     }
   }
   ready().then(function(claude){
+    try{ if(claude) console.log('[prophexy] claude ready \u2014 methods:', Object.keys(claude), '| request:', typeof claude.request); }catch(e){}
     var api;
     if(!claude){ api={installed:false, installUrl:OPEN_URL}; }
     else{
