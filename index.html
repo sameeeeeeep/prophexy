@@ -708,6 +708,13 @@
   .aitaste p{font-family:"Archivo",sans-serif;font-size:clamp(16px,2vw,20px);line-height:1.55;color:var(--g1);margin:12px 0 0;max-width:60ch}
   .tastecut{color:var(--g2)}
   .aireading{font-size:clamp(17px,2.1vw,22px);line-height:1.65;letter-spacing:-.008em;white-space:pre-wrap;max-width:64ch}
+  .aireading.fmt{white-space:normal;font-size:inherit}
+  .aireading.fmt p{margin:0 0 15px;font-size:clamp(15.5px,1.75vw,18px);line-height:1.62;color:var(--g1);max-width:64ch}
+  .aireading.fmt p:last-child{margin-bottom:0}
+  .aireading .rdh{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--sig);
+    margin:26px 0 10px;font-weight:500}
+  .aireading .rdh:first-child{margin-top:2px}
+  .aireading.fmt b{color:var(--ink);font-weight:500}
   /* which mind is reading you — always visible in the reading */
   .aimodebar{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--line)}
   .amcur{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--g2)}
@@ -2442,7 +2449,7 @@ function renderCalib(){
 }
 
 var AISTATE='unknown',AIchat=[],AIMODE='switchboard';
-var CORE_Q='Open with ONE vivid sentence that is my single prediction or piece of advice for today - on its own line, no preamble and no label. Then a blank line. Then my full reading: who I am, what I am really living through right now, and the one thing to focus on. Make the first line something only true for me today, never a phrase you would give someone else. At the very end, on its own new line, write \'DO: \' then one small, concrete action I can actually take today.';
+var CORE_Q='Open with ONE short vivid sentence \u2014 my single prediction or piece of advice for today, at most 12 words \u2014 on its own line, no preamble and no label. Then a blank line. Then my full reading, broken into 3 or 4 short parts. Begin EACH part with a plain 2-to-4-word heading on its own line (for example: Where you are / What is really going on / The one thing), then a new line, then 2 to 4 short sentences. Keep headings human and specific, not clever. Make the opening line something only true for me today, never a phrase you would give someone else. At the very end, on its own new line, write \'DO: \' then one small, concrete action I can actually take today.';
 
 /* ---- one sealed base reading per day; the day around it can still grow ---- */
 var DKEY='prophexy.daily';
@@ -2589,7 +2596,7 @@ function mountReading(){
   else if(!AIchat.length){ aiReveal(); }
 }
 function restoreReading(d){
-  var el=$('aiText');if(!el)return;el.textContent=d.base;
+  var el=$('aiText');if(!el)return;el.innerHTML=fmtReading(stripHead(d.base));el.classList.add('fmt');
   AIchat=[{role:'user',content:CORE_Q},{role:'assistant',content:d.base}];
   var th=$('aiThread');
   (d.thread||[]).forEach(function(m){
@@ -2675,7 +2682,7 @@ function aiReveal(){
     var body=ft.replace(/(^|\n)\s*DO:\s*.+?\s*$/i,'').trim();
     var nl=body.indexOf('\n');
     var line=(nl>0?body.slice(0,nl):body.split('. ')[0]).trim().replace(/^["“‘—\s]+/,'');
-    el.textContent=body;
+    el.innerHTML=fmtReading(stripHead(body));el.classList.add('fmt');
     AIchat.push({role:'assistant',content:body});
     lockBase(body);
     if(line)setDailyLine(line,AIMODE);
@@ -2729,11 +2736,14 @@ function chartReason(){
       (nsign?', in '+nsign:'')+' &mdash; the part of you that runs '+NAT_AREA[t.np]+'.';
   }catch(e){ return ''; }
 }
+function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'\u2026';}
+function fmtReading(text){var esc=escapeHTML;text=String(text||'').replace(/\r/g,'');var blocks=text.split(/\n{2,}/),html='';blocks.forEach(function(b){b=b.trim();if(!b)return;var lines=b.split('\n').map(function(l){return l.trim();}).filter(Boolean);var first=lines[0]||'';var head=first.split(/\s+/).length<=5 && !/[.!?,:;\u2014]$/.test(first) && first.length<=44;if(head&&lines.length>1){html+='<h4 class="rdh">'+esc(first)+'</h4><p>'+esc(lines.slice(1).join(' '))+'</p>';}else if(head){html+='<h4 class="rdh">'+esc(first)+'</h4>';}else{html+='<p>'+esc(lines.join(' '))+'</p>';}});return html.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');}
+function stripHead(body){var nl=String(body||'').indexOf('\n');return nl>0?body.slice(nl).trim():body;}
 function applyDailyLine(){
   var d=todaysLine();
   var badge=$('srcBadge');
   if(!d){ if(badge){badge.textContent='Computed';badge.className='srcbadge computed';} return; }
-  var h=$('headline');if(h){h.textContent=d.line;h.classList.add('aiwritten');}
+  var h=$('headline');if(h){h.textContent=capWords(d.line,13);h.classList.add('aiwritten');}
   var co=$('chainOut');if(co){var cs=co.querySelector('.chainhead');if(cs)cs.textContent=d.line;}
   if(badge){var src=d.src; badge.textContent=(src==='local')?'On your device':(src==='switchboard')?'Your Claude':'AI reading'; badge.className='srcbadge ai'; }
 }
