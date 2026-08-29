@@ -4964,8 +4964,12 @@ frame();
       if(any) return;
     }
     var out=await window.claude.request({method:'claude_complete',params:params});
+    try{ window.__PXRAW=out; console.log('[prophexy] complete raw:', out); }catch(e){}
     var text=pickText(out);
-    if(text) yield {type:'text',text:text};
+    if(text){ yield {type:'text',text:text}; return; }
+    /* got a response but no extractable text — surface the raw shape so we can see it (error obj, unknown key, etc.) */
+    var raw=''; try{ raw=JSON.stringify(out); }catch(e){ raw=String(out); }
+    throw new Error('empty response · '+String(raw).slice(0,500));
   }
   async function *streamWire(o){
     var emitted=0;
