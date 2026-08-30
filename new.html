@@ -54,9 +54,7 @@
     background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;
     font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
-  .stab .sd{width:5px;height:5px;border-radius:50%;border:1px solid var(--faint)}
   .stab.on{color:var(--ink);border-bottom-color:var(--amber)}
-  .stab.on .sd{border-color:var(--amber);background:var(--amber)}
 
   /* ---- hero ---- */
   .hero{padding-top:56px}
@@ -95,10 +93,10 @@
   .combine:hover{color:var(--amber)}
 
   .moonrow{display:flex;align-items:center;gap:26px;margin-top:var(--s4)}
-  .moon{width:118px;height:118px;flex:none;border-radius:50%;position:relative;
-    background:radial-gradient(circle at 47% 46%, #ffffff 0%, #f2f2f7 52%, #dcdce4 76%, #b9b9c5 92%, #9d9daa 100%);
-    box-shadow:0 0 34px 4px rgba(240,240,250,.26), 0 0 90px 12px rgba(240,240,250,.09);
-    filter:contrast(1.04)}
+  .moon{width:118px;height:118px;flex:none;border-radius:50%;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 47% 46%, #e9e9f0 0%, #dcdce4 52%, #c6c6d1 76%, #a3a3b1 92%, #86868f 100%);
+    box-shadow:0 0 16px 2px rgba(240,240,250,.12)}
+  .moonshade{position:absolute;inset:-4px;border-radius:50%;background:#030306;filter:blur(7px)}
   .moon::before{content:"";position:absolute;inset:0;border-radius:50%;
     background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='118' height='118'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.055 0.06' numOctaves='4' seed='11'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='118' height='118' filter='url(%23g)'/%3E%3C/svg%3E");
     mix-blend-mode:multiply;opacity:.5}
@@ -147,9 +145,10 @@
   .week{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--rule);
     border:1px solid var(--rule);margin-top:var(--s3)}
   @media(max-width:560px){.week{grid-template-columns:repeat(4,1fr)}}
-  .wd{background:var(--void);padding:14px 10px;display:grid;gap:7px;justify-items:start}
-  .wd .wnum{font-size:21px;font-weight:300;font-variation-settings:'wdth' 116}
+  .wd{background:var(--void);padding:14px 12px;display:grid;gap:6px;justify-items:start}
+  .wd .wnum{font-size:26px;font-weight:250;font-variation-settings:'wdth' 118;line-height:1}
   .wd.best .wnum{color:var(--amber)}
+  .wd.dim{opacity:.5}
   .weeknote{margin-top:16px;font-size:13.5px;color:var(--faint);line-height:1.6;max-width:52ch}
 
   /* buttons */
@@ -182,15 +181,15 @@
 </header>
 
 <nav class="snav" aria-label="Sections"><div class="snavin" id="snav">
-  <a class="stab on" href="#s-tonight"><span class="sd"></span>Tonight</a>
-  <a class="stab" href="#s-move"><span class="sd"></span>The move</a>
-  <a class="stab" href="#s-why"><span class="sd"></span>Why</a>
-  <a class="stab" href="#s-sky"><span class="sd"></span>The sky</a>
-  <a class="stab" href="#s-you"><span class="sd"></span>You</a>
-  <a class="stab" href="#s-ways"><span class="sd"></span>Four ways</a>
-  <a class="stab" href="#s-checkin"><span class="sd"></span>Check in</a>
-  <a class="stab" href="#s-cure"><span class="sd"></span>The cure</a>
-  <a class="stab" href="#s-week"><span class="sd"></span>Ahead</a>
+  <a class="stab on" href="#s-tonight">Tonight</a>
+  <a class="stab" href="#s-move">The move</a>
+  <a class="stab" href="#s-why">Why</a>
+  <a class="stab" href="#s-sky">The sky</a>
+  <a class="stab" href="#s-you">You</a>
+  <a class="stab" href="#s-ways">Four ways</a>
+  <a class="stab" href="#s-checkin">Check in</a>
+  <a class="stab" href="#s-cure">The cure</a>
+  <a class="stab" href="#s-week">Ahead</a>
 </div></nav>
 
 <div class="page">
@@ -203,7 +202,7 @@
   </section>
 
   <section id="s-move">
-    <div class="seclb"><span class="dot"></span><span class="mono">The move</span></div>
+    <div class="seclb"><span class="mono">The move</span></div>
     <p class="secsub">One thing to actually do about it. Small on purpose.</p>
     <h2 class="display" id="move">&mdash;</h2>
     <div class="movewhen"><span class="mono">Best stretch</span><span class="t" id="movewhen">tonight</span></div>
@@ -211,16 +210,16 @@
   </section>
 
   <section id="s-why">
-    <div class="seclb"><span class="dot"></span><span class="mono">Why the reading says this</span></div>
+    <div class="seclb"><span class="mono">Why the reading says this</span></div>
     <p class="secsub">The live signals it was built from. Each one is real, and each one opens.</p>
     <div id="behindRows"></div>
     <a class="combine" href="./#why">See how they combine &rarr;</a>
   </section>
 
   <section id="s-sky">
-    <div class="seclb"><span class="dot"></span><span class="mono">The sky tonight</span></div>
+    <div class="seclb"><span class="mono">The sky tonight</span></div>
     <div class="moonrow">
-      <div class="moon" role="img" aria-label="The moon tonight"></div>
+      <div class="moon" role="img" aria-label="The moon tonight" id="moonEl"><i class="moonshade" id="moonshade"></i></div>
       <div class="moonfacts" id="moonfacts"></div>
     </div>
     <a class="deeper" href="./#sky" style="margin-top:var(--s4)">
@@ -231,32 +230,32 @@
   </section>
 
   <section id="s-you">
-    <div class="seclb"><span class="dot"></span><span class="mono">The part that never moves</span></div>
+    <div class="seclb"><span class="mono">The part that never moves</span></div>
     <p class="secsub">Everything above changes daily. This is the fixed ground under it.</p>
     <h2 class="display" id="purpose">&mdash;</h2>
     <div id="youRows" style="margin-top:var(--s3)"></div>
   </section>
 
   <section id="s-ways">
-    <div class="seclb"><span class="dot"></span><span class="mono">The same person, four ways</span></div>
+    <div class="seclb"><span class="mono">The same person, four ways</span></div>
     <div class="ways" id="ways"></div>
     <p class="waysnote">Four traditions, four calendars, one birth. They don&rsquo;t translate each other — where they rhyme is where it&rsquo;s worth trusting.</p>
   </section>
 
   <section id="s-checkin">
-    <div class="seclb"><span class="dot"></span><span class="mono">How are you, really?</span></div>
+    <div class="seclb"><span class="mono">How are you, really?</span></div>
     <p class="secsub">No wrong answer — this is how I learn what actually moves you.</p>
     <div class="chips" id="moodChips"></div>
     <div class="moodout" id="moodOut"><p class="body" id="moodTxt"></p></div>
 
     <div class="field" style="margin-top:var(--s5)">
-      <div class="seclb"><span class="dot"></span><span class="mono">A dream, if you have one</span></div>
+      <div class="seclb"><span class="mono">A dream, if you have one</span></div>
       <textarea id="dreamIn" placeholder="I was somewhere I half-recognised&hellip;"></textarea>
       <div class="fieldrow"><button class="cbtn" id="dreamSave">Keep this dream</button><span class="savednote" id="dreamNote"></span></div>
     </div>
 
     <div class="field" style="margin-top:var(--s5)">
-      <div class="seclb"><span class="dot"></span><span class="mono">Tonight&rsquo;s page</span></div>
+      <div class="seclb"><span class="mono">Tonight&rsquo;s page</span></div>
       <p class="secsub" id="jprompt">&mdash;</p>
       <textarea id="jIn" placeholder="Write the gut answer before the reasons arrive."></textarea>
       <div class="fieldrow"><button class="cbtn" id="jSave">Save it</button><span class="savednote" id="jNote"></span></div>
@@ -264,7 +263,7 @@
   </section>
 
   <section id="s-cure">
-    <div class="seclb"><span class="dot lit"></span><span class="mono">Tonight, one thing</span></div>
+    <div class="seclb"><span class="mono">Tonight, one thing</span></div>
     <div class="remedy">
       <span class="mono" id="rembecause">&mdash;</span>
       <h3 id="remhead">&mdash;</h3>
@@ -277,8 +276,8 @@
   </section>
 
   <section id="s-week">
-    <div class="seclb"><span class="dot"></span><span class="mono">The week ahead</span></div>
-    <p class="secsub">Your number for each of the next seven days. Amber is your kind of day.</p>
+    <div class="seclb"><span class="mono">The week ahead</span></div>
+    <p class="secsub">The next seven days, weighed against your numbers.</p>
     <div class="week" id="week"></div>
     <p class="weeknote" id="weeknote"></p>
   </section>
@@ -326,6 +325,9 @@
   var d0=jd-2451545.0, mlon=((218.316+13.176396*d0)%360+360)%360;
   var SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
   var msign=SIGNS[Math.floor(mlon/30)], waning=fr>0.5;
+  /* terminator: a soft shadow disc slides off as the moon fills */
+  window.addEventListener('DOMContentLoaded',function(){var sh=document.getElementById('moonshade');
+    if(sh){var off=(illum/100)*126*1.06; sh.style.transform='translateX('+(waning?off:-off).toFixed(0)+'px)';}});
 
   /* ---- ruler ---- */
   var DR=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'], ruler=DR[now.getDay()];
@@ -439,13 +441,18 @@
   $('chantlink').href='https://www.youtube.com/results?search_query='+encodeURIComponent(r[3]);
 
   /* ---- week ahead ---- */
-  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], wk='', bestDay='';
+  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], wk='', bestDay='', weakDay='';
   for(var i=1;i<=7;i++){ var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);
-    var p2=pdayFor(d), best=(p2===1||p2===lifePath);
+    var p2=pdayFor(d), best=(p2===1||p2===8||p2===lifePath), weak=(p2===2||p2===7);
     if(best&&!bestDay)bestDay=WDN[d.getDay()];
-    wk+='<div class="wd'+(best?' best':'')+'"><span class="mono">'+WDN[d.getDay()]+'</span><span class="wnum">'+p2+'</span><span class="mono">'+(NW[p2]||'')+'</span></div>'; }
+    if(weak&&!weakDay)weakDay=WDN[d.getDay()];
+    wk+='<div class="wd'+(best?' best':'')+(!best&&weak?' dim':'')+'">'+
+      '<span class="mono">'+WDN[d.getDay()]+'</span>'+
+      '<span class="wnum">'+d.getDate()+'</span>'+
+      '<span class="mono">'+p2+' · '+(NW[p2]||'')+'</span></div>'; }
   $('week').innerHTML=wk;
-  $('weeknote').textContent=bestDay?('Your strongest opening this week is '+bestDay+' — hold the big ask for it.'):('An even week — pace it, nothing needs forcing.');
+  $('weeknote').textContent=(bestDay?('Strongest '+bestDay):'An even week')+(weakDay?(' · quietest '+weakDay):'')+
+    (bestDay?(' — hold the big ask for '+bestDay+'.'):' — pace it, nothing needs forcing.');
 
   /* ---- calibration ---- */
   function cal(v,btn){try{var k='prophexy.calib::'+(pid||'_');var a=JSON.parse(localStorage.getItem(k))||[];if(!Array.isArray(a))a=[];a.push({d:tk(),v:v,src:'proto'});localStorage.setItem(k,JSON.stringify(a));}catch(e){}
