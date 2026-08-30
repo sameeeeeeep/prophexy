@@ -22,7 +22,6 @@
     font-variation-settings:'wdth' 100;-webkit-font-smoothing:antialiased}
   .page{max-width:var(--col);margin:0 auto;padding:0 22px 140px}
 
-  /* ---- voices ---- */
   .mono{font-family:'Fragment Mono',monospace;font-size:10.5px;letter-spacing:.18em;
     text-transform:uppercase;color:var(--faint)}
   .mono b{color:var(--dust);font-weight:400}
@@ -30,7 +29,6 @@
   .body{font-size:16.5px;line-height:1.7;color:var(--dust);font-weight:400}
   .body b{color:var(--ink);font-weight:500}
 
-  /* ---- the dot ---- */
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
     border:1px solid var(--amber);vertical-align:middle;flex:none}
   .dot.lit{background:var(--amber);box-shadow:0 0 8px rgba(255,157,46,.55)}
@@ -38,25 +36,22 @@
   .dot.lit{animation:dotbreathe 3.2s ease-in-out infinite}
   @media(prefers-reduced-motion:reduce){.dot.lit{animation:none}}
 
-  /* ---- masthead ---- */
   .mast{display:flex;align-items:center;gap:12px;padding:24px 0 18px}
   .mast svg{width:20px;height:20px;flex:none}
   .mast .who{margin-left:auto;text-align:right}
 
-  /* ---- sticky section nav ---- */
   .snav{position:sticky;top:0;z-index:40;background:rgba(0,0,0,.88);
     backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
   .snavin{max-width:var(--col);margin:0 auto;display:flex;gap:4px;overflow-x:auto;
     padding:0 16px;height:var(--navh);align-items:stretch;scrollbar-width:none}
   .snavin::-webkit-scrollbar{display:none}
-  .stab{flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;
+  .stab{flex:none;display:flex;align-items:center;padding:0 12px;
     background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;
     font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--faint);text-decoration:none;white-space:nowrap}
   .stab.on{color:var(--ink);border-bottom-color:var(--amber)}
 
-  /* ---- hero ---- */
   .hero{padding-top:56px}
   .kicker{display:flex;align-items:center;gap:10px;margin-bottom:var(--s3)}
   h1{font-size:clamp(38px,10.4vw,60px);margin-bottom:var(--s3);max-width:14ch}
@@ -70,11 +65,21 @@
     padding:20px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
   .ev{display:flex;align-items:center;gap:9px}
 
-  /* ---- sections ---- */
+  /* ask */
+  .askrow{display:flex;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:var(--s3)}
+  .askrow input{flex:1;background:#06060a;border:none;color:var(--ink);font-family:'Archivo',sans-serif;
+    font-size:16px;padding:15px 16px;min-width:0}
+  .askrow input:focus{outline:none}
+  .askrow input::placeholder{color:var(--faint)}
+  .askrow button{background:var(--void);border:none;color:var(--amber);font-family:'Fragment Mono',monospace;
+    font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;padding:0 20px;cursor:pointer}
+  .askrow button:hover{background:#0a0a10}
+
   section{padding-top:var(--s6);scroll-margin-top:calc(var(--navh) + 14px)}
   .seclb{display:flex;align-items:center;gap:10px;margin-bottom:var(--s3)}
   .secsub{margin:-16px 0 var(--s3);font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
   h2{font-size:clamp(25px,6vw,36px);max-width:17ch}
+  .sub3{margin-top:var(--s5)}
 
   .movewhen{margin-top:var(--s3);display:flex;align-items:baseline;gap:12px}
   .movewhen .t{font-family:'Fragment Mono',monospace;font-size:15px;color:var(--amber);letter-spacing:.04em}
@@ -92,7 +97,13 @@
     text-transform:uppercase;text-decoration:none}
   .combine:hover{color:var(--amber)}
 
-  .moonrow{display:flex;align-items:center;gap:26px;margin-top:var(--s4)}
+  /* wheel */
+  .wheelrow{display:flex;gap:30px;align-items:center;margin-top:var(--s3);flex-wrap:wrap}
+  .wheel{width:min(300px,78vw);flex:none}
+  .wheel text{font-size:13px;fill:var(--faint)}
+  .wheellegend{display:grid;gap:10px;flex:1;min-width:170px}
+
+  .moonrow{display:flex;align-items:center;gap:26px;margin-top:var(--s5)}
   .moon{width:118px;height:118px;flex:none;border-radius:50%;position:relative;overflow:hidden;
     background:radial-gradient(circle at 47% 46%, #e9e9f0 0%, #dcdce4 52%, #c6c6d1 76%, #a3a3b1 92%, #86868f 100%);
     box-shadow:0 0 16px 2px rgba(240,240,250,.12)}
@@ -105,14 +116,21 @@
     mix-blend-mode:soft-light;opacity:.55}
   .moonfacts{display:grid;gap:9px}
 
-  /* four ways */
+  /* numbers chain */
+  .chain{display:flex;align-items:stretch;gap:1px;background:var(--rule);border:1px solid var(--rule);
+    margin-top:var(--s3);overflow-x:auto}
+  .ch{background:var(--void);padding:18px 16px;display:grid;gap:7px;flex:1;min-width:96px;justify-items:start}
+  .ch .cv{font-size:24px;font-weight:250;font-variation-settings:'wdth' 118;line-height:1}
+  .ch.last .cv{color:var(--amber)}
+  .chainnote{margin-top:14px;font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
+
   .ways{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
     border:1px solid var(--rule);margin-top:var(--s3)}
   .way{background:var(--void);padding:20px 18px;display:grid;gap:8px}
   .way .wv{font-size:19px;font-weight:300;font-variation-settings:'wdth' 116}
+  .way .wnote{font-size:12.5px;color:var(--faint);line-height:1.5}
   .waysnote{margin-top:16px;font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
 
-  /* check-in chips */
   .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--s3)}
   .chip{background:none;border:1px solid var(--rule);color:var(--dust);font-family:'Fragment Mono',monospace;
     font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:12px 18px;cursor:pointer}
@@ -121,7 +139,6 @@
   .moodout{margin-top:22px;max-width:52ch;display:none}
   .moodout.show{display:block}
 
-  /* dream / journal */
   .field{margin-top:var(--s3)}
   textarea{width:100%;background:#06060a;border:1px solid var(--rule);color:var(--ink);
     font-family:'Archivo',sans-serif;font-size:16px;line-height:1.6;padding:16px;min-height:110px;resize:vertical}
@@ -131,17 +148,48 @@
   .savednote{color:var(--faint);font-family:'Fragment Mono',monospace;font-size:10.5px;
     letter-spacing:.14em;text-transform:uppercase}
 
-  /* remedy */
-  .remedy{margin-top:var(--s3);border:1px solid var(--rule);padding:26px 24px}
-  .remedy h3{font-weight:200;font-variation-settings:'wdth' 122;font-size:24px;line-height:1.18;
-    letter-spacing:-.01em;margin:10px 0 12px}
-  .remedy .body{font-size:15px;max-width:46ch}
-  .remlinks{display:flex;gap:22px;margin-top:20px;flex-wrap:wrap}
-  .remlinks a{color:var(--dust);font-family:'Fragment Mono',monospace;font-size:10.5px;
-    letter-spacing:.18em;text-transform:uppercase;text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:3px}
-  .remlinks a:hover{color:var(--amber);border-color:var(--amber)}
+  /* capture + vision */
+  .capgrid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+    border:1px solid var(--rule);margin-top:var(--s3)}
+  @media(max-width:480px){.capgrid{grid-template-columns:1fr}}
+  .capslot{background:var(--void);padding:20px 18px;display:grid;gap:12px;justify-items:start}
+  .capslot img{width:100%;aspect-ratio:1;object-fit:cover;filter:grayscale(1) contrast(1.05)}
+  .visiongrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:var(--s3)}
+  .visiongrid img{width:100%;aspect-ratio:1;object-fit:cover;border:1px solid var(--rule)}
+  .filelb{display:inline-block;border:1px solid var(--rule);color:var(--dust);
+    font-family:'Fragment Mono',monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
+    padding:11px 18px;cursor:pointer}
+  .filelb:hover{border-color:var(--amber);color:var(--amber)}
 
-  /* week ahead */
+  /* cards */
+  .deck{display:flex;gap:14px;margin-top:var(--s3);flex-wrap:wrap}
+  .tcard{flex:1;min-width:150px;border:1px solid var(--rule);padding:22px 18px;display:grid;gap:10px;
+    background:var(--void)}
+  .tcard .tn{font-size:20px;font-weight:300;font-variation-settings:'wdth' 118;line-height:1.2}
+  .tcard .tm{font-size:13.5px;color:var(--dust);line-height:1.55}
+  .tcard.rev .tn::after{content:" · reversed";font-size:11px;color:var(--amber)}
+  .tverdict{margin-top:22px;max-width:52ch}
+
+  /* breath */
+  .breathe{display:flex;align-items:center;gap:28px;margin-top:var(--s3);flex-wrap:wrap}
+  .bring{width:110px;height:110px;flex:none;border-radius:50%;border:1px solid var(--faint);
+    display:flex;align-items:center;justify-content:center;transition:transform 4s ease-in-out}
+  .bring i{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px rgba(255,157,46,.6)}
+  .bstate{display:grid;gap:10px}
+
+  /* songs */
+  .songrow{display:flex;align-items:baseline;gap:14px;padding:16px 0;border-bottom:1px solid var(--rule)}
+  .songrow:first-of-type{border-top:1px solid var(--rule)}
+  .songrow .sn{flex:1;min-width:0}
+  .songrow .sn b{font-weight:500}
+  .songrow .sn .sd2{font-size:12.5px;color:var(--faint);margin-top:3px}
+  .songrow .lks{display:flex;gap:14px}
+  .songrow .lks a{color:var(--faint);font-family:'Fragment Mono',monospace;font-size:9.5px;
+    letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+  .songrow .lks a:hover{color:var(--amber)}
+  @media(max-width:520px){.songrow{flex-direction:column;gap:8px}}
+
+  /* week */
   .week{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--rule);
     border:1px solid var(--rule);margin-top:var(--s3)}
   @media(max-width:560px){.week{grid-template-columns:repeat(4,1fr)}}
@@ -151,13 +199,17 @@
   .wd.dim{opacity:.5}
   .weeknote{margin-top:16px;font-size:13.5px;color:var(--faint);line-height:1.6;max-width:52ch}
 
-  /* buttons */
   .cbtn{background:none;border:1px solid var(--rule);color:var(--dust);font-family:'Fragment Mono',monospace;
     font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;padding:11px 18px;cursor:pointer}
   .cbtn:hover{border-color:var(--amber);color:var(--amber)}
   .calib{margin-top:var(--s6);border-top:1px solid var(--rule);padding-top:26px;
     display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .calib .mono{flex:1;min-width:150px}
+
+  .remedy{margin-top:var(--s3);border:1px solid var(--rule);padding:26px 24px}
+  .remedy h3{font-weight:200;font-variation-settings:'wdth' 122;font-size:24px;line-height:1.18;
+    letter-spacing:-.01em;margin:10px 0 12px}
+  .remedy .body{font-size:15px;max-width:46ch}
 
   .deeper{margin-top:var(--s5);display:flex;align-items:center;justify-content:space-between;
     border:1px solid var(--rule);padding:22px 24px;text-decoration:none;color:inherit}
@@ -182,13 +234,16 @@
 
 <nav class="snav" aria-label="Sections"><div class="snavin" id="snav">
   <a class="stab on" href="#s-tonight">Tonight</a>
-  <a class="stab" href="#s-move">The move</a>
+  <a class="stab" href="#s-move">Move</a>
   <a class="stab" href="#s-why">Why</a>
-  <a class="stab" href="#s-sky">The sky</a>
+  <a class="stab" href="#s-sky">Sky</a>
+  <a class="stab" href="#s-numbers">Numbers</a>
   <a class="stab" href="#s-you">You</a>
-  <a class="stab" href="#s-ways">Four ways</a>
+  <a class="stab" href="#s-ways">Systems</a>
   <a class="stab" href="#s-checkin">Check in</a>
-  <a class="stab" href="#s-cure">The cure</a>
+  <a class="stab" href="#s-cards">Cards</a>
+  <a class="stab" href="#s-cure">Cure</a>
+  <a class="stab" href="#s-timing">Timing</a>
   <a class="stab" href="#s-week">Ahead</a>
 </div></nav>
 
@@ -199,6 +254,8 @@
     <h1 class="display"><span class="rl"><span id="hl">The sky is being read.</span></span></h1>
     <p class="body" id="lede">One honest paragraph about your day lands here.</p>
     <div class="evidence" id="evidence"></div>
+    <div class="askrow"><input id="askQ" placeholder="Ask me anything about today&hellip;"><button id="askGo">Ask</button></div>
+    <p class="movenote" id="askNote">A decision, a person, a fear — I answer against your whole chart.</p>
   </section>
 
   <section id="s-move">
@@ -218,15 +275,28 @@
 
   <section id="s-sky">
     <div class="seclb"><span class="mono">The sky tonight</span></div>
+    <p class="secsub">Where the lights are right now, over your head.</p>
+    <div class="wheelrow">
+      <svg class="wheel" id="wheel" viewBox="0 0 320 320" fill="none"></svg>
+      <div class="wheellegend" id="wheellegend"></div>
+    </div>
     <div class="moonrow">
-      <div class="moon" role="img" aria-label="The moon tonight" id="moonEl"><i class="moonshade" id="moonshade"></i></div>
+      <div class="moon" role="img" aria-label="The moon tonight"><i class="moonshade" id="moonshade"></i></div>
       <div class="moonfacts" id="moonfacts"></div>
     </div>
     <a class="deeper" href="./#sky" style="margin-top:var(--s4)">
-      <span><span class="mono" style="color:var(--dust)">The full chart</span>
-      <div class="d2">Every planet, live, against your birth chart</div></span>
+      <span><span class="mono" style="color:var(--dust)">The precise chart</span>
+      <div class="d2">Every planet to the degree, against your birth chart</div></span>
       <span class="arr">&rarr;</span>
     </a>
+  </section>
+
+  <section id="s-numbers">
+    <div class="seclb"><span class="mono">How tonight reduces</span></div>
+    <p class="secsub">Nothing here is chosen — it&rsquo;s arithmetic, and it changes tomorrow.</p>
+    <div class="chain" id="chain"></div>
+    <p class="chainnote">Your birth day and month, folded against today&rsquo;s date, reduced until one digit remains.</p>
+    <div id="numRows" style="margin-top:var(--s4)"></div>
   </section>
 
   <section id="s-you">
@@ -240,6 +310,17 @@
     <div class="seclb"><span class="mono">The same person, four ways</span></div>
     <div class="ways" id="ways"></div>
     <p class="waysnote">Four traditions, four calendars, one birth. They don&rsquo;t translate each other — where they rhyme is where it&rsquo;s worth trusting.</p>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">The Vedic shift</span></div>
+      <p class="secsub">Vedic astrology measures from a starting point about 24&deg; behind the Western one — so the sign you know is often not the one a Vedic astrologer would give you.</p>
+      <div id="vedicRows"></div>
+    </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">The Chinese year</span></div>
+      <div class="ways" id="chineseCells"></div>
+    </div>
   </section>
 
   <section id="s-checkin">
@@ -248,31 +329,84 @@
     <div class="chips" id="moodChips"></div>
     <div class="moodout" id="moodOut"><p class="body" id="moodTxt"></p></div>
 
-    <div class="field" style="margin-top:var(--s5)">
+    <div class="field sub3">
       <div class="seclb"><span class="mono">A dream, if you have one</span></div>
       <textarea id="dreamIn" placeholder="I was somewhere I half-recognised&hellip;"></textarea>
       <div class="fieldrow"><button class="cbtn" id="dreamSave">Keep this dream</button><span class="savednote" id="dreamNote"></span></div>
     </div>
 
-    <div class="field" style="margin-top:var(--s5)">
+    <div class="field sub3">
       <div class="seclb"><span class="mono">Tonight&rsquo;s page</span></div>
       <p class="secsub" id="jprompt">&mdash;</p>
       <textarea id="jIn" placeholder="Write the gut answer before the reasons arrive."></textarea>
       <div class="fieldrow"><button class="cbtn" id="jSave">Save it</button><span class="savednote" id="jNote"></span></div>
     </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">Let me see you</span></div>
+      <p class="secsub">The chart says who you were born as. Your palm and face say who you&rsquo;ve become. Nothing leaves this device until you connect your own Claude.</p>
+      <div class="capgrid">
+        <div class="capslot"><span class="mono">Your palm</span><img id="palmImg" alt="" hidden><label class="filelb">Add a photo<input type="file" id="palmIn" accept="image/*" hidden></label></div>
+        <div class="capslot"><span class="mono">Your face</span><img id="faceImg" alt="" hidden><label class="filelb">Add a photo<input type="file" id="faceIn" accept="image/*" hidden></label></div>
+      </div>
+    </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">What you&rsquo;re calling in</span></div>
+      <p class="secsub">A board of the life you&rsquo;re moving toward. Look at it often.</p>
+      <div class="visiongrid" id="visionGrid"></div>
+      <div class="fieldrow"><label class="filelb">Add an image<input type="file" id="visIn" accept="image/*" hidden></label><span class="savednote" id="visNote"></span></div>
+    </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">What I&rsquo;ve learned about you</span></div>
+      <p class="secsub" id="learned">Tell me what I get right and wrong — every correction sharpens the next reading.</p>
+    </div>
+  </section>
+
+  <section id="s-cards">
+    <div class="seclb"><span class="mono">Ask the cards</span></div>
+    <p class="secsub">Three cards, cut once. Hold a real question while you draw.</p>
+    <div class="fieldrow" style="margin-top:0"><button class="cbtn" id="drawBtn">Draw three</button><span class="savednote" id="drawNote"></span></div>
+    <div class="deck" id="deck"></div>
+    <div class="tverdict body" id="tverdict"></div>
+    <a class="deeper" href="./#cards" style="margin-top:var(--s4)">
+      <span><span class="mono" style="color:var(--dust)">The full deck</span>
+      <div class="d2">All 78 cards, the spreads, the ceremony</div></span>
+      <span class="arr">&rarr;</span>
+    </a>
   </section>
 
   <section id="s-cure">
-    <div class="seclb"><span class="mono">Tonight, one thing</span></div>
+    <div class="seclb"><span class="dot lit"></span><span class="mono">Tonight, one thing</span></div>
     <div class="remedy">
       <span class="mono" id="rembecause">&mdash;</span>
       <h3 id="remhead">&mdash;</h3>
       <p class="body" id="remnote">&mdash;</p>
-      <div class="remlinks">
-        <a href="./#practice">Begin the breath</a>
-        <a id="chantlink" href="./#songs">Play the chant</a>
+    </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">The breath, here</span></div>
+      <div class="breathe">
+        <div class="bring" id="bring"><i></i></div>
+        <div class="bstate">
+          <span class="mono" id="blabel">In 4 &middot; hold 4 &middot; out 4 &middot; hold 4</span>
+          <button class="cbtn" id="bstart">Begin &middot; six rounds</button>
+        </div>
       </div>
     </div>
+
+    <div class="sub3">
+      <div class="seclb"><span class="mono">Sound for tonight</span></div>
+      <p class="secsub">Chant to steady the mind, frequency to shift the body. Taps open your player.</p>
+      <div id="songs"></div>
+    </div>
+  </section>
+
+  <section id="s-timing">
+    <div class="seclb"><span class="mono">The day&rsquo;s timing</span></div>
+    <p class="secsub">When the day helps, and when to let it pass.</p>
+    <div id="timingRows"></div>
   </section>
 
   <section id="s-week">
@@ -280,6 +414,7 @@
     <p class="secsub">The next seven days, weighed against your numbers.</p>
     <div class="week" id="week"></div>
     <p class="weeknote" id="weeknote"></p>
+    <div id="areaRows" style="margin-top:var(--s4)"></div>
   </section>
 
   <div class="calib">
@@ -289,8 +424,8 @@
   </div>
 
   <a class="deeper" href="./">
-    <span><span class="mono" style="color:var(--dust)">Go deeper</span>
-    <div class="d2">Ask the cards &middot; your palm &amp; face &middot; every system in full</div></span>
+    <span><span class="mono" style="color:var(--dust)">The full instrument</span>
+    <div class="d2">Your Claude &middot; the precise chart &middot; everything in depth</div></span>
     <span class="arr">&rarr;</span>
   </a>
 
@@ -300,7 +435,6 @@
 (function(){
   function $(id){return document.getElementById(id)}
   function esc(x){return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-  /* ---- who: same on-device store as the app ---- */
   var person=null, pid='';
   try{ var ppl=JSON.parse(localStorage.getItem('prophexy.people'))||[]; pid=localStorage.getItem('prophexy.activeId')||'';
     person=ppl.find(function(p){return p.id===pid;})||ppl[ppl.length-1]||null; if(person)pid=person.id; }catch(e){}
@@ -309,7 +443,6 @@
   var now=new Date(), MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   $('who').innerHTML=(name?('For '+esc(name)+'<br>'):'')+now.getDate()+' '+MON[now.getMonth()]+(place?' · '+esc(place):'');
 
-  /* ---- numbers ---- */
   function red(n){while(n>9&&n!==11&&n!==22){n=String(n).split('').reduce(function(a,c){return a+ +c;},0);}return n;}
   function pdayFor(d){var q=dob.split('-');return red(red(+q[1])+red(+q[2])+red(d.getFullYear())+red(d.getMonth()+1)+red(d.getDate()));}
   var dp=dob.split('-'), pd=pdayFor(now);
@@ -318,33 +451,30 @@
   var nameNum=fullname?red(fullname.toUpperCase().replace(/[^A-Z]/g,'').split('').reduce(function(a,c){return a+(PY[c]||0);},0)):0;
   var NW={1:'a beginning',2:'patience',3:'expression',4:'foundation',5:'change',6:'care',7:'the inner life',8:'power',9:'completion',11:'insight',22:'building big'};
 
-  /* ---- moon ---- */
   var jd=now.getTime()/86400000+2440587.5, fr=((jd-2451550.1)/29.530588853)%1; if(fr<0)fr+=1;
   var age=fr*29.530588853, illum=Math.round((1-Math.cos(fr*2*Math.PI))/2*100);
   var phase=age<1.85?'New moon':age<5.54?'Waxing crescent':age<9.23?'First quarter':age<12.91?'Waxing gibbous':age<16.61?'Full moon':age<20.30?'Waning gibbous':age<23.99?'Last quarter':age<27.68?'Waning crescent':'New moon';
   var d0=jd-2451545.0, mlon=((218.316+13.176396*d0)%360+360)%360;
+  var slon=((280.46+0.9856474*d0)%360+360)%360;
   var SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
-  var msign=SIGNS[Math.floor(mlon/30)], waning=fr>0.5;
-  /* terminator: a soft shadow disc slides off as the moon fills */
-  window.addEventListener('DOMContentLoaded',function(){var sh=document.getElementById('moonshade');
+  var msign=SIGNS[Math.floor(mlon/30)], tsign=SIGNS[Math.floor(slon/30)], waning=fr>0.5;
+  window.addEventListener('DOMContentLoaded',function(){var sh=$('moonshade');
     if(sh){var off=(illum/100)*126*1.06; sh.style.transform='translateX('+(waning?off:-off).toFixed(0)+'px)';}});
 
-  /* ---- ruler ---- */
   var DR=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'], ruler=DR[now.getDay()];
   var RTONE={Sun:'visibility · vitality',Moon:'feeling · tides',Mars:'drive · heat',Mercury:'words · exchange',Jupiter:'growth · luck',Venus:'love · ease',Saturn:'limit · discipline'};
 
-  /* ---- sun signs ---- */
   function sunSignByDate(m,d){var T=[[1,20,'Capricorn'],[2,19,'Aquarius'],[3,21,'Pisces'],[4,20,'Aries'],[5,21,'Taurus'],[6,21,'Gemini'],[7,23,'Cancer'],[8,23,'Leo'],[9,23,'Virgo'],[10,23,'Libra'],[11,22,'Scorpio'],[12,22,'Sagittarius'],[12,32,'Capricorn']];
     for(var i=0;i<T.length;i++){ if(m<T[i][0]||(m===T[i][0]&&d<T[i][1])) return T[i][2]; } return 'Capricorn'; }
   var wsun=sunSignByDate(+dp[1],+dp[2]);
   var vsun=SIGNS[(SIGNS.indexOf(wsun)+11)%12];
 
-  /* ---- chinese ---- */
   var by=+dp[0], ANI=['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
   var ELE=['Metal','Metal','Water','Water','Wood','Wood','Fire','Fire','Earth','Earth'];
+  var ANOTE={Rat:'quick, resourceful, first through the gap',Ox:'steady, unstoppable once moving',Tiger:'bold, protective, all-in',Rabbit:'gentle, diplomatic, exact',Dragon:'magnetic, made for the big stage',Snake:'deep, private, precise',Horse:'free, fast, allergic to cages',Goat:'kind, artistic, feels everything',Monkey:'clever, inventive, a natural problem-solver',Rooster:'sharp-eyed, honest, punctual',Dog:'loyal, fair, keeps the watch',Pig:'generous, honest, easy to trust'};
+  var ENOTE={Wood:'growth — you reach and branch',Fire:'heat — you light rooms',Earth:'ground — you hold things',Metal:'edge — you cut cleanly',Water:'depth — you flow around what blocks you'};
   var animal=ANI[(by-4)%12], elem=ELE[by%10], yy=(by%2===0)?'Yang':'Yin';
 
-  /* ---- sealed reading ---- */
   function tk(d){d=d||new Date();var p=function(n){return n<10?'0'+n:''+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
   var daily=null; try{ var dj=JSON.parse(localStorage.getItem('prophexy.daily::'+pid)); if(dj&&dj.day===tk())daily=dj; }catch(e){}
   function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'…';}
@@ -360,7 +490,6 @@
     $('lede').innerHTML='On your numbers it’s a '+pd+'-day — '+NW[pd]+'. The '+phase.toLowerCase()+' leans '+(waning?'toward release':'toward building')+', and '+ruler+' rules the day. <b>Connect your reading and this becomes yours alone.</b>';
   }
 
-  /* ---- evidence + why rows ---- */
   function ev(lit,html){return '<span class="ev"><span class="dot'+(lit?' lit':'')+'"></span><span class="mono">'+html+'</span></span>';}
   $('evidence').innerHTML=ev(true,'<b>'+phase+'</b> · '+illum+'%')+ev(false,ruler+'’s day')+ev(false,'a '+pd+'-day')+(name?ev(false,'read for '+esc(name)):'');
   function brow(subj,meta,href){return '<a class="brow" href="'+(href||'./#why')+'"><span class="sig">'+subj+'</span><span class="meta mono">'+meta+'</span></a>';}
@@ -373,26 +502,74 @@
     '<span class="mono">In '+msign+' · day '+age.toFixed(1)+'</span>'+
     '<span class="mono">'+(waning?'Waning · a night for letting go':'Waxing · a night for building')+'</span>';
 
-  /* ---- the move ---- */
+  /* ask → hands off to the app */
+  $('askGo').addEventListener('click',function(){
+    var q=($('askQ').value||'').trim(); if(!q)return;
+    try{localStorage.setItem('prophexy.pendingQ::'+(pid||'_'),q);}catch(e){}
+    location.href='./#reading-ai';
+  });
+
   var MOVES={1:'Take the first concrete step on the thing you named.',2:'Wait one more day — and say so plainly.',3:'Send the message you drafted in your head.',4:'Finish one structural task, fully.',5:'Act on the feeling you keep talking yourself out of.',6:'Repair one small thing with one person.',7:'Sit alone with it for ten minutes, no phone.',8:'Ask for what it is actually worth.',9:'Close the loop you have been dragging.',11:'Write the flash down before it fades.',22:'Draw the plan for the big thing, one page.'};
   $('move').textContent=(daily&&daily.act)?daily.act:(MOVES[pd]||MOVES[5]);
   var W={Sun:'7 – 8 AM',Moon:'9 – 11 PM',Mars:'6 – 7 AM',Mercury:'10 – 11 AM',Jupiter:'5 – 6 PM',Venus:'8 – 9 PM',Saturn:'10 – 11 PM'};
   $('movewhen').textContent=W[ruler]||'tonight';
 
-  /* ---- you ---- */
+  /* wheel: sign ring + sun/moon markers */
+  (function(){
+    var G=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'].map(function(g){return g+'\uFE0E';});
+    var s2='', cx=160, cy=160;
+    s2+='<circle cx="160" cy="160" r="150" stroke="#1a1a21"/><circle cx="160" cy="160" r="118" stroke="#1a1a21"/>';
+    for(var i=0;i<12;i++){ var a=(i*30)*Math.PI/180;
+      s2+='<line x1="'+(cx+118*Math.cos(a)).toFixed(1)+'" y1="'+(cy-118*Math.sin(a)).toFixed(1)+'" x2="'+(cx+150*Math.cos(a)).toFixed(1)+'" y2="'+(cy-150*Math.sin(a)).toFixed(1)+'" stroke="#1a1a21"/>';
+      var ga=((i*30+15))*Math.PI/180;
+      s2+='<text x="'+(cx+134*Math.cos(ga)).toFixed(1)+'" y="'+(cy-134*Math.sin(ga)+4).toFixed(1)+'" text-anchor="middle">'+G[i]+'</text>';
+    }
+    function mark(lon,col,r2){ var a=lon*Math.PI/180;
+      return '<circle cx="'+(cx+r2*Math.cos(a)).toFixed(1)+'" cy="'+(cy-r2*Math.sin(a)).toFixed(1)+'" r="5" fill="'+col+'"/>'; }
+    s2+=mark(slon,'#ff9d2e',96)+mark(mlon,'#dfe0ee',76);
+    s2+='<circle cx="160" cy="160" r="3" fill="#33333d"/>';
+    $('wheel').innerHTML=s2;
+    $('wheellegend').innerHTML=
+      '<span class="mono"><b style="color:#ff9d2e">●</b> Sun · '+tsign+'</span>'+
+      '<span class="mono"><b style="color:#dfe0ee">●</b> Moon · '+msign+'</span>'+
+      '<span class="mono">'+ruler+' rules the day</span>'+
+      '<span class="mono" style="color:var(--faint)">To the minute, as seen from Earth</span>';
+  })();
+
+  /* numbers chain + rows */
+  var bsum=red(red(+dp[1])+red(+dp[2])), tsum=red(red(now.getFullYear())+red(now.getMonth()+1)+red(now.getDate()));
+  $('chain').innerHTML=
+    '<div class="ch"><span class="mono">Born</span><span class="cv">'+(+dp[2])+'.'+(+dp[1])+'</span><span class="mono">reduces to '+bsum+'</span></div>'+
+    '<div class="ch"><span class="mono">Today</span><span class="cv">'+now.getDate()+'.'+(now.getMonth()+1)+'</span><span class="mono">reduces to '+tsum+'</span></div>'+
+    '<div class="ch last"><span class="mono">Together</span><span class="cv">'+pd+'</span><span class="mono">'+(NW[pd]||'')+'</span></div>';
+  $('numRows').innerHTML=
+    brow('Today&rsquo;s number for you · <b>'+pd+'</b>', NW[pd]+' · changes daily','./#reading')+
+    brow('Your birth number · <b>'+lifePath+'</b>', NW[lifePath]+' · the lens under every day','./#reading')+
+    (nameNum?brow('Your name number · <b>'+nameNum+'</b>', NW[nameNum]+' · from your letters','./#reading'):'');
+
+  /* you */
   var PUR={1:'You are here to go first.',2:'You are here to hold things together.',3:'You are here to say it out loud.',4:'You are here to build what lasts.',5:'You are here to keep things moving.',6:'You are here to take care of it.',7:'You are here to understand it.',8:'You are here to run it.',9:'You are here to finish things whole.',11:'You are here to see what others miss.',22:'You are here to build the big thing.'};
   $('purpose').textContent=PUR[lifePath]||PUR[5];
+  var maturity=red(lifePath+ (nameNum||lifePath));
   $('youRows').innerHTML=
     brow('Life path <b>'+lifePath+'</b> · '+NW[lifePath],'fixed at birth','./#purpose')+
-    (nameNum?brow('Name number <b>'+nameNum+'</b> · '+NW[nameNum],'from your letters','./#reading'):'')+
-    brow('Sun in <b>'+wsun+'</b>','your season · western','./#purpose');
+    brow('Sun in <b>'+wsun+'</b>','your season · western','./#purpose')+
+    brow('Who you become · a <b>'+maturity+'</b>', NW[maturity]+' · takes over mid-30s','./#purpose');
 
-  /* ---- four ways ---- */
-  function way(sys,val){return '<div class="way"><span class="mono">'+sys+'</span><span class="wv">'+val+'</span></div>';}
+  /* systems */
+  function way(sys,val,note){return '<div class="way"><span class="mono">'+sys+'</span><span class="wv">'+val+'</span>'+(note?'<span class="wnote">'+note+'</span>':'')+'</div>';}
   $('ways').innerHTML=way('Western','Sun in '+wsun)+way('Vedic','Sun in '+vsun)+
     way('Chinese',yy+' '+elem+' '+animal)+way('Numbers','Life path '+lifePath);
+  $('vedicRows').innerHTML=
+    brow('Sun · <b>'+wsun+'</b> &rarr; <b>'+vsun+'</b>','western &rarr; vedic','./#vedic')+
+    brow('Moon &amp; rising','need your exact birth time — in the full app','./#vedic');
+  $('chineseCells').innerHTML=
+    way('Your animal',animal,ANOTE[animal]||'')+
+    way('Your element',yy+' '+elem,ENOTE[elem]||'')+
+    way('The year','born '+by,'the animal is the face the world sees')+
+    way('Day master','in the full app','the deepest layer needs your exact birth day');
 
-  /* ---- check-in ---- */
+  /* check-in */
   var MOODS=[['anxious','Name the one thing feeding it. Just the name takes half its charge.'],
     ['low','Go smaller, not faster. One kind thing for yourself before anything else.'],
     ['restless','That energy is real — aim it at the move above before it aims itself.'],
@@ -408,17 +585,15 @@
       try{var k='prophexy.mood::'+(pid||'_');var a=JSON.parse(localStorage.getItem(k))||[];if(!Array.isArray(a))a=[];a.push({d:tk(),m:m[0],src:'proto'});localStorage.setItem(k,JSON.stringify(a));}catch(e){}
     }); chipsEl.appendChild(b); });
 
-  /* ---- dream ---- */
   $('dreamSave').addEventListener('click',function(){
     var t=($('dreamIn').value||'').trim(); if(!t)return;
     try{var k='prophexy.dreams::'+(pid||'_');var a=JSON.parse(localStorage.getItem(k))||[];if(!Array.isArray(a))a=[];
       a.push({t:t,f:'',r:false,d:now.getDate()+' '+MON[now.getMonth()]});localStorage.setItem(k,JSON.stringify(a));
-      $('dreamNote').textContent='Kept · '+a.length+' dream'+(a.length>1?'s':'')+' with me'; $('dreamIn').value='';}catch(e){}
+      $('dreamNote').textContent='Kept · '+a.length+' with me'; $('dreamIn').value='';}catch(e){}
   });
   try{var da=JSON.parse(localStorage.getItem('prophexy.dreams::'+(pid||'_')))||[];
     if(Array.isArray(da)&&da.length)$('dreamNote').textContent=da.length+' dream'+(da.length>1?'s':'')+' with me';}catch(e){}
 
-  /* ---- journal ---- */
   var JP={1:'What would you start if no one was watching?',2:'What are you waiting for — honestly?',3:'What have you not said out loud yet?',4:'What’s the one brick you could lay today?',5:'What are you gripping that wants to change?',6:'Who needs five real minutes from you?',7:'What does the quiet part of you know?',8:'What are you undercharging for?',9:'What is actually finished, if you let it be?',11:'What did you know before you talked yourself out of it?',22:'What would the ten-year version look like?'};
   $('jprompt').textContent=JP[pd]||JP[5];
   $('jSave').addEventListener('click',function(){
@@ -428,7 +603,46 @@
       $('jNote').textContent='Saved · '+a.length+' page'+(a.length>1?'s':''); $('jIn').value='';}catch(e){}
   });
 
-  /* ---- cure ---- */
+  /* palm / face: local preview only — privacy holds */
+  function slot(inId,imgId){ $(inId).addEventListener('change',function(){
+    var f=this.files&&this.files[0]; if(!f)return;
+    var img=$(imgId); img.src=URL.createObjectURL(f); img.hidden=false; }); }
+  slot('palmIn','palmImg'); slot('faceIn','faceImg');
+
+  /* vision board */
+  var VK='prophexy.vision::'+(pid||'_');
+  function drawVision(){ try{var a=JSON.parse(localStorage.getItem(VK))||[]; if(!Array.isArray(a))a=[];
+    $('visionGrid').innerHTML=a.map(function(v){return '<img alt="" src="'+(v.img||v.src||'')+'">';}).join('');
+    $('visNote').textContent=a.length?(a.length+' on the board'):''; }catch(e){} }
+  drawVision();
+  $('visIn').addEventListener('change',function(){
+    var f=this.files&&this.files[0]; if(!f)return;
+    var rd=new FileReader(); rd.onload=function(){
+      var im=new Image(); im.onload=function(){
+        var c=document.createElement('canvas'); var w=Math.min(360,im.width); c.width=w; c.height=Math.round(im.height*w/im.width);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        try{var a=JSON.parse(localStorage.getItem(VK))||[]; if(!Array.isArray(a))a=[];
+          a.push({img:c.toDataURL('image/jpeg',0.72)}); localStorage.setItem(VK,JSON.stringify(a)); drawVision();}catch(e){}
+      }; im.src=rd.result; }; rd.readAsDataURL(f);
+  });
+
+  /* learned */
+  try{var ca=JSON.parse(localStorage.getItem('prophexy.calib::'+(pid||'_')))||[];
+    if(Array.isArray(ca)&&ca.length){ var yes=ca.filter(function(x){return x.v===1||x.v===true;}).length;
+      $('learned').textContent='You have marked '+yes+' reading'+(yes===1?'':'s')+' right and '+(ca.length-yes)+' off so far. Every correction is carried into the next one.'; } }catch(e){}
+
+  /* cards: 3-card draw from the majors */
+  var ARC=[['The Fool','a leap of faith; trust the unknown'],['The Magician','you already hold the tools; will makes it real'],['The High Priestess','listen inward; the answer sits below the surface'],['The Empress','let it grow; nurture rather than force'],['The Emperor','take structure and authority; set the rules'],['The Hierophant','the proven path, or a mentor, holds the key'],['The Lovers','a true choice of the heart; align, then commit'],['The Chariot','drive and will win; steer hard'],['Strength','gentle courage beats force; patience is power'],['The Hermit','withdraw; the light you want is inside'],['Wheel of Fortune','a turning point; ride the cycle'],['Justice','truth and consequence; act fairly'],['The Hanged Man','surrender; the pause is the point'],['Death','an ending that clears the way'],['Temperance','balance and blend; walk the middle'],['The Devil','name the thing that binds you'],['The Tower','a false structure breaks; truth erupts'],['The Star','hope and renewal; keep the faith'],['The Moon','do not trust the surface; fear distorts'],['The Sun','joy and clarity; the yes you hoped for'],['Judgement','a reckoning; answer the call and rise'],['The World','completion; a cycle closes whole']];
+  var POS=['Where you are','The crux','Where it leads'];
+  $('drawBtn').addEventListener('click',function(){
+    var idx=[]; while(idx.length<3){ var r2=Math.floor(Math.random()*ARC.length); if(idx.indexOf(r2)<0)idx.push(r2); }
+    $('deck').innerHTML=idx.map(function(ci,i){ var rev=Math.random()<0.25;
+      return '<div class="tcard'+(rev?' rev':'')+'"><span class="mono">'+POS[i]+'</span><span class="tn">'+ARC[ci][0]+'</span><span class="tm">'+ARC[ci][1]+'</span></div>'; }).join('');
+    $('tverdict').innerHTML='The middle card is your crux — <b>sit with it before you decide anything</b>. For the woven answer, the full deck reads all three against your chart.';
+    $('drawNote').textContent='Cut once · majors only here';
+  });
+
+  /* cure */
   var REM={Sun:['Because the Sun asks to be seen','Three rounds of breath, then the Gayatri once.','Clarity first — the dawn prayer, for light.','Gayatri Mantra'],
     Moon:['Because the Moon runs the feelings','Six rounds of box breathing, slow.','Settle the water before you read it.','Om Chandraya Namah'],
     Mars:['Because Mars runs hot today','Exhale-heavy breathing — four in, eight out.','Burn it down to something usable.','Hanuman Chalisa'],
@@ -438,12 +652,52 @@
     Saturn:['Because Saturn asks for stillness','Six rounds of box breathing, then the Mahamrityunjaya once.','Settle the body before you name the feeling.','Mahamrityunjaya Mantra']};
   var r=REM[ruler]||REM.Saturn;
   $('rembecause').textContent=r[0]; $('remhead').textContent=r[1]; $('remnote').textContent=r[2];
-  $('chantlink').href='https://www.youtube.com/results?search_query='+encodeURIComponent(r[3]);
 
-  /* ---- week ahead ---- */
+  /* breath — six rounds of 4-4-4-4, inline */
+  (function(){
+    var ring=$('bring'), lab=$('blabel'), btn=$('bstart'), timer=null;
+    var PH=[['Breathe in',1.18],['Hold',1.18],['Breathe out',0.82],['Hold',0.82]];
+    function stop(done){ if(timer){clearTimeout(timer);timer=null;}
+      ring.style.transform='scale(1)'; btn.textContent=done?'Again · six rounds':'Begin · six rounds';
+      lab.textContent=done?'Done — notice how you feel.':'In 4 · hold 4 · out 4 · hold 4'; }
+    btn.addEventListener('click',function(){
+      if(timer){stop(false);return;}
+      btn.textContent='Stop'; var round=0,pi=0;
+      (function step(){ var p=PH[pi];
+        lab.textContent=p[0]+' · round '+(round+1)+' of 6';
+        ring.style.transform='scale('+p[1]+')';
+        timer=setTimeout(function(){ pi++; if(pi>=PH.length){pi=0;round++;}
+          if(round>=6){stop(true);return;} step(); },4000);
+      })();
+    });
+  })();
+
+  /* songs */
+  var SONGS=[['Chant — traditional',[['Om Namah Shivaya','the five-syllable mantra — steadies the mind'],['Gayatri Mantra','the dawn prayer for clarity and light'],['Mahamrityunjaya Mantra','for healing, courage and protection']]],
+    ['Devotional — new age',[['Deva Premal','modern mantra, crystal clear'],['Krishna Das','call-and-response, lifts a low mood'],['Snatam Kaur','gentle, luminous, for late nights']]],
+    ['Frequencies',[['432 Hz','the calm tuning — for settling'],['528 Hz','the repair tone — for heaviness'],['639 Hz','the connection tone — for people things']]]];
+  $('songs').innerHTML=SONGS.map(function(g){
+    return '<div class="sub3" style="margin-top:26px"><span class="mono">'+g[0]+'</span>'+
+      g[1].map(function(s3){ var q=encodeURIComponent(s3[0]);
+        return '<div class="songrow"><span class="sn"><b>'+s3[0]+'</b><div class="sd2">'+s3[1]+'</div></span>'+
+          '<span class="lks"><a href="https://open.spotify.com/search/'+q+'">Spotify</a>'+
+          '<a href="https://music.apple.com/search?term='+q+'">Apple</a>'+
+          '<a href="https://www.youtube.com/results?search_query='+q+'">YouTube</a></span></div>'; }).join('')+'</div>';
+  }).join('');
+
+  /* timing */
+  var RAHU={0:'4:30 – 6:00 PM',1:'7:30 – 9:00 AM',2:'3:00 – 4:30 PM',3:'12:00 – 1:30 PM',4:'1:30 – 3:00 PM',5:'10:30 AM – 12:00 PM',6:'9:00 – 10:30 AM'};
+  $('timingRows').innerHTML=
+    brow('<b>Best stretch</b> · '+(W[ruler]||'tonight'), ruler+'’s hour · make the move here','./#prescribe')+
+    brow('<b>Let it pass</b> · '+RAHU[now.getDay()], 'the day’s dead zone · start nothing new','./#prescribe')+
+    brow('<b>Tonight</b> · after dark', waning?'release · close loops':'build · open loops','./#prescribe');
+
+  /* week + areas */
   var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], wk='', bestDay='', weakDay='';
+  var dayPds=[];
   for(var i=1;i<=7;i++){ var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);
-    var p2=pdayFor(d), best=(p2===1||p2===8||p2===lifePath), weak=(p2===2||p2===7);
+    var p2=pdayFor(d); dayPds.push({d:d,pd:p2});
+    var best=(p2===1||p2===8||p2===lifePath), weak=(p2===2||p2===7);
     if(best&&!bestDay)bestDay=WDN[d.getDay()];
     if(weak&&!weakDay)weakDay=WDN[d.getDay()];
     wk+='<div class="wd'+(best?' best':'')+(!best&&weak?' dim':'')+'">'+
@@ -453,14 +707,19 @@
   $('week').innerHTML=wk;
   $('weeknote').textContent=(bestDay?('Strongest '+bestDay):'An even week')+(weakDay?(' · quietest '+weakDay):'')+
     (bestDay?(' — hold the big ask for '+bestDay+'.'):' — pace it, nothing needs forcing.');
+  var AREAS=[['Love',6],['Money',8],['Work',4],['Words',3],['Body',1],['Spirit',7]];
+  $('areaRows').innerHTML=AREAS.map(function(a2){
+    var hit=dayPds.find(function(x){return x.pd===a2[1];});
+    return brow('<b>'+a2[0]+'</b>', hit?('strongest '+WDN[hit.d.getDay()]+' · a '+a2[1]+'-day'):('quiet this week'),'./#matrix');
+  }).join('');
 
-  /* ---- calibration ---- */
+  /* calibration */
   function cal(v,btn){try{var k='prophexy.calib::'+(pid||'_');var a=JSON.parse(localStorage.getItem(k))||[];if(!Array.isArray(a))a=[];a.push({d:tk(),v:v,src:'proto'});localStorage.setItem(k,JSON.stringify(a));}catch(e){}
     btn.textContent=v?'Noted — it did':'Noted — I’ll learn'; btn.style.color='var(--amber)'; btn.style.borderColor='var(--amber)';}
   $('cyes').addEventListener('click',function(){cal(1,this)});
   $('cno').addEventListener('click',function(){cal(0,this)});
 
-  /* ---- sticky nav tracking ---- */
+  /* sticky nav tracking */
   var tabs=[].slice.call(document.querySelectorAll('.stab'));
   var secs=tabs.map(function(t){return document.querySelector(t.getAttribute('href'));});
   var nav=$('snav');
