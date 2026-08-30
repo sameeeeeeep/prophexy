@@ -9,8 +9,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900&family=Fragment+Mono&display=swap">
 <style>
   :root{
-    --void:#000; --ink:#f0f0fa; --dust:#8b8b99; --faint:#55555f;
-    --rule:#1a1a21; --amber:#ff9d2e;
+    --void:#000; --ink:#f5f5fc; --dust:#c3c3ce; --faint:#83838f;
+    --rule:#242430; --amber:#ffab4d;
     --col:640px;
     --s2:16px; --s3:28px; --s4:44px; --s5:72px; --s6:104px;
     --navh:52px;
@@ -22,11 +22,11 @@
     font-variation-settings:'wdth' 100;-webkit-font-smoothing:antialiased}
   .page{max-width:var(--col);margin:0 auto;padding:0 22px 140px}
 
-  .mono{font-family:'Fragment Mono',monospace;font-size:10.5px;letter-spacing:.18em;
+  .mono{font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.16em;
     text-transform:uppercase;color:var(--faint)}
   .mono b{color:var(--dust);font-weight:400}
-  .display{font-weight:200;font-variation-settings:'wdth' 122;letter-spacing:-.015em;line-height:1.04}
-  .body{font-size:16.5px;line-height:1.7;color:var(--dust);font-weight:400}
+  .display{font-weight:280;font-variation-settings:'wdth' 118;letter-spacing:-.012em;line-height:1.05}
+  .body{font-size:17px;line-height:1.72;color:var(--dust);font-weight:400}
   .body b{color:var(--ink);font-weight:500}
 
   .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
@@ -77,20 +77,20 @@
 
   section{padding-top:var(--s6);scroll-margin-top:calc(var(--navh) + 14px)}
   .seclb{display:flex;align-items:center;gap:10px;margin-bottom:var(--s3)}
-  .secsub{margin:-16px 0 var(--s3);font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
+  .secsub{margin:-16px 0 var(--s3);font-size:14px;color:var(--dust);max-width:52ch;line-height:1.62;opacity:.85}
   h2{font-size:clamp(25px,6vw,36px);max-width:17ch}
   .sub3{margin-top:var(--s5)}
 
   .movewhen{margin-top:var(--s3);display:flex;align-items:baseline;gap:12px}
   .movewhen .t{font-family:'Fragment Mono',monospace;font-size:15px;color:var(--amber);letter-spacing:.04em}
-  .movenote{margin-top:14px;font-size:14px;color:var(--faint);max-width:46ch;line-height:1.6}
+  .movenote{margin-top:14px;font-size:14px;color:var(--dust);max-width:46ch;line-height:1.6;opacity:.8}
 
   .brow{display:flex;align-items:baseline;gap:14px;padding:19px 0;border-bottom:1px solid var(--rule);
     text-decoration:none;color:inherit}
   .brow:first-child{border-top:1px solid var(--rule)}
   .brow .sig{flex:1;min-width:0;font-size:17px;font-weight:400}
   .brow .sig b{font-weight:500}
-  .brow .meta{text-align:right}
+  .brow .meta{text-align:right;color:var(--dust)}
   @media(max-width:560px){.brow{flex-direction:column;gap:7px}.brow .meta{text-align:left}}
   .combine{display:flex;align-items:center;gap:10px;padding:18px 0 0;color:var(--faint);
     font-family:'Fragment Mono',monospace;font-size:10.5px;letter-spacing:.18em;
@@ -122,14 +122,14 @@
   .ch{background:var(--void);padding:18px 16px;display:grid;gap:7px;flex:1;min-width:96px;justify-items:start}
   .ch .cv{font-size:24px;font-weight:250;font-variation-settings:'wdth' 118;line-height:1}
   .ch.last .cv{color:var(--amber)}
-  .chainnote{margin-top:14px;font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
+  .chainnote{margin-top:14px;font-size:13.5px;color:var(--dust);max-width:52ch;line-height:1.6}
 
   .ways{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
     border:1px solid var(--rule);margin-top:var(--s3)}
   .way{background:var(--void);padding:20px 18px;display:grid;gap:8px}
   .way .wv{font-size:19px;font-weight:300;font-variation-settings:'wdth' 116}
   .way .wnote{font-size:12.5px;color:var(--faint);line-height:1.5}
-  .waysnote{margin-top:16px;font-size:13.5px;color:var(--faint);max-width:52ch;line-height:1.6}
+  .waysnote{margin-top:16px;font-size:13.5px;color:var(--dust);max-width:52ch;line-height:1.6}
 
   .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:var(--s3)}
   .chip{background:none;border:1px solid var(--rule);color:var(--dust);font-family:'Fragment Mono',monospace;
@@ -187,7 +187,7 @@
   .railcard{width:216px;border:1px solid var(--rule);padding:20px 18px;display:grid;gap:9px;
     align-content:start;background:var(--void)}
   .railcard .rn{font-size:18px;font-weight:300;font-variation-settings:'wdth' 116;line-height:1.25}
-  .railcard .rd{font-size:12.5px;color:var(--faint);line-height:1.5}
+  .railcard .rd{font-size:13px;color:var(--dust);line-height:1.5;opacity:.85}
   .railcard .lks{display:flex;gap:12px;margin-top:6px}
   .railcard .lks a{color:var(--faint);font-family:'Fragment Mono',monospace;font-size:9.5px;
     letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
@@ -213,7 +213,7 @@
   .wd .wnum{font-size:26px;font-weight:250;font-variation-settings:'wdth' 118;line-height:1}
   .wd.best .wnum{color:var(--amber)}
   .wd.dim{opacity:.5}
-  .weeknote{margin-top:16px;font-size:13.5px;color:var(--faint);line-height:1.6;max-width:52ch}
+  .weeknote{margin-top:16px;font-size:13.5px;color:var(--dust);line-height:1.6;max-width:52ch}
 
   .cbtn{background:none;border:1px solid var(--rule);color:var(--dust);font-family:'Fragment Mono',monospace;
     font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;padding:11px 18px;cursor:pointer}
@@ -331,7 +331,7 @@
     <div class="seclb"><span class="mono">Why the reading says this</span></div>
     <p class="secsub">The live signals it was built from. Each one is real, and each one opens.</p>
     <div id="behindRows"></div>
-    <a class="combine" href="full.html#why">See how they combine &rarr;</a>
+    <a class="combine" href="#s-why">See how they combine &rarr;</a>
   </section>
 
   <section id="s-sky">
@@ -345,11 +345,6 @@
       <div class="moon" role="img" aria-label="The moon tonight"><i class="moonshade" id="moonshade"></i></div>
       <div class="moonfacts" id="moonfacts"></div>
     </div>
-    <a class="deeper" href="full.html#sky" style="margin-top:var(--s4)">
-      <span><span class="mono" style="color:var(--dust)">The precise chart</span>
-      <div class="d2">Every planet to the degree, against your birth chart</div></span>
-      <span class="arr">&rarr;</span>
-    </a>
   </section>
 
   <section id="s-numbers">
@@ -431,11 +426,6 @@
     <div class="fieldrow" style="margin-top:0"><button class="cbtn" id="drawBtn">Draw three</button><span class="savednote" id="drawNote"></span></div>
     <div class="deck" id="deck"></div>
     <div class="tverdict body" id="tverdict"></div>
-    <a class="deeper" href="full.html#cards" style="margin-top:var(--s4)">
-      <span><span class="mono" style="color:var(--dust)">The full deck</span>
-      <div class="d2">All 78 cards, the spreads, the ceremony</div></span>
-      <span class="arr">&rarr;</span>
-    </a>
   </section>
 
   <section id="s-cure">
@@ -483,12 +473,6 @@
     <button class="cbtn" id="cyes">It did</button>
     <button class="cbtn" id="cno">Not quite</button>
   </div>
-
-  <a class="deeper" href="full.html">
-    <span><span class="mono" style="color:var(--dust)">The full instrument</span>
-    <div class="d2">Your Claude &middot; the precise chart &middot; everything in depth</div></span>
-    <span class="arr">&rarr;</span>
-  </a>
 
 </div>
 
@@ -869,8 +853,18 @@
       AI.connect=function(){ return window.claude.request({method:'claude_connect',params:{
         models:['claude-sonnet-5','claude-haiku-4-5'],
         reason:'Read your chart across every system and answer your questions, as your personal oracle'}})
-        .then(function(){ AI.connected=true; }); };
-      updateAIUI();
+        .then(function(){ AI.connected=true; try{localStorage.setItem('prophexy.sbok','1');}catch(e){} }); };
+      /* already granted before? reconnect silently — no re-tap */
+      window.claude.request({method:'claude_permissions',params:{}}).then(function(perm){
+        var granted = perm && perm.models && perm.models.length;
+        if(granted){ AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); }).catch(function(){ updateAIUI(); }); }
+        else { updateAIUI(); }
+      }).catch(function(){
+        /* permissions method unavailable — fall back to the stored flag */
+        var seen=false; try{seen=localStorage.getItem('prophexy.sbok')==='1';}catch(e){}
+        if(seen){ AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); }).catch(function(){ updateAIUI(); }); }
+        else updateAIUI();
+      });
     });
   })();
   function readNow(){
