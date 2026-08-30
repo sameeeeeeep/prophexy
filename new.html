@@ -162,9 +162,11 @@
   .filelb:hover{border-color:var(--amber);color:var(--amber)}
 
   /* cards */
-  .deck{display:flex;gap:14px;margin-top:var(--s3);flex-wrap:wrap}
-  .tcard{flex:1;min-width:150px;border:1px solid var(--rule);padding:22px 18px;display:grid;gap:10px;
-    background:var(--void)}
+  .deck{display:flex;gap:12px;margin-top:var(--s3);overflow-x:auto;
+    scroll-snap-type:x proximity;scrollbar-width:none;padding-bottom:10px}
+  .deck::-webkit-scrollbar{display:none}
+  .tcard{flex:0 0 200px;scroll-snap-align:start;border:1px solid var(--rule);padding:22px 18px;
+    display:grid;gap:10px;align-content:start;background:var(--void)}
   .tcard .tn{font-size:20px;font-weight:300;font-variation-settings:'wdth' 118;line-height:1.2}
   .tcard .tm{font-size:13.5px;color:var(--dust);line-height:1.55}
   .tcard.rev .tn::after{content:" · reversed";font-size:11px;color:var(--amber)}
@@ -177,23 +179,37 @@
   .bring i{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px rgba(255,157,46,.6)}
   .bstate{display:grid;gap:10px}
 
-  /* songs */
-  .songrow{display:flex;align-items:baseline;gap:14px;padding:16px 0;border-bottom:1px solid var(--rule)}
-  .songrow:first-of-type{border-top:1px solid var(--rule)}
-  .songrow .sn{flex:1;min-width:0}
-  .songrow .sn b{font-weight:500}
-  .songrow .sn .sd2{font-size:12.5px;color:var(--faint);margin-top:3px}
-  .songrow .lks{display:flex;gap:14px}
-  .songrow .lks a{color:var(--faint);font-family:'Fragment Mono',monospace;font-size:9.5px;
+  /* rail — browsable peers you pick from: horizontal scroll, snap */
+  .rail{display:flex;gap:12px;overflow-x:auto;margin-top:18px;padding-bottom:10px;
+    scroll-snap-type:x proximity;scrollbar-width:none}
+  .rail::-webkit-scrollbar{display:none}
+  .rail>*{flex:0 0 auto;scroll-snap-align:start}
+  .railcard{width:216px;border:1px solid var(--rule);padding:20px 18px;display:grid;gap:9px;
+    align-content:start;background:var(--void)}
+  .railcard .rn{font-size:18px;font-weight:300;font-variation-settings:'wdth' 116;line-height:1.25}
+  .railcard .rd{font-size:12.5px;color:var(--faint);line-height:1.5}
+  .railcard .lks{display:flex;gap:12px;margin-top:6px}
+  .railcard .lks a{color:var(--faint);font-family:'Fragment Mono',monospace;font-size:9.5px;
     letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
-  .songrow .lks a:hover{color:var(--amber)}
-  @media(max-width:520px){.songrow{flex-direction:column;gap:8px}}
+  .railcard .lks a:hover{color:var(--amber)}
+  .railhint{margin-top:4px;font-size:10px;font-family:'Fragment Mono',monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  /* areas — a collection, compact grid */
+  .areas{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);
+    border:1px solid var(--rule);margin-top:var(--s4)}
+  @media(max-width:520px){.areas{grid-template-columns:repeat(2,1fr)}}
+  .area{background:var(--void);padding:16px 14px;display:grid;gap:6px}
+  .area .an{font-size:16px;font-weight:400}
+  .area .ad{font-size:11px;font-family:'Fragment Mono',monospace;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--faint)}
+  .area.hit .ad{color:var(--amber)}
 
   /* week */
-  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--rule);
-    border:1px solid var(--rule);margin-top:var(--s3)}
-  @media(max-width:560px){.week{grid-template-columns:repeat(4,1fr)}}
-  .wd{background:var(--void);padding:14px 12px;display:grid;gap:6px;justify-items:start}
+  .week{display:flex;gap:1px;background:var(--rule);border:1px solid var(--rule);
+    margin-top:var(--s3);overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none}
+  .week::-webkit-scrollbar{display:none}
+  .wd{background:var(--void);padding:14px 14px;display:grid;gap:6px;justify-items:start;
+    flex:1 0 92px;scroll-snap-align:start}
   .wd .wnum{font-size:26px;font-weight:250;font-variation-settings:'wdth' 118;line-height:1}
   .wd.best .wnum{color:var(--amber)}
   .wd.dim{opacity:.5}
@@ -414,7 +430,7 @@
     <p class="secsub">The next seven days, weighed against your numbers.</p>
     <div class="week" id="week"></div>
     <p class="weeknote" id="weeknote"></p>
-    <div id="areaRows" style="margin-top:var(--s4)"></div>
+    <div class="areas" id="areaGrid"></div>
   </section>
 
   <div class="calib">
@@ -677,13 +693,14 @@
     ['Devotional — new age',[['Deva Premal','modern mantra, crystal clear'],['Krishna Das','call-and-response, lifts a low mood'],['Snatam Kaur','gentle, luminous, for late nights']]],
     ['Frequencies',[['432 Hz','the calm tuning — for settling'],['528 Hz','the repair tone — for heaviness'],['639 Hz','the connection tone — for people things']]]];
   $('songs').innerHTML=SONGS.map(function(g){
-    return '<div class="sub3" style="margin-top:26px"><span class="mono">'+g[0]+'</span>'+
-      g[1].map(function(s3){ var q=encodeURIComponent(s3[0]);
-        return '<div class="songrow"><span class="sn"><b>'+s3[0]+'</b><div class="sd2">'+s3[1]+'</div></span>'+
+    return '<div style="margin-top:26px"><span class="mono">'+g[0]+'</span>'+
+      '<div class="rail">'+g[1].map(function(s3){ var q=encodeURIComponent(s3[0]);
+        return '<div class="railcard"><span class="rn">'+s3[0]+'</span><span class="rd">'+s3[1]+'</span>'+
           '<span class="lks"><a href="https://open.spotify.com/search/'+q+'">Spotify</a>'+
           '<a href="https://music.apple.com/search?term='+q+'">Apple</a>'+
-          '<a href="https://www.youtube.com/results?search_query='+q+'">YouTube</a></span></div>'; }).join('')+'</div>';
-  }).join('');
+          '<a href="https://www.youtube.com/results?search_query='+q+'">YouTube</a></span></div>'; }).join('')+
+      '</div></div>';
+  }).join('')+'<div class="railhint">Slide for more</div>';
 
   /* timing */
   var RAHU={0:'4:30 – 6:00 PM',1:'7:30 – 9:00 AM',2:'3:00 – 4:30 PM',3:'12:00 – 1:30 PM',4:'1:30 – 3:00 PM',5:'10:30 AM – 12:00 PM',6:'9:00 – 10:30 AM'};
@@ -708,9 +725,10 @@
   $('weeknote').textContent=(bestDay?('Strongest '+bestDay):'An even week')+(weakDay?(' · quietest '+weakDay):'')+
     (bestDay?(' — hold the big ask for '+bestDay+'.'):' — pace it, nothing needs forcing.');
   var AREAS=[['Love',6],['Money',8],['Work',4],['Words',3],['Body',1],['Spirit',7]];
-  $('areaRows').innerHTML=AREAS.map(function(a2){
+  $('areaGrid').innerHTML=AREAS.map(function(a2){
     var hit=dayPds.find(function(x){return x.pd===a2[1];});
-    return brow('<b>'+a2[0]+'</b>', hit?('strongest '+WDN[hit.d.getDay()]+' · a '+a2[1]+'-day'):('quiet this week'),'./#matrix');
+    return '<div class="area'+(hit?' hit':'')+'"><span class="an">'+a2[0]+'</span>'+
+      '<span class="ad">'+(hit?(WDN[hit.d.getDay()]+' · '+a2[1]+'-day'):'quiet week')+'</span></div>';
   }).join('');
 
   /* calibration */
