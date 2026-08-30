@@ -100,7 +100,7 @@
   /* wheel */
   .wheelrow{display:flex;gap:30px;align-items:center;margin-top:var(--s3);flex-wrap:wrap}
   .wheel{width:min(300px,78vw);flex:none}
-  .wheel text{font-size:13px;fill:var(--faint)}
+  .wheel text{font-size:8.5px;fill:var(--faint);font-family:'Fragment Mono',monospace;letter-spacing:.12em}
   .wheellegend{display:grid;gap:10px;flex:1;min-width:170px}
 
   .moonrow{display:flex;align-items:center;gap:26px;margin-top:var(--s5)}
@@ -516,7 +516,7 @@
 
   /* wheel: sign ring + sun/moon markers */
   (function(){
-    var G=['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'].map(function(g){return g+'\uFE0E';});
+    var G=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'];
     var s2='', cx=160, cy=160;
     s2+='<circle cx="160" cy="160" r="150" stroke="#1a1a21"/><circle cx="160" cy="160" r="118" stroke="#1a1a21"/>';
     for(var i=0;i<12;i++){ var a=(i*30)*Math.PI/180;
