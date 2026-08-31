@@ -282,16 +282,47 @@
   .scan span:nth-child(2){animation-delay:.12s}.scan span:nth-child(3){animation-delay:.24s}.scan span:nth-child(4){animation-delay:.36s}.scan span:nth-child(5){animation-delay:.48s}.scan span:nth-child(6){animation-delay:.6s}
   @keyframes scanp{0%,100%{background:#33333d;transform:scale(1)}50%{background:var(--amber);transform:scale(1.6)}}
   .atxt{font-family:'Fragment Mono','Courier New',monospace;color:var(--faint);font-size:11px;letter-spacing:.2em;text-transform:uppercase}
+  /* ===== entry ceremony — the 10-step acquisition sequence ===== */
+  .acer{width:min(452px,86vw);display:flex;flex-direction:column;align-items:center;gap:22px}
+  .aseqhead{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:16px}
+  .askip{background:none;border:none;color:var(--faint);font-family:'Fragment Mono',monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;padding:4px 2px}
+  .askip:hover{color:var(--ink)}
+  .aseqbar{width:100%;height:1px;background:var(--rule);overflow:hidden;flex:none}
+  .aseqbar i{display:block;height:100%;width:0;background:var(--amber);transition:width .45s cubic-bezier(.3,.7,.2,1);box-shadow:0 0 8px rgba(255,171,77,.6)}
+  .aseqlist{width:100%;display:flex;flex-direction:column}
+  .sq{display:flex;align-items:baseline;gap:12px;padding:8px 0;border-bottom:1px solid var(--rule);opacity:.26;transform:translateY(3px);transition:opacity .45s ease,transform .45s ease}
+  .sq.on{opacity:1;transform:none}
+  .sq .n{font-family:'Fragment Mono',monospace;font-size:10px;color:var(--faint);letter-spacing:.08em;flex:none;width:18px}
+  .sq .k{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dust);flex:none;width:88px}
+  .sq .v{font-size:13px;color:var(--ink);margin-left:auto;text-align:right;line-height:1.35}
+  .sq .v.pending{color:var(--faint)}
+  @media(prefers-reduced-motion:reduce){.sq{transition:none}.aseqbar i{transition:none}}
+  /* the eye loader — the motif, continued through streaming */
+  .eyeload{display:inline-flex;align-items:center;gap:11px;color:var(--faint);font-size:13px;letter-spacing:.02em}
+  .eyesvg{width:38px;height:38px;overflow:visible;flex:none}
+  .eyesvg .iris,.eyesvg .pupil,.eyesvg .scan{transform-box:fill-box;transform-origin:center}
+  .eyesvg .iris{animation:eyescan 2.6s ease-in-out infinite}
+  .eyesvg .pupil{animation:eyepulse 1.5s ease-in-out infinite}
+  .eyesvg .scan{animation:eyespin 1.7s linear infinite}
+  .eyelabel{opacity:.85}
+  @keyframes eyepulse{0%,100%{transform:scale(.62)}50%{transform:scale(1.35)}}
+  @keyframes eyescan{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+  @keyframes eyespin{to{transform:rotate(360deg)}}
+  @media(prefers-reduced-motion:reduce){.eyesvg .iris,.eyesvg .pupil,.eyesvg .scan{animation:none}}
 </style>
 </head>
 <body>
 <div class="aoverlay" id="analysisOverlay">
-  <svg class="aeye" viewBox="0 0 160 160" fill="none">
-    <path class="alid" d="M18 80 Q80 26 142 80 Q80 134 18 80 Z" stroke="#f5f5fc" stroke-width="2"/>
-    <circle class="airis" cx="80" cy="80" r="26" stroke="#ffab4d" stroke-width="1.5"/>
-    <circle class="apupil" cx="80" cy="80" r="7" fill="#ffab4d"/>
-  </svg>
-  <div class="atxt2">Reading the sky&hellip;</div>
+  <div class="acer">
+    <svg class="aeye" viewBox="0 0 160 160" fill="none">
+      <path class="alid" d="M18 80 Q80 26 142 80 Q80 134 18 80 Z" stroke="#f5f5fc" stroke-width="2"/>
+      <circle class="airis" cx="80" cy="80" r="26" stroke="#ffab4d" stroke-width="1.5"/>
+      <circle class="apupil" cx="80" cy="80" r="7" fill="#ffab4d"/>
+    </svg>
+    <div class="aseqhead"><span class="atxt2" id="aseqState">Reading the sky</span><button class="askip" id="aseqSkip" type="button">Skip &rarr;</button></div>
+    <div class="aseqbar"><i id="aseqBar"></i></div>
+    <div class="aseqlist" id="aseqList"></div>
+  </div>
 </div>
 
 <header class="mast" style="max-width:var(--col);margin:0 auto;padding-left:22px;padding-right:22px">
@@ -565,6 +596,58 @@
     $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · computed';
     $('lede').textContent=MEANING[pd]||MEANING[5];
   }
+
+  /* ===== the eye loader — reusable, shown while a reading streams ===== */
+  function eyeLoader(label){
+    return '<span class="eyeload"><svg viewBox="0 0 40 40" class="eyesvg" aria-hidden="true">'+
+      '<ellipse cx="20" cy="20" rx="18" ry="11" fill="none" stroke="#3a3a46" stroke-width="1.2"/>'+
+      '<circle class="iris" cx="20" cy="20" r="7" fill="none" stroke="#f5f5fc" stroke-width="1.2"/>'+
+      '<circle class="pupil" cx="20" cy="20" r="2.4" fill="#ffab4d"/>'+
+      '<circle class="scan" cx="20" cy="20" r="11" fill="none" stroke="#ffab4d" stroke-width="1.4" stroke-dasharray="14 55" stroke-linecap="round"/>'+
+      '</svg><span class="eyelabel">'+esc(label||'reading you…')+'</span></span>';
+  }
+  window.__eyeLoader=eyeLoader;
+
+  /* ===== entry ceremony: the 10-step acquisition sequence ===== */
+  (function(){
+    var AC; function ceTone(f){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume();
+        var o=AC.createOscillator(),g=AC.createGain(); o.type='sine'; o.frequency.value=f; g.gain.value=0.04;
+        o.connect(g); g.connect(AC.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+0.4); o.stop(AC.currentTime+0.42);
+      }catch(e){} }
+    var coords=(person&&person.lat!=null)?(Math.abs(person.lat).toFixed(1)+'°'+(person.lat>=0?'N':'S')):'';
+    var STEPS=[
+      ['Subject',      fullname||'You'],
+      ['Station',      (place||'—')+(coords?(' · '+coords):'')],
+      ['Date',         now.getDate()+' '+MON[now.getMonth()]+' '+now.getFullYear()],
+      ['Lunar phase',  phase+' · '+illum+'% lit'],
+      ['Moon',         'in '+msign],
+      ['Sun',          'in '+tsign],
+      ['Day ruler',    ruler+' · '+(RTONE[ruler]||'')],
+      ['Personal day', pd+' · '+(NW[pd]||'')],
+      ['Life path',    lifePath+' · '+(NW[lifePath]||'')],
+      ['Name value',   nameNum?(nameNum+' · '+(NW[nameNum]||'')):'—']
+    ];
+    window.__playCeremony=function(sound,onDone){
+      var ov=$('analysisOverlay'); if(!ov){ onDone&&onDone(); return; }
+      var reduce=false; try{ reduce=matchMedia('(prefers-reduced-motion:reduce)').matches; }catch(e){}
+      var list=$('aseqList'), bar=$('aseqBar'), state=$('aseqState'), skip=$('aseqSkip');
+      list.innerHTML=STEPS.map(function(s,i){ return '<div class="sq" id="sq'+i+'"><span class="n">'+(i<9?'0':'')+(i+1)+
+        '</span><span class="k">'+esc(s[0])+'</span><span class="v pending">…</span></div>'; }).join('');
+      bar.style.width='0'; state.textContent='Reading the sky';
+      ov.classList.remove('gone'); ov.style.display='flex';
+      ov.querySelectorAll('.alid,.airis,.apupil').forEach(function(e){ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+      var i=0, timer=null, ended=false, step=reduce?150:480;
+      function reveal(j){ var r=$('sq'+j); if(!r)return; r.classList.add('on'); var v=r.querySelector('.v'); v.classList.remove('pending'); v.textContent=STEPS[j][1]; }
+      function finish(){ if(ended)return; ended=true; clearTimeout(timer); if(skip)skip.style.visibility='hidden';
+        state.textContent='Resolved · 10 sources'; bar.style.width='100%'; if(sound&&!reduce)ceTone(880);
+        setTimeout(function(){ ov.classList.add('gone'); setTimeout(function(){ ov.style.display='none'; },720); onDone&&onDone(); }, reduce?260:640); }
+      function next(){ if(i>=STEPS.length){ finish(); return; }
+        reveal(i); bar.style.width=Math.round((i+1)/STEPS.length*100)+'%'; state.textContent='Acquired · '+STEPS[i][0];
+        if(sound&&!reduce)ceTone(300+i*42); i++; timer=setTimeout(next,step); }
+      if(skip){ skip.style.visibility='visible'; skip.onclick=function(){ for(var j=0;j<STEPS.length;j++)reveal(j); i=STEPS.length; clearTimeout(timer); finish(); }; }
+      timer=setTimeout(next, reduce?60:360);
+    };
+  })();
 
   function ev(lit,html){return '<span class="ev"><span class="dot'+(lit?' lit':'')+'"></span><span class="mono">'+html+'</span></span>';}
   $('evidence').innerHTML=ev(true,'<b>'+phase+'</b> · '+illum+'%')+ev(false,ruler+'’s day')+ev(false,'a '+pd+'-day')+(name?ev(false,'read for '+esc(name)):'');
@@ -900,7 +983,7 @@
   })();
   function readNow(){
     $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · your Claude';
-    $('hl').textContent='Reading you\u2026'; $('lede').textContent='';
+    $('hl').textContent='Reading you\u2026'; $('lede').innerHTML=eyeLoader('reading you\u2026');
     (async function(){
       var acc='';
       try{
@@ -936,7 +1019,7 @@
     $('askQ').value='';
     var th=$('askThread');
     var qd=document.createElement('div'); qd.className='aq you'; qd.textContent=q; th.appendChild(qd);
-    var ad=document.createElement('div'); ad.className='aq me'; ad.textContent='\u2026'; th.appendChild(ad);
+    var ad=document.createElement('div'); ad.className='aq me'; ad.innerHTML=eyeLoader('reading\u2026'); th.appendChild(ad);
     if(!AIchat.length&&daily&&daily.base)AIchat=[{role:'user',content:CORE},{role:'assistant',content:daily.base}];
     AIchat.push({role:'user',content:q});
     (async function(){
@@ -1010,15 +1093,9 @@
   /* hero = reading only: the reasoning evidence chips move out (they live in "Why", now gated) */
   var ev=$('evidence'); if(ev) ev.style.display='none';
 
-  /* analysis overlay — plays on entry (after reload) and when opening the daily */
-  var ov=$('analysisOverlay');
-  function playAnalysis(sound){ if(!ov)return; ov.classList.remove('gone'); ov.style.display='flex';
-    ov.querySelectorAll('.alid,.airis,.apupil,.atxt2').forEach(function(e){ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
-    if(sound){ [0,190,380,600].forEach(function(d,i){ setTimeout(function(){ tone(280+i*130,0.55,0.045); },d); }); setTimeout(function(){ tone(860,0.8,0.05); },780); }
-    setTimeout(function(){ ov.classList.add('gone'); setTimeout(function(){ ov.style.display='none'; },720); }, 1900);
-  }
+  /* entry ceremony — the 10-step acquisition sequence plays on entry (once we know who we're reading) */
   var ident=$('ident');
-  if(!ident || ident.hidden){ playAnalysis(true); }
+  if((!ident || ident.hidden) && typeof window.__playCeremony==='function'){ window.__playCeremony(true); }
 
   /* gate every deeper section behind a "run the analysis" button + a dramatic scan */
   var GATES={'s-why':'See the reasoning','s-sky':'Cast the chart','s-numbers':'Run your numbers','s-you':'Find your fixed core','s-ways':'Read all four systems','s-checkin':'Open check-in','s-cards':'Draw the cards','s-cure':'Reveal tonight’s cure','s-timing':'Map the day’s timing','s-week':'Chart the week ahead'};
