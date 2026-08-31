@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prophexy — your reading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fragment+Mono&display=swap">
+<style>
+  :root{--void:#000;--ink:#f5f5fc;--dust:#dcdce4;--faint:#8a8a97;--rule:#1c1c26;--amber:#ffab4d;--cool:#7d95ff;
+    --cool-bg:#0a0d16;--cool-br:#26304a;--warm-bg:#0d0b08;--tile-bg:#120d06;--tile-br:#5a3f16}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--void);color:var(--ink);font-family:'Archivo',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:'Fragment Mono','Courier New',monospace;letter-spacing:.14em;text-transform:uppercase}
+  a{color:var(--amber)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 40px}
+  .zlab{font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase}
+  /* masthead */
+  .mast{border-bottom:1px solid var(--rule)}
+  .mastin{display:flex;align-items:center;justify-content:space-between;padding:22px 40px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .who{background:none;border:none;color:inherit;text-align:right;cursor:pointer;font:inherit;padding:0}
+  .who:hover .whoName{color:var(--amber)}
+  /* reading */
+  .reading{background:var(--warm-bg)}
+  .readin{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:44px;align-items:center;padding:64px 40px}
+  .kick{color:var(--faint);font-size:11px}
+  h1.hl{font-weight:700;font-size:56px;line-height:1.02;letter-spacing:-.02em;margin:22px 0 0}
+  .lede{font-size:19px;line-height:1.64;color:#ededf4;max-width:52ch;margin:24px 0 0}
+  .move{display:flex;align-items:baseline;gap:14px;border-top:1px solid var(--rule);padding-top:20px;margin-top:26px}
+  .move .lb{font-size:10.5px;color:var(--amber);flex:none}
+  .move .tx{font-size:16px;color:var(--ink)}
+  .srcrow{display:flex;align-items:center;gap:14px;margin-top:22px}
+  .srcbadge{font-size:10px;letter-spacing:.14em;color:var(--faint);border:1px solid var(--rule);padding:6px 12px}
+  .srcbadge.live{color:var(--amber);border-color:#4a3413}
+  .srcbtn{background:none;border:1px solid var(--amber);color:var(--amber);font-size:10px;letter-spacing:.14em;padding:7px 14px;cursor:pointer;text-transform:uppercase}
+  .srcbtn:hover{background:var(--amber);color:#000}
+  .moonwrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .moon{position:relative;width:200px;height:200px;border-radius:50%;overflow:hidden;
+    background:
+      radial-gradient(circle at 66% 28%, rgba(0,0,0,.12), transparent 20%),
+      radial-gradient(circle at 32% 60%, rgba(0,0,0,.10), transparent 18%),
+      radial-gradient(circle at 54% 70%, rgba(0,0,0,.08), transparent 14%),
+      radial-gradient(circle at 40% 36%, #e7e7ee, #bcbcc6 52%, #8d8d98 78%, #6a6a75 94%);
+    box-shadow:0 0 20px rgba(220,220,238,.10)}
+  .moon::before{content:'';position:absolute;inset:0;border-radius:50%;z-index:1;pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+    background-size:cover;mix-blend-mode:multiply;opacity:.42}
+  .moonshade{position:absolute;top:-2%;width:82%;height:104%;background:var(--warm-bg);border-radius:50%;filter:blur(3px);z-index:2}
+  /* zones generic */
+  .zone{border-top:1px solid var(--rule)}
+  .zonein{padding:44px 40px}
+  .reasoning{background:#080a10}
+  .interactive{background:var(--warm-bg)}
+  .ahead{background:#08080c}
+  .thread{background:#08080c}
+  .threaditem{border-top:1px solid var(--rule);padding:16px 0;max-width:72ch}
+  .threaditem:last-child{border-bottom:1px solid var(--rule)}
+  .ask{background:#07090d}
+  .zh{margin-top:0}
+  /* reasoning cards */
+  .rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}
+  .rcard{background:var(--cool-bg);border:1px solid var(--cool-br);padding:22px}
+  .rcard .rl{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--cool)}
+  .rcard .rv{font-size:18px;margin-top:16px;color:var(--ink)}
+  .rcard .rs{font-size:14px;margin-top:6px;color:var(--faint)}
+  .rcard .rt{border-top:1px solid #1b2338;margin-top:20px;padding-top:16px;font-size:14.5px;color:var(--amber)}
+  .skyrow{display:flex;gap:36px;align-items:center;margin:26px 0 30px;flex-wrap:wrap}
+  .wheel{width:300px;height:300px;flex:none}
+  .wheel text{font-family:'Fragment Mono',monospace;font-size:9px;letter-spacing:.1em;fill:var(--faint)}
+  .wheellegend{display:flex;flex-direction:column;gap:12px;min-width:220px}
+  .wheellegend .wl{font-size:15px;color:var(--dust);display:flex;align-items:baseline}
+  .wheellegend .wl b{margin-right:10px;font-size:12px}
+  .foursub{color:var(--faint);font-size:15px;line-height:1.55;margin:14px 0 0;max-width:62ch}
+  .fourgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--cool-br);border:1px solid var(--cool-br);margin-top:20px}
+  .fourcell{background:var(--cool-bg);padding:18px 16px}
+  .fourcell .fl{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--cool)}
+  .fourcell .fv{font-size:16px;color:var(--ink);margin-top:12px;line-height:1.25}
+  .fourcell .fd{font-size:12.5px;color:var(--faint);margin-top:8px;line-height:1.42}
+  .timing{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:20px}
+  .trow{background:#0a0a0f;padding:16px 18px}
+  .trow .tk{font-size:16px;color:var(--ink)} .trow .tk b{color:var(--amber);font-weight:600}
+  .trow .tv{font-size:13.5px;color:var(--faint);margin-top:6px;line-height:1.5;max-width:60ch}
+  .areas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:18px}
+  .acell{background:#0a0a0f;padding:16px}
+  .acell .an{font-size:15px;color:var(--ink)}
+  .acell .ad{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:8px}
+  .acell.hit .ad{color:var(--amber)}
+  .breath{display:flex;align-items:center;gap:20px;margin-top:20px;flex-wrap:wrap}
+  .breathdisc{width:120px;height:120px;border:1px solid var(--rule);border-radius:50%;position:relative;flex:none}
+  .breathdisc i{position:absolute;left:50%;top:50%;width:12px;height:12px;border-radius:50%;background:var(--amber);transform:translate(-50%,-50%);animation:bre 16s ease-in-out infinite}
+  @keyframes bre{0%,100%{transform:translate(-50%,-50%) scale(1)}25%,50%{transform:translate(-50%,-50%) scale(2.6)}75%{transform:translate(-50%,-50%) scale(1)}}
+  .sounds{display:flex;flex-direction:column;gap:0;margin-top:22px}
+  .srow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;border-top:1px solid var(--rule);padding:12px 0;flex-wrap:wrap}
+  .srow .sn{font-size:15px;color:var(--ink)} .srow .sd{font-size:12.5px;color:var(--faint)}
+  .srow .slk a{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-left:12px}
+  @media(max-width:760px){.fourgrid{grid-template-columns:1fr 1fr}.areas{grid-template-columns:1fr 1fr}}
+  /* interactive tiles */
+  .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+  .tile{background:var(--tile-bg);border:1px solid var(--tile-br);padding:20px;min-height:74px;display:flex;
+    flex-direction:column;gap:8px;cursor:pointer;color:inherit;text-align:left;font:inherit}
+  .tile:hover{border-color:var(--amber)}
+  .tile .tn{font-size:16px;color:var(--ink)}
+  .tile .td{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#8a6a34}
+  .tile.on{border-color:var(--amber);background:#1a1109}
+  .tile.on .td{color:var(--amber)}
+  /* opened go-deeper section */
+  .gopanel{margin-top:18px;border:1px solid var(--tile-br);background:#0b0906;padding:30px 32px}
+  .gopanel h3{margin:0;font-size:24px;font-weight:600;color:var(--ink)}
+  .gopanel .gp-sub{color:var(--dust);font-size:15.5px;line-height:1.58;margin:12px 0 22px;max-width:62ch}
+  .gpbtn{background:none;border:1px solid var(--amber);color:var(--amber);padding:13px 22px;font-family:'Fragment Mono',monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+  .gpbtn:hover{background:var(--amber);color:#000}
+  .tarot3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+  .tcard{border:1px solid var(--tile-br);background:#120d06;padding:20px;min-height:156px}
+  .tcard .tpos,.tface .tpos{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#8a6a34}
+  .tcard .tname,.tface .tname{font-size:20px;color:var(--ink);margin-top:14px;font-weight:600;line-height:1.15}
+  .tcard .tmean,.tface .tmean{font-size:14px;color:var(--dust);margin-top:10px;line-height:1.5}
+  /* the dramatic draw — shuffle then flip */
+  .drawstage{margin-top:22px;min-height:210px}
+  .deck{position:relative;height:170px;display:flex;justify-content:center;align-items:center}
+  .deck span{position:absolute;width:100px;height:146px;border:1px solid var(--tile-br);border-radius:3px;background:radial-gradient(circle at 50% 42%,#2a1c0a,#150e06 72%)}
+  .deck span::after{content:'';position:absolute;left:50%;top:42%;width:8px;height:8px;border-radius:50%;background:var(--amber);transform:translate(-50%,-50%);box-shadow:0 0 10px rgba(255,171,77,.5)}
+  .deck.shuffling span{animation:shf .5s ease-in-out infinite}
+  .deck span:nth-child(2){animation-delay:.06s}.deck span:nth-child(3){animation-delay:.12s}.deck span:nth-child(4){animation-delay:.18s}.deck span:nth-child(5){animation-delay:.24s}
+  @keyframes shf{0%,100%{transform:translateX(0) rotate(0)}25%{transform:translateX(-54px) rotate(-8deg)}50%{transform:translateX(0) rotate(0)}75%{transform:translateX(54px) rotate(8deg)}}
+  .tflip{perspective:1100px}
+  .tcard3{position:relative;width:100%;min-height:170px;transform-style:preserve-3d;transition:transform .8s cubic-bezier(.2,.75,.2,1);transform:rotateY(180deg)}
+  .tcard3.revealed{transform:rotateY(0deg)}
+  .tface,.tbackf{position:absolute;inset:0;-webkit-backface-visibility:hidden;backface-visibility:hidden;border:1px solid var(--tile-br);border-radius:3px}
+  .tface{background:#120d06;padding:20px}
+  .tbackf{transform:rotateY(180deg);background:radial-gradient(circle at 50% 42%,#2a1c0a,#150e06 72%)}
+  .tbackf::after{content:'';position:absolute;left:50%;top:50%;width:9px;height:9px;border-radius:50%;background:var(--amber);transform:translate(-50%,-50%);box-shadow:0 0 12px rgba(255,171,77,.55)}
+  .gp-field{width:100%;background:#0b0b10;border:1px solid var(--rule);padding:16px;font:inherit;font-size:16px;color:var(--ink);min-height:96px;resize:vertical}
+  .gp-note{font-size:14px;color:var(--faint);line-height:1.58;margin-top:14px;max-width:62ch}
+  .moods{display:flex;flex-wrap:wrap;gap:10px}
+  .gp-row{display:flex;gap:12px;align-items:center;margin-top:14px;flex-wrap:wrap}
+  /* week */
+  .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-top:24px}
+  .wd{background:#0a0a0f;padding:16px 12px}
+  .wd .wn{font-size:20px;margin-top:8px}
+  .wd .meter{height:3px;background:#2a2a36;margin-top:12px}
+  .wd .meter i{display:block;height:100%;background:var(--faint)}
+  .wd.peak .meter i{background:var(--amber)}
+  .wd .flag{font-family:'Fragment Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+  .weeknote{font-size:14.5px;color:var(--faint);margin-top:16px;line-height:1.55}
+  /* ask */
+  .ask h2{font-size:32px;font-weight:600;margin:0}
+  .asksub{font-size:16px;color:var(--faint);margin-top:12px;max-width:60ch;line-height:1.55}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+  .chip{border:1px solid var(--rule);padding:11px 16px;font-size:14px;color:var(--dust);cursor:pointer;background:none;font:inherit}
+  .chip:hover{border-color:var(--cool)}
+  .askrow{display:flex;gap:12px;align-items:center;margin-top:22px;max-width:640px}
+  .askrow input{flex-grow:1;background:#101018;border:1px solid #2a2a3a;padding:16px;font:inherit;font-size:15px;color:var(--ink)}
+  .askrow input::placeholder{color:#5b5b66}
+  .askgo{background:var(--amber);color:#000;border:none;padding:16px 22px;font-size:12px;cursor:pointer}
+  .answer{margin-top:20px;max-width:640px;font-size:16px;line-height:1.62;color:var(--dust);white-space:pre-wrap}
+  /* sticky ask bar */
+  .stick{position:sticky;bottom:0;background:linear-gradient(to top,#000 72%,transparent);padding:14px 0 16px;z-index:20}
+  .stickin{display:flex;align-items:center;gap:14px;background:#0c0c12;border:1px solid var(--amber);padding:13px 18px;cursor:pointer}
+  .stickin .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex:none}
+  .stickin .tx{flex-grow:1;font-size:14px;color:var(--dust)}
+  .stickin .go{font-family:'Fragment Mono',monospace;font-size:11px;color:#000;background:var(--amber);padding:8px 14px}
+  /* identify overlay */
+  .reveal{position:fixed;inset:0;background:#000;z-index:120;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;transition:opacity .7s}
+  .reveal.gone{opacity:0}
+  .reye{width:118px;height:118px}
+  .reye .rlid{stroke-dasharray:380;stroke-dashoffset:380;animation:rdraw 1.05s ease forwards}
+  .reye .riris{opacity:0;animation:rfin .5s ease .7s forwards}
+  .reye .rpupil{opacity:0;transform-box:fill-box;transform-origin:center;animation:rfin .4s ease .9s forwards, rpul 1.6s ease-in-out 1s infinite}
+  @keyframes rdraw{to{stroke-dashoffset:0}} @keyframes rfin{to{opacity:1}} @keyframes rpul{0%,100%{transform:scale(1)}50%{transform:scale(1.55)}}
+  .revealtxt{font-size:11px;letter-spacing:.24em;color:var(--faint);opacity:0;animation:rfin .6s ease 1.1s forwards}
+  .ovl{position:fixed;inset:0;background:#000;z-index:80;overflow:auto;display:none}
+  .ovl.on{display:block}
+  .ovlin{max-width:560px;margin:0 auto;padding:64px 32px}
+  .ovl h2{font-weight:700;font-size:40px;line-height:1.05;letter-spacing:-.02em;margin:0 0 40px}
+  .fl{margin-bottom:24px}
+  .fl label{display:block;font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:10px}
+  .fl input{width:100%;background:#0b0b10;border:1px solid var(--rule);padding:18px;font:inherit;font-size:17px;color:var(--ink)}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .begin{width:100%;background:none;border:1px solid var(--amber);color:var(--amber);padding:20px;font-family:'Fragment Mono',monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;cursor:pointer;margin-top:8px}
+  .begin:hover{background:var(--amber);color:#000}
+  .ovlnote{font-size:15px;color:var(--faint);line-height:1.6;margin-top:24px}
+  @media(max-width:760px){
+    .wrap{padding:0 20px}.mastin,.readin,.zonein{padding-left:20px;padding-right:20px}
+    .readin{grid-template-columns:1fr;gap:24px;padding-top:32px;padding-bottom:32px}
+    .moonwrap{order:-1}.moon{width:120px;height:120px}
+    h1.hl{font-size:34px}.lede{font-size:16px}
+    .rgrid{grid-template-columns:1fr}.tiles{grid-template-columns:1fr 1fr}
+    .week{grid-template-columns:repeat(7,1fr)}.wd{padding:10px 5px}.wd .wn{font-size:14px}
+    .ask h2{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<!-- IDENTIFY -->
+<div class="ovl" id="ovl">
+  <div class="ovlin">
+    <h2>The sky is the same for everyone today. You are not.</h2>
+    <div class="fl"><label>Full name at birth</label><input id="fName" placeholder="First Last"></div>
+    <div class="frow">
+      <div class="fl"><label>Born</label><input id="fDob" type="date" value="1992-10-01"></div>
+      <div class="fl"><label>Where you were born</label><input id="fPlace" placeholder="Any city"></div>
+    </div>
+    <button class="begin" id="fGo">Read my day</button>
+    <p class="ovlnote">Your name and date make your numbers; the date and sky make the rest. Nothing about you leaves this device.</p>
+  </div>
+</div>
+
+<div class="reveal" id="reveal">
+  <svg class="reye" viewBox="0 0 160 160" fill="none">
+    <path class="rlid" d="M18 80 Q80 26 142 80 Q80 134 18 80 Z" stroke="#f5f5fc" stroke-width="2"/>
+    <circle class="riris" cx="80" cy="80" r="26" stroke="#ffab4d" stroke-width="1.5"/>
+    <circle class="rpupil" cx="80" cy="80" r="7" fill="#ffab4d"/>
+  </svg>
+  <div class="revealtxt mono" id="revealtxt">Reading the sky…</div>
+</div>
+
+<div id="app">
+  <!-- MASTHEAD -->
+  <div class="mast"><div class="wrap mastin">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f5f5fc" stroke-width="1.4"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3" fill="#ffab4d" stroke="none"/></svg>
+      <span class="mono" style="font-size:15px">Prophexy</span>
+    </div>
+    <button class="who" id="who"><div class="whoName mono" style="font-size:12px;color:var(--faint)" id="whoName">—</div><div class="mono" style="font-size:12px;color:#5b5b66;margin-top:3px" id="whoMeta">—</div></button>
+  </div></div>
+
+  <!-- ZONE 1 · READING -->
+  <div class="reading"><div class="wrap readin">
+    <div>
+      <div class="kick mono" id="kick">—</div>
+      <h1 class="hl" id="hl">—</h1>
+      <p class="lede" id="lede">—</p>
+      <div class="move"><span class="lb mono">Today's one move →</span><span class="tx" id="move">—</span></div>
+      <div class="srcrow">
+        <span class="srcbadge mono" id="srcBadge">Computed</span>
+        <button class="srcbtn mono" id="aiBtn" hidden>Read with my Claude</button>
+      </div>
+    </div>
+    <div class="moonwrap">
+      <div class="moon"><div class="moonshade" id="moonshade"></div></div>
+      <span class="mono" style="font-size:9.5px;color:#5b5b66" id="moonlb">—</span>
+    </div>
+  </div></div>
+
+  <!-- ZONE 2 · REASONING -->
+  <div class="zone reasoning"><div class="wrap zonein">
+    <span class="zlab" style="color:var(--cool)">Why today reads this way</span>
+    <div class="skyrow">
+      <svg class="wheel" id="wheel" viewBox="0 0 320 320" fill="none"></svg>
+      <div class="wheellegend" id="wheellegend"></div>
+    </div>
+    <div class="rgrid" id="rgrid"></div>
+    <span class="zlab" style="color:var(--cool);display:block;margin-top:40px">The same you, four ways</span>
+    <p class="foursub" id="foursub">Four old traditions, four ways of naming the same person. Where they agree is where it’s worth trusting.</p>
+    <div class="fourgrid" id="fourgrid"></div>
+  </div></div>
+
+  <!-- ZONE 3 · INTERACTIVE -->
+  <div class="zone interactive"><div class="wrap zonein">
+    <span class="zlab" style="color:var(--amber)">Go deeper</span>
+    <div class="tiles" id="tiles">
+      <button class="tile" data-go="cards"><span class="tn">Draw the cards</span><span class="td">Tarot</span></button>
+      <button class="tile" data-go="dream"><span class="tn">Tell a dream</span><span class="td">Read back to you</span></button>
+      <button class="tile" data-go="palm"><span class="tn">Read my palm</span><span class="td">Photo</span></button>
+      <button class="tile" data-go="face"><span class="tn">Read my face</span><span class="td">Photo</span></button>
+      <button class="tile" data-go="vision"><span class="tn">Vision board</span><span class="td">What you're calling in</span></button>
+      <button class="tile" data-go="checkin"><span class="tn">Check in</span><span class="td">How are you</span></button>
+      <button class="tile" data-go="cure"><span class="tn">Tonight's cure</span><span class="td">Breath &amp; sound</span></button>
+    </div>
+    <div class="gopanel" id="gopanel" hidden></div>
+  </div></div>
+
+  <!-- THE DAY'S TIMING -->
+  <div class="zone ahead"><div class="wrap zonein">
+    <span class="zlab" style="color:var(--faint)">The day's timing</span>
+    <p class="foursub">When today tends to help, and when to let it pass.</p>
+    <div id="timing"></div>
+    <span class="zlab" style="color:var(--faint);display:block;margin-top:44px">The week ahead</span>
+    <div class="week" id="week"></div>
+    <p class="weeknote" id="weeknote">—</p>
+    <p class="foursub" style="margin-top:30px">Which part of life each day this week leans toward.</p>
+    <div class="areas" id="areas"></div>
+  </div></div>
+
+  <!-- YOUR THREAD -->
+  <div class="zone thread"><div class="wrap zonein">
+    <span class="zlab" style="color:var(--faint)">Your thread</span>
+    <p class="foursub" id="threadNote"></p>
+    <div id="threadList"></div>
+  </div></div>
+
+  <!-- ZONE 4 · ASK -->
+  <div class="zone ask"><div class="wrap zonein">
+    <h2>Ask me anything</h2>
+    <p class="asksub">A decision, a person, a fear, last night's dream. I answer from your chart, numbers and the day — about you, not everyone born this month.</p>
+    <div class="chips" id="chips"></div>
+    <div class="askrow"><input id="askIn" placeholder="Ask me anything…"><button class="askgo" id="askGo">Ask</button></div>
+    <div class="answer" id="answer"></div>
+  </div></div>
+
+  <!-- STICKY ASK -->
+  <div class="stick"><div class="wrap" style="padding:0 40px">
+    <button class="stickin" id="stickAsk" style="width:100%"><span class="dot"></span><span class="tx">Ask — I already know your chart, numbers and the day</span><span class="go mono">Ask</span></button>
+  </div></div>
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var esc=function(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});};
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DAYNAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var WDN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var DR=['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+  var PY={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8};
+
+  /* ---- math (reused from the app) ---- */
+  function red(n){while(n>9&&n!==11&&n!==22){n=String(n).split('').reduce(function(a,c){return a+ +c;},0);}return n;}
+  function pdayFor(dob,d){var q=dob.split('-');return red(red(+q[1])+red(+q[2])+red(d.getFullYear())+red(d.getMonth()+1)+red(d.getDate()));}
+  function lifePathOf(dob){var dp=dob.split('-');return red(String(dp[0]+dp[1]+dp[2]).split('').reduce(function(a,c){return a+ +c;},0));}
+  function nameNumOf(nm){return nm?red(nm.toUpperCase().replace(/[^A-Z]/g,'').split('').reduce(function(a,c){return a+(PY[c]||0);},0)):0;}
+  function sunSign(m,d){var T=[[1,20,'Capricorn'],[2,19,'Aquarius'],[3,21,'Pisces'],[4,20,'Aries'],[5,21,'Taurus'],[6,21,'Gemini'],[7,23,'Cancer'],[8,23,'Leo'],[9,23,'Virgo'],[10,23,'Libra'],[11,22,'Scorpio'],[12,22,'Sagittarius'],[12,32,'Capricorn']];for(var i=0;i<T.length;i++){if(m===T[i][0]&&d<T[i][1])return T[i][2];}return T[m===12?T.length-1:m][2];}
+  function moon(now){var jd=now.getTime()/86400000+2440587.5,fr=((jd-2451550.1)/29.530588853)%1;if(fr<0)fr+=1;
+    var age=fr*29.530588853,illum=Math.round((1-Math.cos(fr*2*Math.PI))/2*100);
+    var phase=age<1.85?'New moon':age<5.54?'Waxing crescent':age<9.23?'First quarter':age<12.91?'Waxing gibbous':age<16.61?'Full moon':age<20.30?'Waning gibbous':age<23.99?'Last quarter':age<27.68?'Waning crescent':'New moon';
+    return {age:age,illum:illum,phase:phase,waning:age>=14.77};}
+
+  /* ---- content (the READING = interpretation, not evidence) ---- */
+  var HL={1:'Expect a restless, ready day.',2:'Expect a slow, waiting day.',3:'Expect a bright, talkative day.',4:'Expect a steady, working day.',5:'Expect a loose, changeable day.',6:'Expect a quiet day, close to home.',7:'Expect a quiet, inward day.',8:'Expect a strong, sure day.',9:'Expect a winding-down day.',11:'Expect a gut-feeling day.',22:'Expect a big-picture day.'};
+  var MEANING={
+    1:'Expect a restless, ready feeling today, like something wants to get moving. That thing you keep coming back to may feel closer to the surface than usual. Days like this tend to have a bit of push in them.',
+    2:'Today will move slowly, and it’s not really yours to hurry. Something you want is probably still coming together in the background. Expect a waiting kind of day — the sort where things work out better when they’re not forced.',
+    3:'Expect a bright, talkative feeling today. Words may come more easily than usual, and you might feel more like sharing what’s on your mind. It should be a sociable, open sort of day.',
+    4:'Today will feel steady and grounded — a working day, not a dramatic one. The practical stuff that’s been piling up may feel more manageable. Expect a calm, solid quality to it.',
+    5:'Today may feel a little loose, like your usual routine has some give in it. Things might not go quite to plan, and you can expect an open, restless quality to the day — more room than usual for something to shift.',
+    6:'Today, the people close to you will likely be on your mind more than usual. You may notice their moods, and small things at home could matter more than they normally would. Expect it to feel less about getting things done and more about who you’re doing them for.',
+    7:'Expect a quiet, inward feeling today. The world outside may matter a little less, and your own thoughts a little more. It should be a low-key day — the kind where you notice how you’re really doing.',
+    8:'Today may bring a stronger, surer feeling, like you’re on firmer ground than usual. You might find you’re readier to speak up and be taken seriously. Expect a day with some weight and confidence in it.',
+    9:'Expect a winding-down feeling today, like the end of a chapter. Something that’s been running its course may feel ready to close. It should read more like an exhale than a fresh breath.',
+    11:'Today your gut may run louder than your logic. You might find you just “know” things before you can explain them — a first impression, a hunch, a sense of which way to go. Expect an intuitive quality to the day.',
+    22:'Expect a big-picture feeling today. The bigger things you think about — the long-term, the someday — may feel a little closer and more real. It should be a day that thinks in years, not hours.'};
+  var MOVE={1:'Take the first concrete step on the thing you named.',2:'Wait one more day — and say so plainly to whoever’s waiting.',3:'Send the message you’ve been drafting in your head.',4:'Finish one structural task, fully, start to end.',5:'Act on the feeling you keep talking yourself out of.',6:'Repair one small thing with one person.',7:'Sit alone with it for ten minutes, no phone.',8:'Ask for what it’s actually worth.',9:'Close the loop you’ve been dragging.',11:'Write the flash down before it fades.',22:'Draw the plan for the big thing — one page.'};
+  var NUMWORD={1:'beginnings',2:'patience & partnership',3:'expression',4:'structure',5:'change',6:'care',7:'reflection',8:'power',9:'endings',11:'intuition',22:'building big'};
+  var NUMTAKE={1:'So expect a nudge to begin something.',2:'So expect a slower, more patient pace.',3:'So expect an easy, talkative day.',4:'So expect a steady, practical day.',5:'So expect a shift or a change of plan.',6:'So expect a people-first, low-key day.',7:'So expect a quieter, more inward day.',8:'So expect more drive and confidence.',9:'So expect an ending or a clearing-out.',11:'So expect strong gut instincts.',22:'So expect the long-term to feel closer.'};
+  var RULERWORD={Sun:'the Sun',Moon:'the Moon',Mars:'Mars',Mercury:'Mercury',Jupiter:'Jupiter',Venus:'Venus',Saturn:'Saturn'};
+  var RULERSUB={Sun:'Visibility, confidence, being seen',Moon:'Feeling, home, shifting moods',Mars:'Drive, heat, the urge to act',Mercury:'Talking, writing, quick thinking',Jupiter:'Growth, luck, the bigger view',Venus:'Love, money, beauty, ease',Saturn:'Discipline, limits, patient work'};
+  var RULERTAKE={Sun:'So confidence and visibility may run high.',Moon:'So feelings may lead over logic today.',Mars:'So expect extra drive and a shorter fuse.',Mercury:'So talking and quick thinking come easily.',Jupiter:'So things may feel a bit bigger and luckier.',Venus:'So ease, warmth and people are favoured.',Saturn:'So it may feel more serious and disciplined.'};
+  var NUMSTR={1:82,2:48,3:70,4:60,5:75,6:66,7:44,8:88,9:56,11:80,22:84};
+  var SIGNS=['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+  function vedicSun(w){ var i=SIGNS.indexOf(w); return i<0?w:SIGNS[(i+11)%12]; }
+  function chinese(y){ var an=['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'][((y-4)%12+12)%12];
+    var el=['Wood','Fire','Earth','Metal','Water'][Math.floor((((y-4)%10)+10)%10/2)]; return {animal:an,element:el,full:(y%2===0?'Yang':'Yin')+' '+el+' '+an}; }
+  var CHIN_TRAIT={Rat:'quick and resourceful',Ox:'steady and dependable',Tiger:'bold and driven',Rabbit:'gentle and diplomatic',Dragon:'confident and lucky',Snake:'wise and private',Horse:'free and energetic',Goat:'kind and creative',Monkey:'clever and inventive',Rooster:'sharp and honest',Dog:'loyal and fair',Pig:'warm and generous'};
+  var WIN={Sun:'7 – 8 AM',Moon:'9 – 11 PM',Mars:'6 – 7 AM',Mercury:'10 – 11 AM',Jupiter:'5 – 6 PM',Venus:'8 – 9 PM',Saturn:'10 – 11 PM'};
+  var RAHU={0:'4:30 – 6:00 PM',1:'7:30 – 9:00 AM',2:'3:00 – 4:30 PM',3:'12:00 – 1:30 PM',4:'1:30 – 3:00 PM',5:'10:30 AM – 12:00 PM',6:'9:00 – 10:30 AM'};
+  var AREAS=[['Love',6],['Money',8],['Work',4],['Words',3],['Body',1],['Rest',7]];
+
+  /* ---- state ---- */
+  function load(){try{return JSON.parse(localStorage.getItem('prophexy.reading.person'));}catch(e){return null;}}
+  function save(p){try{localStorage.setItem('prophexy.reading.person',JSON.stringify(p));}catch(e){}}
+
+  function artNum(n){return (n===8||n===11||n===18)?'an':'a';}
+  function render(person){
+    var now=new Date();
+    var first=(person.name||'').trim().split(/\s+/)[0]||'you';
+    var dob=person.dob, place=(person.place||'').trim();
+    var pd=pdayFor(dob,now), lp=lifePathOf(dob), nn=nameNumOf(person.name);
+    var dp=dob.split('-'), wsun=sunSign(+dp[1],+dp[2]);
+    var m=moon(now), ruler=DR[now.getDay()], dayName=DAYNAMES[now.getDay()];
+
+    /* masthead */
+    $('whoName').textContent=first.toUpperCase();
+    $('whoMeta').textContent=now.getDate()+' '+MON[now.getMonth()].toUpperCase()+(place?(' · '+place.toUpperCase()):'');
+
+    /* ZONE 1 reading */
+    $('kick').textContent=dayName+', '+now.getDate()+' '+MON[now.getMonth()];
+    $('hl').textContent=HL[pd]||HL[5];
+    $('lede').textContent=MEANING[pd]||MEANING[5];
+    $('move').textContent=MOVE[pd]||MOVE[5];
+    /* moon visual */
+    var off=(m.illum/100)*164; /* disc ~200, shade 82% */
+    $('moonshade').style.transform='translateX('+(m.waning?off:-off).toFixed(0)+'px)';
+    $('moonlb').textContent=m.phase+' · '+m.illum+'% lit';
+
+    /* ZONE 2 reasoning */
+    function rcard(lb,val,sub,take){return '<div class="rcard"><div class="rl">'+lb+'</div><div class="rv">'+val+'</div><div class="rs">'+sub+'</div><div class="rt">→ '+take+'</div></div>';}
+    $('rgrid').innerHTML=
+      rcard('The sky', m.phase+' · '+m.illum+'% lit',
+            m.waning?'The moon is past full and shrinking back toward dark. In old astrology a shrinking moon is a time to finish and let go, not to begin.':'The moon is growing toward full. A growing moon is traditionally a time to start things and build them up.',
+            m.waning?'So today leans toward release, not new starts.':'So today leans toward starting and building.')+
+      rcard('Your numbers', (artNum(pd)==='an'?'An':'A')+' '+pd+' day for you',
+            'Your birthday, added onto today’s date and reduced to a single digit, comes to '+pd+' — in numerology the number of '+NUMWORD[pd]+'. (Your life-path number, the one that never changes, is '+lp+'.)',
+            NUMTAKE[pd])+
+      rcard('The day', dayName+' · '+RULERWORD[ruler],
+            'Every weekday has an old planetary ruler. '+dayName+'’s is '+RULERWORD[ruler]+', which colours the whole day with '+RULERSUB[ruler].toLowerCase()+'.',
+            RULERTAKE[ruler]);
+
+    /* the same you, four ways */
+    var vsun=vedicSun(wsun), ch=chinese(+dp[0]);
+    $('fourgrid').innerHTML=[
+      ['Western','Sun in '+wsun,'Your sign in the zodiac most people know.'],
+      ['Vedic','Sun in '+vsun+'*','Indian astrology uses a different zero-point, roughly a sign back from the Western one. *Rough guide — your exact Vedic sign and nakshatra need your birth time.'],
+      ['Chinese','The '+ch.animal,ch.full+' — '+CHIN_TRAIT[ch.animal]+'.'],
+      ['Numbers','Life path '+lp,'The one number your whole birth date reduces to — '+NUMWORD[lp]+'.']
+    ].map(function(f){return '<div class="fourcell"><div class="fl">'+f[0]+'</div><div class="fv">'+f[1]+'</div><div class="fd">'+f[2]+'</div></div>';}).join('');
+
+    /* the sky right now — zodiac ring with the Sun and Moon plotted at their real spots */
+    (function(){
+      var n=now.getTime()/86400000+2440587.5-2451545.0;
+      var L=(280.460+0.9856474*n)%360; if(L<0)L+=360;
+      var g=(357.528+0.9856003*n)*Math.PI/180;
+      var slon=(L+1.915*Math.sin(g)+0.020*Math.sin(2*g))%360; if(slon<0)slon+=360;
+      var mlon=(slon+(m.age/29.530588853)*360)%360;
+      var ssign=SIGNS[Math.floor(slon/30)%12], msign=SIGNS[Math.floor(mlon/30)%12];
+      var G=['ARI','TAU','GEM','CAN','LEO','VIR','LIB','SCO','SAG','CAP','AQU','PIS'], cx=160,cy=160,s2='';
+      s2+='<circle cx="160" cy="160" r="150" stroke="#26304a"/><circle cx="160" cy="160" r="118" stroke="#26304a"/>';
+      for(var i=0;i<12;i++){ var a=i*30*Math.PI/180;
+        s2+='<line x1="'+(cx+118*Math.cos(a)).toFixed(1)+'" y1="'+(cy-118*Math.sin(a)).toFixed(1)+'" x2="'+(cx+150*Math.cos(a)).toFixed(1)+'" y2="'+(cy-150*Math.sin(a)).toFixed(1)+'" stroke="#26304a"/>';
+        var ga=(i*30+15)*Math.PI/180;
+        s2+='<text x="'+(cx+134*Math.cos(ga)).toFixed(1)+'" y="'+(cy-134*Math.sin(ga)+3).toFixed(1)+'" text-anchor="middle">'+G[i]+'</text>'; }
+      function mk(lon,c,r2){ var a=lon*Math.PI/180; return '<circle cx="'+(cx+r2*Math.cos(a)).toFixed(1)+'" cy="'+(cy-r2*Math.sin(a)).toFixed(1)+'" r="6" fill="'+c+'"/>'; }
+      s2+=mk(slon,'#ffab4d',96)+mk(mlon,'#dfe0ee',76)+'<circle cx="160" cy="160" r="3" fill="#33333d"/>';
+      $('wheel').innerHTML=s2;
+      $('wheellegend').innerHTML='<div class="wl"><b style="color:#ffab4d">●</b>Sun, today · '+ssign+'</div><div class="wl"><b style="color:#dfe0ee">●</b>Moon · '+msign+'</div><div class="wl" style="color:var(--faint);font-size:13px;line-height:1.5;display:block">Where the Sun and Moon sit on the zodiac right now, as seen from Earth. This is today’s sky — your own birth Sun sign is in the four cards below.</div>';
+    })();
+
+    /* WEEK */
+    var days=[];
+    for(var i=1;i<=7;i++){var d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i);var p=pdayFor(dob,d);
+      days.push({d:d,pd:p,str:Math.min(100,(NUMSTR[p]||60)+(p===lp?8:0))});}
+    var peak=days.slice().sort(function(a,b){return b.str-a.str;})[0];
+    var trough=days.slice().sort(function(a,b){return a.str-b.str;})[0];
+    $('week').innerHTML=days.map(function(x){var isP=x===peak,isT=x===trough;
+      return '<div class="wd'+(isP?' peak':'')+'">'+(isP?'<span class="flag">Strong</span>':(isT?'<span class="flag" style="color:#5b5b66">Quiet</span>':'<span class="flag">&nbsp;</span>'))+
+        '<div class="mono" style="font-size:10px;color:var(--faint);margin-top:4px">'+WDN[x.d.getDay()]+'</div>'+
+        '<div class="wn">'+x.d.getDate()+'</div>'+
+        '<div class="mono" style="font-size:9px;color:#5b5b66;margin-top:6px">'+x.pd+' · '+NUMWORD[x.pd].split(' ')[0]+'</div>'+
+        '<div class="meter"><i style="width:'+x.str.toFixed(0)+'%"></i></div></div>';}).join('');
+    $('weeknote').innerHTML='Each day is scored against your numbers — the taller the amber bar, the more the day is with you. Your strongest is <b style="color:var(--ink)">'+DAYNAMES[peak.d.getDay()]+'</b> ('+artNum(peak.pd)+' '+peak.pd+' day, '+NUMWORD[peak.pd]+'); the quietest is <b style="color:var(--ink)">'+DAYNAMES[trough.d.getDay()]+'</b>. If a big ask can wait, aim it at '+DAYNAMES[peak.d.getDay()]+'.';
+
+    /* the day's timing */
+    function trow(k,v){return '<div class="trow"><div class="tk">'+k+'</div><div class="tv">'+v+'</div></div>';}
+    $('timing').innerHTML=
+      trow('The best window · <b>'+(WIN[ruler]||'this evening')+'</b>','This is '+RULERWORD[ruler]+'’s own hour — the part of the day that best matches today’s mood.')+
+      trow('Let it pass · <b>'+RAHU[now.getDay()]+'</b>','In Indian timekeeping this stretch is called Rahu kaal — traditionally a poor time to begin anything new.')+
+      trow('After dark · <b>'+(m.waning?'a time to finish':'a time to begin')+'</b>','With the moon '+(m.waning?'waning, the evening suits closing loops and letting go':'waxing, the evening suits starting and building')+'.');
+
+    /* which part of life each day leans toward */
+    $('areas').innerHTML=AREAS.map(function(a){ var hit=days.find(function(x){return x.pd===a[1];});
+      return '<div class="acell'+(hit?' hit':'')+'"><div class="an">'+a[0]+'</div><div class="ad">'+(hit?('best '+WDN[hit.d.getDay()]):'quiet all week')+'</div></div>'; }).join('');
+
+    renderThread();
+
+    /* ASK chips */
+    $('chips').innerHTML=['Should I take the offer?','Why do I feel this way today?','Read my last dream back to me'].map(function(q){return '<button class="chip">'+esc(q)+'</button>';}).join('');
+    [].forEach.call(document.querySelectorAll('.chip'),function(b){b.addEventListener('click',function(){$('askIn').value=b.textContent;$('askIn').focus();});});
+
+    window.__ctx={pd:pd,lp:lp,nn:nn,wsun:wsun,phase:m.phase,illum:m.illum,waning:m.waning,ruler:ruler,dayName:dayName,first:first};
+  }
+
+  /* ---- AI bridge (Switchboard window.claude) — reading with your own Claude, offered as an option ---- */
+  var AI={installed:false,connected:false,connect:null};
+  function pickText(d){ if(d==null)return ''; if(typeof d==='string')return d; if(typeof d.text==='string')return d.text;
+    if(d.delta){ if(typeof d.delta==='string')return d.delta; if(typeof d.delta.text==='string')return d.delta.text; }
+    if(typeof d.completion==='string')return d.completion; if(typeof d.content==='string')return d.content;
+    if(Object.prototype.toString.call(d.content)==='[object Array]')return d.content.map(function(b){return (b&&(b.text||(b.delta&&b.delta.text)))||'';}).join('');
+    if(d.message)return pickText(d.message); if(d.choices&&d.choices[0]){var c=d.choices[0];return pickText(c.delta||c.message||c);} return ''; }
+  function toWire(o){ var msgs=(o.messages||[]).map(function(m){return {role:m.role,content:m.content};});
+    if(o.system){ if(msgs.length&&msgs[0].role==='user'){msgs[0]={role:'user',content:o.system+'\n\n'+msgs[0].content};} else {msgs.unshift({role:'user',content:o.system});} }
+    return {model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,max_tokens:o.maxTokens||800,messages:msgs}; }
+  async function *streamOnce(o){ var params=toWire(o),res=null;
+    try{ res=window.claude.request({method:'claude_stream',params:params}); }catch(e){ res=null; }
+    if(res&&typeof res.then==='function'){ try{res=await res;}catch(e){res=null;} }
+    if(res&&res[Symbol.asyncIterator]){ var any=false; for await(var d of res){ if(!d)continue; var t=pickText(d); if(t){any=true;yield {text:t};} } if(any)return; }
+    var out=await window.claude.request({method:'claude_complete',params:params}); var text=pickText(out);
+    if(text){ yield {text:text}; return; } throw new Error('empty response'); }
+  async function *streamWire(o){ var emitted=0;
+    try{ for await(var d of streamOnce(o)){ emitted++; yield d; } }
+    catch(e){ if(emitted===0&&o.model!=='claude-haiku-4-5'){ var o2={};for(var k in o)o2[k]=o[k];o2.model='claude-haiku-4-5'; for await(var d2 of streamOnce(o2)){yield d2;} } else throw e; } }
+  function sysPromptAI(){ var c=window.__ctx||{}, p=load()||{};
+    return 'You are Prophexy, a warm, plain-spoken astrologer who speaks as "I" to "you". Write like a reading that observes the day and how it will feel, not a list of commands. SUBJECT: '+(p.name||'')+', born '+(p.dob||'')+(p.place?(' in '+p.place):'')+'. TODAY: personal day '+c.pd+' ('+NUMWORD[c.pd]+'), life path '+c.lp+', sun in '+c.wsun+'; the moon is a '+c.phase+' ('+c.illum+'% lit, '+(c.waning?'waning':'waxing')+'); '+c.dayName+' is ruled by '+c.ruler+'. No jargon in the prose, no emojis.'; }
+  var CORE='Write my reading for today. It is a FORECAST, so frame everything as what to expect, not as fact: use "expect", "you’ll likely", "you may", "might", "will" — you can’t know what is on my mind right now, so predict what I’ll feel or notice, don’t assert it (say "will be" / "may feel", never "is" / "are"). Open with ONE short forecast headline starting with "Expect a…" that names the day’s feeling in a few easy words — at most 6 words, like "Expect a quiet day, close to home." — on its own line, no label, no bookish verbs or clever twists. Then a blank line, then two short paragraphs that READ my day to me: predict what I’ll notice and how the day may feel. This is a reading, NOT advice — describe, don’t instruct. Do not tell me what to do and never say "you should"; the one thing to do goes only in MOVE. Keep it very simple: short sentences, plain everyday words the way you’d text a friend. No literary or poetic phrases (nothing like "inward gravity"), no jargon. Warm, second person. At the very end, on its own line, write MOVE: then one small concrete thing I could do today.';
+  function badge(live){ var b=$('srcBadge'); if(live){b.textContent='Your Claude';b.classList.add('live');} else {b.textContent='Computed';b.classList.remove('live');} }
+  function readWithClaude(){ var btn=$('aiBtn'); if(btn){btn.hidden=true;} badge(true);
+    var c=window.__ctx||{}; $('hl').textContent='Reading you…'; $('lede').textContent='';
+    (async function(){ var acc='';
+      try{ for await(var d of streamWire({system:sysPromptAI(),messages:[{role:'user',content:CORE}],maxTokens:600})){ if(d&&d.text){acc+=d.text; $('lede').textContent=acc.slice(0,1400);} }
+        var ft=acc.trim(); var mM=ft.match(/(^|\n)\s*MOVE:\s*([\s\S]+?)\s*$/i); var act=mM?mM[2].trim():'';
+        var body=ft.replace(/(^|\n)\s*MOVE:\s*[\s\S]+?\s*$/i,'').trim();
+        var nl=body.indexOf('\n'); var line=(nl>0?body.slice(0,nl):body).trim();
+        $('hl').textContent=line||(HL[c.pd]||''); $('lede').textContent=(nl>0?body.slice(nl).trim():body).slice(0,900);
+        if(act)$('move').textContent=act;
+      }catch(e){ badge(false); $('hl').textContent=HL[c.pd]||''; $('lede').textContent=MEANING[c.pd]||''; if(btn)btn.hidden=false; }
+    })();
+  }
+  function ask(q){ q=(q||'').trim(); if(!q)return; var out=$('answer'); var c=window.__ctx||{};
+    if(AI&&AI.connected){ out.textContent='…';
+      (async function(){ var acc=''; try{ for await(var d of streamWire({system:sysPromptAI(),messages:[{role:'user',content:q}],maxTokens:420})){ if(d&&d.text){acc+=d.text; out.textContent=acc;} } }catch(e){ out.textContent='Couldn’t reach your Claude just now — try again.'; } })();
+    } else { out.innerHTML='<span style="color:var(--faint)">Turn on <b style="color:var(--amber)">Read with my Claude</b> up top and I’ll answer this against your chart. For now, the computed steer: today is '+(artNum(c.pd)==='an'?'an':'a')+' '+c.pd+' day — '+esc(NUMTAKE[c.pd]||'')+'</span>'; }
+  }
+  function initAI(){
+    function ready(){ if(window.claude&&window.claude.isRelay)return Promise.resolve(window.claude);
+      return new Promise(function(res){ var done=false,fin=function(){if(done)return;done=true;res(window.claude&&window.claude.isRelay?window.claude:null);};
+        window.addEventListener('claude#initialized',fin,{once:true}); setTimeout(fin,1600); }); }
+    function showBtn(){ var b=$('aiBtn'); if(b)b.hidden=false; }
+    ready().then(function(cl){ if(!cl)return; AI.installed=true;
+      AI.connect=function(){ return window.claude.request({method:'claude_connect',params:{models:['claude-sonnet-5','claude-haiku-4-5'],reason:'Write your reading and answer your questions as your personal oracle'}}).then(function(){ AI.connected=true; try{localStorage.setItem('prophexy.reading.sbok','1');}catch(e){} }); };
+      window.claude.request({method:'claude_permissions',params:{}}).then(function(perm){
+        if(perm&&perm.models&&perm.models.length){ AI.connect().then(readWithClaude).catch(showBtn); } else showBtn();
+      }).catch(function(){ var seen=false; try{seen=localStorage.getItem('prophexy.reading.sbok')==='1';}catch(e){} if(seen){AI.connect().then(readWithClaude).catch(showBtn);} else showBtn(); });
+    });
+  }
+  $('aiBtn').addEventListener('click',function(){ var b=this; b.textContent='Connecting…'; b.disabled=true;
+    if(AI.connect){ AI.connect().then(readWithClaude).catch(function(){ b.textContent='Read with my Claude'; b.disabled=false; }); } });
+  $('askGo').addEventListener('click',function(){ask($('askIn').value);});
+  $('askIn').addEventListener('keydown',function(e){if(e.key==='Enter')ask(this.value);});
+  $('stickAsk').addEventListener('click',function(){$('askIn').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){$('askIn').focus();},400);});
+
+  /* identify */
+  function openIdent(){var p=load()||{};$('fName').value=p.name||'';if(p.dob)$('fDob').value=p.dob;$('fPlace').value=p.place||'';$('ovl').classList.add('on');}
+  $('who').addEventListener('click',openIdent);
+  $('fGo').addEventListener('click',function(){
+    var p={name:($('fName').value||'').trim()||'Friend',dob:$('fDob').value||'1992-10-01',place:($('fPlace').value||'').trim()};
+    save(p);$('ovl').classList.remove('on');render(p);window.scrollTo(0,0);reveal(true);
+    if(AI&&AI.connected)readWithClaude(); else badge(false);
+  });
+
+  /* ---- Go deeper: cards open real sections ---- */
+  var MAJORS=[['The Fool','a leap of faith — begin before you feel ready'],['The Magician','you already have what you need; focus it'],['The High Priestess','trust the quiet knowing beneath the noise'],['The Empress','let it grow at its own pace; nurture, don’t force'],['The Emperor','structure and a firm boundary steady you now'],['The Hierophant','a mentor, a tradition, or the tried-and-true has your answer'],['The Lovers','a real choice of the heart — line it up with your values'],['The Chariot','drive and will carry you through; keep the reins'],['Strength','gentle persistence beats force today'],['The Hermit','step back — this answer is found alone'],['Wheel of Fortune','the cycle turns; a shift of luck is in motion'],['Justice','cause and effect — be honest and it balances'],['The Hanged Man','stop struggling; the view changes when you let go'],['Death','an ending that clears the way for something new'],['Temperance','balance and patience; take the middle path'],['The Devil','name what you feel bound to — naming loosens it'],['The Tower','a sudden shake-up that frees more than it breaks'],['The Star','hope and healing after hard weather'],['The Moon','things aren’t quite as they seem — trust instinct over appearances'],['The Sun','clarity and warmth; a plain, bright yes'],['Judgement','a reckoning — answer the call and rise to it'],['The World','a cycle complete; you’ve arrived somewhere real']];
+  var MOODS=[['Anxious','Name the one thing underneath it — just naming it takes half its charge.'],['Low','Go smaller, not faster. One kind thing for yourself before anything else.'],['Restless','That energy is real — point it at today’s one move before it points itself.'],['Angry','Anger usually guards something softer. What would you say if it felt safe to?'],['Flat','Flat is allowed. Don’t force brightness; just do the next small thing.'],['Good','Good days are for banking a little — do one thing your future self will thank you for.']];
+  var TPOS=['Where you are','The heart of it','Where it’s headed'];
+
+  function drawThree(){var idx=[],p=MAJORS.slice();for(var i=0;i<3;i++){var j=Math.floor(Math.random()*p.length);idx.push(p.splice(j,1)[0]);}return idx;}
+  /* sound — a soft riffle while shuffling, a chime on each reveal */
+  var _AC; function actx(){ try{ _AC=_AC||new (window.AudioContext||window.webkitAudioContext)(); if(_AC.state==='suspended')_AC.resume(); }catch(e){} return _AC; }
+  function tone(freq,dur,vol,type){ var c=actx(); if(!c)return; try{ var o=c.createOscillator(),g=c.createGain(); o.type=type||'triangle'; o.frequency.value=freq; g.gain.value=vol||0.04; o.connect(g); g.connect(c.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+(dur||0.09)); o.stop(c.currentTime+(dur||0.09)); }catch(e){} }
+  function drawSeq(stage,btn){
+    btn.disabled=true; btn.textContent='Shuffling…';
+    stage.innerHTML='<div class="deck shuffling"><span></span><span></span><span></span><span></span><span></span></div>';
+    var riffle=setInterval(function(){ tone(90+Math.random()*130,0.045,0.028,'square'); },85);
+    setTimeout(function(){ clearInterval(riffle);
+      var c=drawThree();
+      stage.innerHTML='<div class="tarot3">'+c.map(function(card,i){
+        return '<div class="tflip"><div class="tcard3" id="tc'+i+'"><div class="tbackf"></div><div class="tface"><div class="tpos">'+TPOS[i]+'</div><div class="tname">'+card[0]+'</div><div class="tmean">'+card[1]+'</div></div></div></div>';
+      }).join('')+'</div><p class="gp-note" id="tnote" style="opacity:0;transition:opacity .6s">The middle card is the crux — sit with it before you decide anything. Draw again for a different question.</p>';
+      c.forEach(function(_,i){ setTimeout(function(){ var el=document.getElementById('tc'+i);
+        if(el){ el.classList.add('revealed'); tone(430+i*110,0.5,0.05,'sine'); }
+        if(i===2){ setTimeout(function(){ var nn=document.getElementById('tnote'); if(nn)nn.style.opacity='1'; },720); }
+      }, 380+i*480); });
+      btn.disabled=false; btn.textContent='Draw again';
+    },1300);
+  }
+
+  var GO={
+    cards:function(el){
+      el.innerHTML='<h3>Draw the cards</h3><p class="gp-sub">Hold one real question in mind — about a choice, a person, a direction — then shuffle. Three cards fall: where you are now, the heart of it, and where it’s headed.</p><button class="gpbtn" id="drawBtn">Shuffle &amp; draw</button><div id="drawStage" class="drawstage"></div>';
+      $('drawBtn').addEventListener('click',function(){ drawSeq($('drawStage'),$('drawBtn')); });
+    },
+    dream:function(el){
+      el.innerHTML='<h3>Tell a dream</h3><p class="gp-sub">Write down what you remember — even a fragment. A dream is how the day before talks to you, in pictures instead of words.</p><textarea class="gp-field" id="dIn" placeholder="I was somewhere I half-recognised…"></textarea><div class="gp-row"><button class="gpbtn" id="dKeep">Keep this dream</button><span class="mono" style="font-size:10px;color:var(--faint)" id="dNote"></span></div><div class="gp-note" id="dOut"></div>';
+      try{var a=JSON.parse(localStorage.getItem('prophexy.reading.dreams'))||[];if(a.length)$('dNote').textContent=a.length+' kept';}catch(e){}
+      $('dKeep').addEventListener('click',function(){var t=($('dIn').value||'').trim();if(!t)return;
+        try{var k='prophexy.reading.dreams',a=JSON.parse(localStorage.getItem(k))||[];a.push({t:t,d:Date.now()});localStorage.setItem(k,JSON.stringify(a));$('dNote').textContent=a.length+' kept';}catch(e){}
+        $('dOut').textContent='Kept. With your Claude connected I read this back against your chart and the day. For now: notice the feeling it left you with more than the plot — that’s usually where the message is.';$('dIn').value='';renderThread();});
+    },
+    palm:function(el){ el.innerHTML='<h3>Read my palm</h3><p class="gp-sub">Add a clear photo of your open palm. With your Claude connected, I read the lines against your chart and today.</p><input type="file" accept="image/*" class="gpbtn" style="padding:12px"><p class="gp-note">Your hands change as your life does — the lines are a snapshot of who you are now, not a sentence you’re stuck with. Nothing leaves this device; the reading runs once your Claude is connected.</p>';},
+    face:function(el){ el.innerHTML='<h3>Read my face</h3><p class="gp-sub">Add a straight-on photo in soft light. Face reading looks at proportion and expression — the story your features tell about how you meet the world.</p><input type="file" accept="image/*" class="gpbtn" style="padding:12px"><p class="gp-note">A snapshot of the present, not a verdict. Nothing leaves this device; the reading runs once your Claude is connected.</p>';},
+    vision:function(el){ el.innerHTML='<h3>Vision board</h3><p class="gp-sub">Add images of the life you’re calling in — a place, a feeling, a version of you. Looking at it often quietly tunes what you notice and reach for.</p><input type="file" accept="image/*" multiple class="gpbtn" style="padding:12px"><p class="gp-note">These stay on your device. Come back to them on the strong days in your week below.</p>';},
+    checkin:function(el){
+      el.innerHTML='<h3>How are you, really?</h3><p class="gp-sub">No wrong answer — this is how I learn what actually moves you, so the readings get truer over time.</p><div class="moods" id="moods"></div><div class="gp-note" id="mOut"></div>';
+      $('moods').innerHTML=MOODS.map(function(m,i){return '<button class="chip" data-i="'+i+'">'+m[0]+'</button>';}).join('');
+      [].forEach.call($('moods').children,function(b){b.addEventListener('click',function(){
+        [].forEach.call($('moods').children,function(o){o.style.borderColor='';o.style.color='';});
+        b.style.borderColor='var(--amber)';b.style.color='var(--amber)';
+        $('mOut').textContent=MOODS[+b.dataset.i][1];});});
+    },
+    cure:function(el){
+      el.innerHTML='<h3>Tonight’s cure</h3><p class="gp-sub">A small way to settle the day. Breathe with the dot — in as it grows, hold, out as it shrinks, hold. Do it four times.</p>'+
+        '<div class="breath"><div class="breathdisc"><i></i></div><div class="gp-note" style="margin:0">In 4 · hold 4 · out 4 · hold 4</div></div>'+
+        '<p class="gp-note" style="margin-top:26px">Or put one of these on low while you wind down:</p><div class="sounds" id="sounds"></div>';
+      var S=[['Om Namah Shivaya','steadies the mind'],['Gayatri Mantra','the dawn prayer, for clarity'],['Mahamrityunjaya Mantra','for courage and protection'],['Deva Premal','modern mantra, crystal clear'],['Krishna Das','call-and-response, lifts a low mood'],['432 Hz','the calm tuning, for settling'],['528 Hz','the repair tone, for heaviness'],['639 Hz','the connection tone, for people things']];
+      $('sounds').innerHTML=S.map(function(s){ var q=encodeURIComponent(s[0]);
+        return '<div class="srow"><span><span class="sn">'+s[0]+'</span> <span class="sd">— '+s[1]+'</span></span><span class="slk"><a href="https://open.spotify.com/search/'+q+'" target="_blank" rel="noopener">Spotify</a><a href="https://music.apple.com/search?term='+q+'" target="_blank" rel="noopener">Apple</a><a href="https://youtube.com/results?search_query='+q+'" target="_blank" rel="noopener">YouTube</a></span></div>'; }).join('');
+    }
+  };
+  function openGo(key){var tiles=$('tiles'),panel=$('gopanel');
+    var already=panel.dataset.key===key&&!panel.hidden;
+    [].forEach.call(tiles.children,function(t){t.classList.toggle('on',t.dataset.go===key&&!already);});
+    if(already){panel.hidden=true;panel.dataset.key='';return;}
+    panel.hidden=false;panel.dataset.key=key;(GO[key]||function(){})(panel);
+    panel.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  [].forEach.call(document.querySelectorAll('#tiles .tile'),function(t){t.addEventListener('click',function(){openGo(t.dataset.go);});});
+
+  function renderThread(){
+    var dreams=[]; try{dreams=JSON.parse(localStorage.getItem('prophexy.reading.dreams'))||[];}catch(e){}
+    if(dreams.length){
+      $('threadNote').textContent='What you’ve told me so far — I read this back into your daily readings.';
+      $('threadList').innerHTML=dreams.slice().reverse().map(function(d){ var dt=new Date(d.d||Date.now());
+        return '<div class="threaditem"><div class="mono" style="font-size:9.5px;color:var(--faint)">'+dt.getDate()+' '+MON[dt.getMonth()]+' · dream</div><div style="font-size:15px;color:var(--dust);margin-top:8px;line-height:1.55">'+esc(d.t).slice(0,240)+'</div></div>'; }).join('');
+    } else {
+      $('threadNote').textContent='Nothing here yet. The dreams and notes you keep under “Go deeper” collect here, and I read them back into your daily readings.';
+      $('threadList').innerHTML='';
+    }
+  }
+
+  /* the reveal ceremony before the reading — eye draws, a soft chord rises, then it fades to the reading */
+  function reveal(sound){ var r=$('reveal'); if(!r)return;
+    r.classList.remove('gone'); r.style.display='flex';
+    /* restart the css animations */
+    r.querySelectorAll('.rlid,.riris,.rpupil,.revealtxt').forEach(function(e){ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+    if(sound){ [0,190,380,600].forEach(function(d,i){ setTimeout(function(){ tone(280+i*130,0.55,0.045,'sine'); },d); }); setTimeout(function(){ tone(860,0.8,0.05,'sine'); },780); }
+    setTimeout(function(){ r.classList.add('gone'); setTimeout(function(){ r.style.display='none'; },720); }, 1750);
+  }
+
+  /* boot: load saved, else a sample so the reading shows immediately */
+  var p=load();
+  if(!p){p={name:'Maya Anne Fielding',dob:'1992-10-01',place:'Portland'};}
+  render(p);
+  reveal(false);
+  initAI();
+})();
+</script>
+</body>
+</html>

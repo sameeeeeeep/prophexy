@@ -261,9 +261,38 @@
     font-size:10px;letter-spacing:.14em;text-transform:uppercase}
   .aq.me{color:var(--dust);white-space:pre-wrap}
   :focus-visible{outline:1px solid var(--amber);outline-offset:3px}
+  /* ===== new approach: analysis overlay + on-demand gated sections ===== */
+  .aoverlay{position:fixed;inset:0;background:#000;z-index:120;display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;transition:opacity .7s}
+  .aoverlay.gone{opacity:0}
+  .aeye{width:118px;height:118px}
+  .aeye .alid{stroke-dasharray:380;stroke-dashoffset:380;animation:adraw 1.05s ease forwards}
+  .aeye .airis{opacity:0;animation:afin .5s ease .7s forwards}
+  .aeye .apupil{opacity:0;transform-box:fill-box;transform-origin:center;animation:afin .4s ease .9s forwards, apul 1.6s ease-in-out 1s infinite}
+  @keyframes adraw{to{stroke-dashoffset:0}} @keyframes afin{to{opacity:1}} @keyframes apul{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+  .atxt2{font-family:'Fragment Mono','Courier New',monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint);opacity:0;animation:afin .6s ease 1.1s forwards}
+  .gate{margin-top:var(--s3)}
+  .gatebtn{background:none;border:1px solid var(--amber);color:var(--amber);padding:14px 22px;font-family:'Fragment Mono','Courier New',monospace;letter-spacing:.12em;text-transform:uppercase;font-size:12px;cursor:pointer}
+  .gatebtn:hover{background:var(--amber);color:#000}
+  .gatebody{display:none}
+  .gatebody.shown{display:block;animation:gfade .6s ease}
+  @keyframes gfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .gatestage{margin-top:20px;display:flex;flex-direction:column;gap:16px}
+  .scan{display:flex;gap:9px}
+  .scan span{width:10px;height:10px;border-radius:50%;background:#33333d;animation:scanp 1s ease-in-out infinite}
+  .scan span:nth-child(2){animation-delay:.12s}.scan span:nth-child(3){animation-delay:.24s}.scan span:nth-child(4){animation-delay:.36s}.scan span:nth-child(5){animation-delay:.48s}.scan span:nth-child(6){animation-delay:.6s}
+  @keyframes scanp{0%,100%{background:#33333d;transform:scale(1)}50%{background:var(--amber);transform:scale(1.6)}}
+  .atxt{font-family:'Fragment Mono','Courier New',monospace;color:var(--faint);font-size:11px;letter-spacing:.2em;text-transform:uppercase}
 </style>
 </head>
 <body>
+<div class="aoverlay" id="analysisOverlay">
+  <svg class="aeye" viewBox="0 0 160 160" fill="none">
+    <path class="alid" d="M18 80 Q80 26 142 80 Q80 134 18 80 Z" stroke="#f5f5fc" stroke-width="2"/>
+    <circle class="airis" cx="80" cy="80" r="26" stroke="#ffab4d" stroke-width="1.5"/>
+    <circle class="apupil" cx="80" cy="80" r="7" fill="#ffab4d"/>
+  </svg>
+  <div class="atxt2">Reading the sky&hellip;</div>
+</div>
 
 <header class="mast" style="max-width:var(--col);margin:0 auto;padding-left:22px;padding-right:22px">
   <svg viewBox="0 0 40 40" fill="none" stroke="#f0f0fa" stroke-width="1.4">
@@ -524,7 +553,8 @@
   function tk(d){d=d||new Date();var p=function(n){return n<10?'0'+n:''+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
   var daily=null; try{ var dj=JSON.parse(localStorage.getItem('prophexy.daily::'+pid)); if(dj&&dj.day===tk())daily=dj; }catch(e){}
   function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'…';}
-  var HL={1:'Start the thing — today rewards the first step.',2:'Hold steady; let it come to you.',3:'Say the thing out loud today.',4:'Build one solid piece of it today.',5:'Let something change today — don’t grip.',6:'Tend to one person, including you.',7:'Go quiet and listen inward today.',8:'Claim the thing you already earned.',9:'Finish it — the ending is the gift.',11:'Trust the flash of knowing today.',22:'Lay one stone of the big thing.'};
+  var HL={1:'Expect a restless, ready day.',2:'Expect a slow, waiting day.',3:'Expect a bright, talkative day.',4:'Expect a steady, working day.',5:'Expect a loose, changeable day.',6:'Expect a quiet day, close to home.',7:'Expect a quiet, inward day.',8:'Expect a strong, sure day.',9:'Expect a winding-down day.',11:'Expect a gut-feeling day.',22:'Expect a big-picture day.'};
+  var MEANING={1:'Expect a restless, ready feeling today, like something wants to get moving. That thing you keep coming back to may feel closer to the surface than usual. Days like this tend to have a bit of push in them.',2:'Today will move slowly, and it’s not really yours to hurry. Something you want is probably still coming together in the background. Expect a waiting kind of day — the sort where things work out better when they’re not forced.',3:'Expect a bright, talkative feeling today. Words may come more easily than usual, and you might feel more like sharing what’s on your mind. It should be a sociable, open sort of day.',4:'Today will feel steady and grounded — a working day, not a dramatic one. The practical stuff that’s been piling up may feel more manageable. Expect a calm, solid quality to it.',5:'Today may feel a little loose, like your usual routine has some give in it. Things might not go quite to plan, and you can expect an open, restless quality to the day — more room than usual for something to shift.',6:'Today, the people close to you will likely be on your mind more than usual. You may notice their moods, and small things at home could matter more than they normally would. Expect it to feel less about getting things done and more about who you’re doing them for.',7:'Expect a quiet, inward feeling today. The world outside may matter a little less, and your own thoughts a little more. It should be a low-key day — the kind where you notice how you’re really doing.',8:'Today may bring a stronger, surer feeling, like you’re on firmer ground than usual. You might find you’re readier to speak up and be taken seriously. Expect a day with some weight and confidence in it.',9:'Expect a winding-down feeling today, like the end of a chapter. Something that’s been running its course may feel ready to close. It should read more like an exhale than a fresh breath.',11:'Today your gut may run louder than your logic. You might find you just “know” things before you can explain them — a first impression, a hunch, a sense of which way to go. Expect an intuitive quality to the day.',22:'Expect a big-picture feeling today. The bigger things you think about — the long-term, the someday — may feel a little closer and more real. It should be a day that thinks in years, not hours.'};
   if(daily&&daily.line){ $('hl').textContent=capWords(daily.line,13);
     $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · '+(daily.src==='local'?'on your device':'your Claude');
     if(daily.base){ var paras=daily.base.split(/\n{2,}/).filter(Boolean);
@@ -533,7 +563,7 @@
   } else {
     $('hl').textContent=HL[pd]||'The day is being read.';
     $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · computed';
-    $('lede').innerHTML='On your numbers it’s a '+pd+'-day — '+NW[pd]+'. The '+phase.toLowerCase()+' leans '+(waning?'toward release':'toward building')+', and '+ruler+' rules the day. <b>Connect your reading and this becomes yours alone.</b>';
+    $('lede').textContent=MEANING[pd]||MEANING[5];
   }
 
   function ev(lit,html){return '<span class="ev"><span class="dot'+(lit?' lit':'')+'"></span><span class="mono">'+html+'</span></span>';}
@@ -824,7 +854,7 @@
       } else throw e;
     }
   }
-  var CORE='Open with ONE short vivid sentence — my single prediction or piece of advice for today, at most 12 words — on its own line, no preamble and no label. Then a blank line. Then my reading in 3 short parts: each begins with a plain 2-to-4-word heading on its own line, then 2 or 3 short sentences. Make it true only for me today, never a phrase you would hand anyone else. No emojis, no astrology jargon in the prose. At the very end, on its own line, write DO: then one small concrete action I can take today.';
+  var CORE='Write my reading for today. It is a FORECAST, so frame everything as what to expect, not as fact: use "expect", "you’ll likely", "you may", "might", "will" — you can’t know what is on my mind right now, so predict what I’ll feel or notice, don’t assert it (say "will be" / "may feel", never "is" / "are"). Open with ONE short forecast headline starting with "Expect a…" that names the day’s feeling in a few easy words — at most 6 words, like "Expect a quiet day, close to home." — on its own line, no label, no bookish verbs or clever twists. Then a blank line, then two short paragraphs that read my day to me: predict what I’ll notice and how the day may feel. This is a reading, NOT advice — describe, don’t instruct. Do not tell me what to do and never say "you should"; the one thing to do goes only after DO:. Keep it very simple: short sentences, plain everyday words the way you’d text a friend. No literary or poetic phrases (nothing like "inward gravity"), no jargon, no emojis. At the very end, on its own line, write DO: then one small concrete thing I could do today.';
   function sysPrompt(){
     var L=[];
     L.push('You are Prophexy, a personal oracle instrument. Speak in first person as the instrument. Plain, warm, specific. Never generic, no emojis.');
@@ -967,6 +997,47 @@
   })();
 
   window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+})();
+</script>
+<script>
+/* new approach: analysis reveal + on-demand gated sections. Additive — moves each section's
+   already-rendered content into a hidden body, gates it behind a button + dramatic scan. Removes nothing. */
+(function(){
+  var $=function(i){return document.getElementById(i);};
+  var AC; function actx(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended')AC.resume(); }catch(e){} return AC; }
+  function tone(f,d,v,t){ var c=actx(); if(!c)return; try{ var o=c.createOscillator(),g=c.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.value=v||0.04; o.connect(g); g.connect(c.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+(d||0.4)); o.stop(c.currentTime+(d||0.4)); }catch(e){} }
+
+  /* hero = reading only: the reasoning evidence chips move out (they live in "Why", now gated) */
+  var ev=$('evidence'); if(ev) ev.style.display='none';
+
+  /* analysis overlay — plays on entry (after reload) and when opening the daily */
+  var ov=$('analysisOverlay');
+  function playAnalysis(sound){ if(!ov)return; ov.classList.remove('gone'); ov.style.display='flex';
+    ov.querySelectorAll('.alid,.airis,.apupil,.atxt2').forEach(function(e){ e.style.animation='none'; void e.offsetWidth; e.style.animation=''; });
+    if(sound){ [0,190,380,600].forEach(function(d,i){ setTimeout(function(){ tone(280+i*130,0.55,0.045); },d); }); setTimeout(function(){ tone(860,0.8,0.05); },780); }
+    setTimeout(function(){ ov.classList.add('gone'); setTimeout(function(){ ov.style.display='none'; },720); }, 1900);
+  }
+  var ident=$('ident');
+  if(!ident || ident.hidden){ playAnalysis(true); }
+
+  /* gate every deeper section behind a "run the analysis" button + a dramatic scan */
+  var GATES={'s-why':'See the reasoning','s-sky':'Cast the chart','s-numbers':'Run your numbers','s-you':'Find your fixed core','s-ways':'Read all four systems','s-checkin':'Open check-in','s-cards':'Draw the cards','s-cure':'Reveal tonight’s cure','s-timing':'Map the day’s timing','s-week':'Chart the week ahead'};
+  var SCANTXT={'s-why':'Tracing the signals','s-sky':'Casting the chart','s-numbers':'Reducing the numbers','s-you':'Finding your core','s-ways':'Aligning four systems','s-checkin':'Opening check-in','s-cards':'Shuffling the deck','s-cure':'Choosing your cure','s-timing':'Mapping the hours','s-week':'Weighing the week'};
+  Object.keys(GATES).forEach(function(id){
+    var sec=$(id); if(!sec)return; var lb=sec.querySelector('.seclb'); if(!lb)return;
+    var body=document.createElement('div'); body.className='gatebody';
+    var n=lb.nextSibling; while(n){ var nx=n.nextSibling; body.appendChild(n); n=nx; }
+    var gate=document.createElement('div'); gate.className='gate';
+    gate.innerHTML='<button class="gatebtn" type="button">'+GATES[id]+' &rarr;</button>'+
+      '<div class="gatestage" hidden><div class="scan"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="atxt">'+SCANTXT[id]+'&hellip;</div></div>';
+    sec.appendChild(gate); sec.appendChild(body);
+    var btn=gate.querySelector('.gatebtn'), stage=gate.querySelector('.gatestage');
+    btn.addEventListener('click',function(){
+      btn.hidden=true; stage.hidden=false;
+      var ticks=setInterval(function(){ tone(150+Math.random()*230,0.05,0.03,'triangle'); },110);
+      setTimeout(function(){ clearInterval(ticks); gate.style.display='none'; body.classList.add('shown'); tone(720,0.5,0.05); }, 1700);
+    });
+  });
 })();
 </script>
 </body>
