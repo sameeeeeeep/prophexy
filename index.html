@@ -776,17 +776,39 @@
     Aquarius:'independent and future-facing, thinking sideways',
     Pisces:'porous and dreaming, absorbing what’s around you'
   };
-  if($('vedicRead')){
-    $('vedicRead').textContent=
-      'To Western astrology you’re '+wsun+'. But Vedic astrology reads the sky from a fixed star point about 24° behind, and by that measure your Sun sits in '+vsun+' — '+(SIGNTRAIT[vsun]||'')+'. '+
-      (wsun===vsun
-        ? 'Here the two traditions agree, which is rare: it means this part of you reads the same however you look at it.'
-        : 'So under the '+wsun+' you were handed, a quieter '+vsun+' is running. When the two disagree, the Vedic one tends to be who you are when no one’s watching — the private default underneath the public sign.');
+  var VEDIC_COMPUTED=
+    'To Western astrology you’re '+wsun+'. But Vedic astrology reads the sky from a fixed star point about 24° behind, and by that measure your Sun sits in '+vsun+' — '+(SIGNTRAIT[vsun]||'')+'. '+
+    (wsun===vsun
+      ? 'Here the two traditions agree, which is rare: it means this part of you reads the same however you look at it.'
+      : 'So under the '+wsun+' you were handed, a quieter '+vsun+' is running. When the two disagree, the Vedic one tends to be who you are when no one’s watching — the private default underneath the public sign.');
+  var CHINESE_COMPUTED=
+    'You were born in the year of the '+yy+' '+elem+' '+animal+'. The '+animal+' is '+(ANOTE[animal]||'')+' — the face the world meets first. Its element is '+elem+': '+(ENOTE[elem]||'')+'. And it runs '+yy+', '+(yy==='Yang'?'turned outward — initiating, spending energy to make things happen':'turned inward — receptive, gathering energy before it moves')+'. Together they describe how you actually operate, underneath the Western story.';
+  if($('vedicRead')) $('vedicRead').textContent=VEDIC_COMPUTED;
+  if($('chineseRead')) $('chineseRead').textContent=CHINESE_COMPUTED;
+
+  /* upgrade to a real AI reading when a source is connected; computed prose is the instant fallback */
+  function sysReadPrompt(kind){
+    if(kind==='vedic') return 'Write my Vedic (sidereal) astrology reading in 2–3 plain sentences. My Western Sun is '+wsun+'; my Vedic Sun is '+vsun+'. Second person, warm and specific, a reading not advice, no headline and no label — say what this Vedic placement means for who I am underneath the Western sign.';
+    return 'Write my Chinese astrology reading in 2–3 plain sentences. I am a '+yy+' '+elem+' '+animal+' (born '+by+'). Second person, warm and specific, a reading not advice, no headline and no label — say how this describes the way I actually operate.';
   }
-  if($('chineseRead')){
-    $('chineseRead').textContent=
-      'You were born in the year of the '+yy+' '+elem+' '+animal+'. The '+animal+' is '+(ANOTE[animal]||'')+' — the face the world meets first. Its element is '+elem+': '+(ENOTE[elem]||'')+'. And it runs '+yy+', '+(yy==='Yang'?'turned outward — initiating, spending energy to make things happen':'turned inward — receptive, gathering energy before it moves')+'. Together they describe how you actually operate, underneath the Western story.';
+  function streamInto(el,prompt,cacheKey,fallback){
+    if(!el)return;
+    if(!aiReady()){ if(fallback)el.textContent=fallback; return; }
+    try{ var c=JSON.parse(localStorage.getItem(cacheKey)); if(c&&c.day===tk()&&c.text){ el.textContent=c.text; return; } }catch(e){}
+    if(el.dataset.busy)return; el.dataset.busy='1';
+    var prev=fallback||el.textContent; el.innerHTML=eyeLoader('reading…');
+    (async function(){ var acc='';
+      try{ for await (var d of aiStream({system:sysPrompt(),messages:[{role:'user',content:prompt}],maxTokens:240})){ if(d&&d.text){ acc+=d.text; el.textContent=acc; } }
+        acc=acc.trim(); if(acc){ el.textContent=acc; try{localStorage.setItem(cacheKey,JSON.stringify({day:tk(),text:acc}));}catch(e){} } else el.textContent=prev;
+      }catch(e){ el.textContent=prev; }
+      finally{ delete el.dataset.busy; }
+    })();
   }
+  window.__enrichSystems=function(){
+    streamInto($('vedicRead'),sysReadPrompt('vedic'),'prophexy.vedic::'+pid,VEDIC_COMPUTED);
+    streamInto($('chineseRead'),sysReadPrompt('chinese'),'prophexy.chinese::'+pid,CHINESE_COMPUTED);
+  };
+  if(aiReady()) window.__enrichSystems();
 
   /* check-in */
   var MOODS=[['anxious','Name the one thing feeding it. Just the name takes half its charge.'],
@@ -1128,10 +1150,10 @@
         /* pick up where the user left off; first-time default follows what's available */
         if(!AIMODE){ AIMODE = granted ? 'switchboard' : 'computed'; }
         if(AIMODE==='switchboard' && AI.installed){
-          AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); })
+          AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); else if(window.__enrichSystems) window.__enrichSystems(); })
             .catch(function(){ AIMODE='computed'; updateAIUI(); });
         } else if(AIMODE==='local' && LocalAI.supported()){
-          updateAIUI(); if(!daily) loadLocalThenRead();
+          updateAIUI(); if(!daily) loadLocalThenRead(); else if(window.__enrichSystems) window.__enrichSystems();
         } else {
           if(AIMODE==='switchboard'||AIMODE==='local') AIMODE='computed'; /* source no longer available here */
           if(daily && daily.src && daily.src!=='computed'){ showComputed(); } else { updateAIUI(); }
@@ -1156,6 +1178,7 @@
         if(act)$('move').textContent=act;
         try{ localStorage.setItem('prophexy.daily::'+pid, JSON.stringify({day:tk(),base:body,line:line,act:act,src:(AIMODE==='local'?'local':'switchboard'),thread:[]})); }catch(e){}
         AIchat=[{role:'user',content:CORE},{role:'assistant',content:body}];
+        if(window.__enrichSystems)window.__enrichSystems();
       }catch(e){
         $('hl').textContent=HL[pd]||'The day is being read.';
         $('lede').textContent='(Reading failed: '+String(e&&e.message||e).slice(0,300)+' — '+(AIMODE==='local'?'on-device model':'via Switchboard')+')';
