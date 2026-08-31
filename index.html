@@ -367,6 +367,8 @@
   <a class="stab" href="#s-numbers">Numbers</a>
   <a class="stab" href="#s-you">You</a>
   <a class="stab" href="#s-ways">Systems</a>
+  <a class="stab" href="#s-vedic">Vedic</a>
+  <a class="stab" href="#s-chinese">Chinese</a>
   <a class="stab" href="#s-checkin">Check in</a>
   <a class="stab" href="#s-cards">Cards</a>
   <a class="stab" href="#s-cure">Cure</a>
@@ -459,18 +461,21 @@
   <section id="s-ways">
     <div class="seclb"><span class="mono">The same person, four ways</span></div>
     <div class="ways" id="ways"></div>
-    <p class="waysnote">Four traditions, four calendars, one birth. They don&rsquo;t translate each other — where they rhyme is where it&rsquo;s worth trusting.</p>
+    <p class="waysnote">Four traditions, four calendars, one birth. They don&rsquo;t translate each other — where they rhyme is where it&rsquo;s worth trusting. The two that most disagree with the Western story get their own reading below.</p>
+  </section>
 
-    <div class="sub3">
-      <div class="seclb"><span class="mono">The Vedic shift</span></div>
-      <p class="secsub">Vedic astrology measures from a starting point about 24&deg; behind the Western one — so the sign you know is often not the one a Vedic astrologer would give you.</p>
-      <div id="vedicRows"></div>
-    </div>
+  <section id="s-vedic">
+    <div class="seclb"><span class="mono">The Vedic you</span></div>
+    <p class="secsub">Read from the fixed stars — about 24&deg; behind the Western zodiac.</p>
+    <p class="body" id="vedicRead">&mdash;</p>
+    <div id="vedicRows" style="margin-top:var(--s3)"></div>
+  </section>
 
-    <div class="sub3">
-      <div class="seclb"><span class="mono">The Chinese year</span></div>
-      <div class="ways" id="chineseCells"></div>
-    </div>
+  <section id="s-chinese">
+    <div class="seclb"><span class="mono">Your Chinese year</span></div>
+    <p class="secsub">One birth year, read as animal, element, and force.</p>
+    <p class="body" id="chineseRead">&mdash;</p>
+    <div class="ways" id="chineseCells" style="margin-top:var(--s3)"></div>
   </section>
 
   <section id="s-checkin">
@@ -755,6 +760,33 @@
     way('Your element',yy+' '+elem,ENOTE[elem]||'')+
     way('The year','born '+by,'the animal is the face the world sees')+
     way('Day master','in the full app','the deepest layer needs your exact birth day');
+
+  /* dedicated readings — Vedic & Chinese, as prose, not just cells */
+  var SIGNTRAIT={
+    Aries:'a starter, quick to move and ask later',
+    Taurus:'steady and sensory, building things that last',
+    Gemini:'quick and curious, living between ideas',
+    Cancer:'protective and tidal, feeling in waves',
+    Leo:'warm and visible, made to be seen',
+    Virgo:'precise and useful, fixing what others miss',
+    Libra:'a balancer, reading the room and evening it out',
+    Scorpio:'deep and all-or-nothing, going to the bottom of things',
+    Sagittarius:'restless and honest, needing room and truth',
+    Capricorn:'patient and climbing, playing the long game',
+    Aquarius:'independent and future-facing, thinking sideways',
+    Pisces:'porous and dreaming, absorbing what’s around you'
+  };
+  if($('vedicRead')){
+    $('vedicRead').textContent=
+      'To Western astrology you’re '+wsun+'. But Vedic astrology reads the sky from a fixed star point about 24° behind, and by that measure your Sun sits in '+vsun+' — '+(SIGNTRAIT[vsun]||'')+'. '+
+      (wsun===vsun
+        ? 'Here the two traditions agree, which is rare: it means this part of you reads the same however you look at it.'
+        : 'So under the '+wsun+' you were handed, a quieter '+vsun+' is running. When the two disagree, the Vedic one tends to be who you are when no one’s watching — the private default underneath the public sign.');
+  }
+  if($('chineseRead')){
+    $('chineseRead').textContent=
+      'You were born in the year of the '+yy+' '+elem+' '+animal+'. The '+animal+' is '+(ANOTE[animal]||'')+' — the face the world meets first. Its element is '+elem+': '+(ENOTE[elem]||'')+'. And it runs '+yy+', '+(yy==='Yang'?'turned outward — initiating, spending energy to make things happen':'turned inward — receptive, gathering energy before it moves')+'. Together they describe how you actually operate, underneath the Western story.';
+  }
 
   /* check-in */
   var MOODS=[['anxious','Name the one thing feeding it. Just the name takes half its charge.'],
@@ -1224,7 +1256,10 @@
   if((!ident || ident.hidden) && typeof window.__playCeremony==='function'){ window.__playCeremony(true); }
 
   /* gate every deeper section behind a "run the analysis" button + a dramatic scan */
-  var GATES={'s-why':'See the reasoning','s-sky':'Cast the chart','s-numbers':'Run your numbers','s-you':'Find your fixed core','s-ways':'Read all four systems','s-checkin':'Open check-in','s-cards':'Draw the cards','s-cure':'Reveal tonight’s cure','s-timing':'Map the day’s timing','s-week':'Chart the week ahead'};
+  /* sections now show openly — the entry ceremony is the analysis moment, and the
+     input-driven sections (Ask, Cards, Check-in, photos) carry their own controls.
+     Leave this empty to gate nothing; add {id:'label'} here to re-gate a section. */
+  var GATES={};
   var SCANTXT={'s-why':'Tracing the signals','s-sky':'Casting the chart','s-numbers':'Reducing the numbers','s-you':'Finding your core','s-ways':'Aligning four systems','s-checkin':'Opening check-in','s-cards':'Shuffling the deck','s-cure':'Choosing your cure','s-timing':'Mapping the hours','s-week':'Weighing the week'};
   Object.keys(GATES).forEach(function(id){
     var sec=$(id); if(!sec)return; var lb=sec.querySelector('.seclb'); if(!lb)return;
