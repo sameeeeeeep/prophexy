@@ -16,6 +16,7 @@
     --navh:52px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
+  [hidden]{display:none!important}
   html{background:var(--void);scroll-behavior:smooth}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
   body{background:var(--void);color:var(--ink);font-family:'Archivo',system-ui,sans-serif;
@@ -309,6 +310,29 @@
   @keyframes eyescan{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
   @keyframes eyespin{to{transform:rotate(360deg)}}
   @media(prefers-reduced-motion:reduce){.eyesvg .iris,.eyesvg .pupil,.eyesvg .scan{animation:none}}
+  /* ===== reading-source picker ===== */
+  .srcbar{margin-top:14px}
+  .srctoggle{background:none;border:none;cursor:pointer;color:var(--faint);text-align:left;padding:0;
+    font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+  .srctoggle b{color:var(--amber);font-weight:400}
+  .srctoggle:hover{color:var(--dust)}
+  .srctoggle .caret{display:inline-block;transition:transform .2s}
+  .srctoggle.open .caret{transform:rotate(180deg)}
+  .srcpanel{margin-top:14px;border:1px solid var(--rule)}
+  .srcopt{display:flex;flex-direction:column;gap:3px;align-items:flex-start;background:none;border:none;
+    border-bottom:1px solid var(--rule);cursor:pointer;padding:14px 16px;text-align:left;width:100%}
+  .srcopt:last-child{border-bottom:none}
+  .srcopt:hover{background:rgba(255,171,77,.06)}
+  .srcopt.cur{background:rgba(255,171,77,.09)}
+  .so-t{font-size:15px;color:var(--ink)}
+  .srcopt.cur .so-t{color:var(--amber)}
+  .so-t .tick{color:var(--amber);margin-left:7px;font-size:12px}
+  .so-d{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .srcopt:disabled{opacity:.4;cursor:default}
+  .srcopt:disabled:hover{background:none}
+  .so-prog{padding:12px 16px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:8px}
+  .so-prog .track{height:2px;background:var(--rule);overflow:hidden}
+  .so-prog .track i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s}
 </style>
 </head>
 <body>
@@ -373,6 +397,15 @@
   <section class="hero" id="s-tonight">
     <div class="kicker"><span class="dot lit"></span><span class="mono" id="kick"><b>Tonight&rsquo;s reading</b></span><button class="cbtn" id="aiConnectBtn" hidden style="margin-left:auto">Use my Claude</button></div>
     <h1 class="display"><span class="rl"><span id="hl">The sky is being read.</span></span></h1>
+    <div class="srcbar">
+      <button class="srctoggle" id="srcToggle" type="button">Source: <b id="srcNow">computed</b> &nbsp;<span class="caret">&#9662;</span></button>
+      <div class="srcpanel" id="srcPanel" hidden>
+        <button class="srcopt" id="srcSB" type="button"><span class="so-t">Your Claude<span class="tick" hidden>&#10003;</span></span><span class="so-d">Switchboard &middot; richest, most personal</span></button>
+        <button class="srcopt" id="srcDev" type="button"><span class="so-t">On this device<span class="tick" hidden>&#10003;</span></span><span class="so-d">Private local model &middot; ~1GB, one-time</span></button>
+        <button class="srcopt" id="srcNone" type="button"><span class="so-t">On the chart<span class="tick" hidden>&#10003;</span></span><span class="so-d">Computed &middot; no AI, instant</span></button>
+        <div class="so-prog" id="srcProg" hidden><div class="track"><i id="srcProgFill"></i></div><span class="mono" id="srcProgTxt">Loading the on-device model&hellip;</span></div>
+      </div>
+    </div>
     <p class="body" id="lede">One honest paragraph about your day lands here.</p>
     <div class="evidence" id="evidence"></div>
     <div class="askrow"><input id="askQ" placeholder="Ask me anything about today&hellip;"><button id="askGo">Ask</button></div>
@@ -892,6 +925,35 @@
 
   /* ================= your Claude — the Switchboard wire ================= */
   var AIchat=[], AI={installed:false,connected:false,connect:null};
+  /* source of the reading: 'switchboard' (your Claude) · 'local' (on-device model) · 'computed' */
+  var AIMODE=''; try{ AIMODE=localStorage.getItem('prophexy.aimode')||''; }catch(e){}
+
+  /* ---- on-device model (WebLLM / WebGPU) ---- */
+  var LocalAI=(function(){
+    var engine=null, ready=false, loading=false, MODEL='Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
+    function supported(){ try{ return !!navigator.gpu; }catch(e){ return false; } }
+    async function load(progressCb){
+      if(ready)return true; if(loading)return false; loading=true;
+      try{
+        var webllm=await import('https://esm.run/@mlc-ai/web-llm');
+        engine=await webllm.CreateMLCEngine(MODEL,{initProgressCallback:function(r){ progressCb&&progressCb(r); }});
+        ready=true; loading=false; return true;
+      }catch(e){ loading=false; throw e; }
+    }
+    async function *stream(o){
+      var msgs=(o.messages||[]).slice(); if(o.system) msgs.unshift({role:'system',content:o.system});
+      var res=await engine.chat.completions.create({messages:msgs,stream:true,temperature:0.6,top_p:0.9,max_tokens:o.maxTokens||700});
+      for await (var ch of res){ var t=ch&&ch.choices&&ch.choices[0]&&ch.choices[0].delta&&ch.choices[0].delta.content; if(t) yield {text:t}; }
+    }
+    return {supported:supported,load:load,stream:stream,isReady:function(){return ready;},isLoading:function(){return loading;}};
+  })();
+
+  /* unified dispatch — the reading + answers stream from whichever source is active */
+  async function *aiStream(o){
+    if(AIMODE==='local'){ for await (var d of LocalAI.stream(o)) yield d; return; }
+    for await (var d of streamWire(o)) yield d;
+  }
+  function aiReady(){ return (AIMODE==='switchboard'&&AI.connected) || (AIMODE==='local'&&LocalAI.isReady()); }
   function pickText(d){
     if(d==null) return '';
     if(typeof d==='string') return d;
@@ -950,44 +1012,108 @@
     return L.join('\n');
   }
   function updateAIUI(){
-    var b=$('aiConnectBtn'); if(!b)return;
-    b.hidden=!(AI.installed&&!AI.connected);
-    if(AI.connected){ $('askNote').textContent='A decision, a person, a fear — I answer against your whole chart.'; }
-    else if(AI.installed){ $('askNote').textContent='Tap "Use my Claude" and the reading is written for you alone.'; }
-    else { $('askNote').textContent='Connect your Claude (Switchboard) and I answer here — computed until then.'; }
+    var b=$('aiConnectBtn'); if(b)b.hidden=true; /* the picker owns source selection now */
+    if(aiReady()){ $('askNote').textContent='A decision, a person, a fear — I answer against your whole chart.'; }
+    else if(AIMODE==='switchboard'||AIMODE==='local'){ $('askNote').textContent='Connecting your source — I answer here once it’s ready.'; }
+    else { $('askNote').textContent='Reading on the chart. Pick a source above and I’ll answer your questions.'; }
+    renderSource();
   }
+  function renderSource(){
+    var lbl=AIMODE==='local'?'on your device':(AIMODE==='switchboard'?'your Claude':'computed');
+    var n=$('srcNow'); if(n)n.textContent=lbl;
+    [['srcSB','switchboard'],['srcDev','local'],['srcNone','computed']].forEach(function(pair){
+      var el=$(pair[0]); if(!el)return;
+      var on=(AIMODE===pair[1])||(!AIMODE&&pair[1]==='computed');
+      el.classList.toggle('cur',on); var tk=el.querySelector('.tick'); if(tk)tk.hidden=!on;
+    });
+    var dev=$('srcDev'); if(dev){ var ok=LocalAI.supported(); dev.disabled=!ok&&AIMODE!=='local';
+      if(!ok){ var dd=dev.querySelector('.so-d'); if(dd)dd.textContent='Needs WebGPU · not available in this browser'; } }
+    var sb=$('srcSB'); if(sb&&!AI.installed){ sb.disabled=true; var sd=sb.querySelector('.so-d'); if(sd)sd.textContent='Switchboard not detected in this browser'; }
+  }
+  function closePanel(){ var p=$('srcPanel'); if(p)p.hidden=true; var t=$('srcToggle'); if(t)t.classList.remove('open'); }
+  function showComputed(){
+    AIMODE='computed'; try{localStorage.setItem('prophexy.aimode','computed');}catch(e){}
+    $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · computed';
+    $('hl').textContent=HL[pd]||'The day is being read.';
+    $('lede').textContent=MEANING[pd]||MEANING[5];
+    updateAIUI();
+  }
+  function loadLocalThenRead(){
+    var prog=$('srcProg'), fill=$('srcProgFill'), txt=$('srcProgTxt');
+    if(prog)prog.hidden=false; if(txt)txt.textContent='Loading the on-device model…';
+    LocalAI.load(function(r){ if(!r)return; var p=(r.progress!=null)?Math.round(r.progress*100):null;
+        if(fill&&p!=null)fill.style.width=p+'%'; if(txt)txt.textContent=String(r.text||'Loading…').slice(0,90); })
+      .then(function(){ if(txt)txt.textContent='On-device model ready.'; updateAIUI(); readNow(); closePanel(); })
+      .catch(function(e){ if(txt)txt.textContent='(Load failed: '+String(e&&e.message||e).slice(0,90)+')'; });
+  }
+  function setSource(mode){
+    if(mode==='computed'){ showComputed(); closePanel(); return; }
+    if(mode==='switchboard'){
+      if(!AI.installed){ renderSource(); return; }
+      AIMODE='switchboard'; try{localStorage.setItem('prophexy.aimode','switchboard');}catch(e){}
+      renderSource();
+      if(AI.connected){ readNow(); closePanel(); updateAIUI(); }
+      else AI.connect().then(function(){ updateAIUI(); readNow(); closePanel(); })
+        .catch(function(e){ $('askNote').textContent='(Could not connect: '+String(e&&e.message||e).slice(0,140)+')'; });
+      return;
+    }
+    if(mode==='local'){
+      if(!LocalAI.supported()){ renderSource(); var t=$('srcProgTxt'); if(t){t.textContent='This browser has no WebGPU — on-device model unavailable.'; $('srcProg').hidden=false;} return; }
+      AIMODE='local'; try{localStorage.setItem('prophexy.aimode','local');}catch(e){}
+      renderSource();
+      if(LocalAI.isReady()){ readNow(); closePanel(); updateAIUI(); }
+      else loadLocalThenRead();
+    }
+  }
+  (function(){
+    var t=$('srcToggle'); if(t)t.addEventListener('click',function(){ var p=$('srcPanel'); if(!p)return;
+      p.hidden=!p.hidden; this.classList.toggle('open',!p.hidden); renderSource(); });
+    var a=$('srcSB'); if(a)a.addEventListener('click',function(){ setSource('switchboard'); });
+    var b2=$('srcDev'); if(b2)b2.addEventListener('click',function(){ setSource('local'); });
+    var c=$('srcNone'); if(c)c.addEventListener('click',function(){ setSource('computed'); });
+    renderSource();
+  })();
   (function(){
     function ready(){ if(window.claude&&window.claude.isRelay)return Promise.resolve(window.claude);
       return new Promise(function(res){ var done=false,fin=function(){ if(done)return; done=true;
         res(window.claude&&window.claude.isRelay?window.claude:null); };
         window.addEventListener('claude#initialized',fin,{once:true}); setTimeout(fin,1600); }); }
     ready().then(function(cl){
-      if(!cl){ updateAIUI(); return; }
-      AI.installed=true;
-      AI.connect=function(){ return window.claude.request({method:'claude_connect',params:{
-        models:['claude-sonnet-5','claude-haiku-4-5'],
-        reason:'Read your chart across every system and answer your questions, as your personal oracle'}})
-        .then(function(){ AI.connected=true; try{localStorage.setItem('prophexy.sbok','1');}catch(e){} }); };
-      /* already granted before? reconnect silently — no re-tap */
-      window.claude.request({method:'claude_permissions',params:{}}).then(function(perm){
-        var granted = perm && perm.models && perm.models.length;
-        if(granted){ AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); }).catch(function(){ updateAIUI(); }); }
-        else { updateAIUI(); }
-      }).catch(function(){
-        /* permissions method unavailable — fall back to the stored flag */
-        var seen=false; try{seen=localStorage.getItem('prophexy.sbok')==='1';}catch(e){}
-        if(seen){ AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); }).catch(function(){ updateAIUI(); }); }
-        else updateAIUI();
+      if(cl){
+        AI.installed=true;
+        AI.connect=function(){ return window.claude.request({method:'claude_connect',params:{
+          models:['claude-sonnet-5','claude-haiku-4-5'],
+          reason:'Read your chart across every system and answer your questions, as your personal oracle'}})
+          .then(function(){ AI.connected=true; try{localStorage.setItem('prophexy.sbok','1');}catch(e){} }); };
+      }
+      function grantThen(cb){
+        if(!cl){ cb(false); return; }
+        window.claude.request({method:'claude_permissions',params:{}}).then(function(perm){
+          cb(!!(perm&&perm.models&&perm.models.length));
+        }).catch(function(){ var seen=false; try{seen=localStorage.getItem('prophexy.sbok')==='1';}catch(e){} cb(seen); });
+      }
+      grantThen(function(granted){
+        /* pick up where the user left off; first-time default follows what's available */
+        if(!AIMODE){ AIMODE = granted ? 'switchboard' : 'computed'; }
+        if(AIMODE==='switchboard' && AI.installed){
+          AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); })
+            .catch(function(){ AIMODE='computed'; updateAIUI(); });
+        } else if(AIMODE==='local' && LocalAI.supported()){
+          updateAIUI(); if(!daily) loadLocalThenRead();
+        } else {
+          if(AIMODE==='switchboard'||AIMODE==='local') AIMODE='computed'; /* source no longer available here */
+          if(daily && daily.src && daily.src!=='computed'){ showComputed(); } else { updateAIUI(); }
+        }
       });
     });
   })();
   function readNow(){
-    $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · your Claude';
+    $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · '+(AIMODE==='local'?'on your device':'your Claude');
     $('hl').textContent='Reading you\u2026'; $('lede').innerHTML=eyeLoader('reading you\u2026');
     (async function(){
       var acc='';
       try{
-        for await (var d of streamWire({system:sysPrompt(),messages:[{role:'user',content:CORE}],maxTokens:700})){
+        for await (var d of aiStream({system:sysPrompt(),messages:[{role:'user',content:CORE}],maxTokens:700})){
           if(d&&d.text){ acc+=d.text; $('lede').textContent=acc.slice(0,1400); } }
         var ft=acc.trim();
         var doM=ft.match(/(^|\n)\s*DO:\s*([\s\S]+?)\s*$/i); var act=doM?doM[2].trim():'';
@@ -996,11 +1122,11 @@
         $('hl').textContent=capWords(line,13);
         $('lede').textContent=(nl>0?body.slice(nl).trim():body).slice(0,700);
         if(act)$('move').textContent=act;
-        try{ localStorage.setItem('prophexy.daily::'+pid, JSON.stringify({day:tk(),base:body,line:line,act:act,src:'switchboard',thread:[]})); }catch(e){}
+        try{ localStorage.setItem('prophexy.daily::'+pid, JSON.stringify({day:tk(),base:body,line:line,act:act,src:(AIMODE==='local'?'local':'switchboard'),thread:[]})); }catch(e){}
         AIchat=[{role:'user',content:CORE},{role:'assistant',content:body}];
       }catch(e){
         $('hl').textContent=HL[pd]||'The day is being read.';
-        $('lede').textContent='(Reading failed: '+String(e&&e.message||e).slice(0,300)+' — via Switchboard)';
+        $('lede').textContent='(Reading failed: '+String(e&&e.message||e).slice(0,300)+' — '+(AIMODE==='local'?'on-device model':'via Switchboard')+')';
       }
     })();
   }
@@ -1015,7 +1141,7 @@
       el.className='aq '+(m.r==='user'?'you':'me'); el.textContent=m.c; th.appendChild(el); }); } })();
   $('askGo').addEventListener('click',function(){
     var q=($('askQ').value||'').trim(); if(!q)return;
-    if(!(AI&&AI.connected)){ updateAIUI(); return; }
+    if(!aiReady()){ updateAIUI(); return; }
     $('askQ').value='';
     var th=$('askThread');
     var qd=document.createElement('div'); qd.className='aq you'; qd.textContent=q; th.appendChild(qd);
@@ -1025,7 +1151,7 @@
     (async function(){
       var acc='';
       try{
-        for await (var d of streamWire({system:sysPrompt(),messages:AIchat,maxTokens:450})){
+        for await (var d of aiStream({system:sysPrompt(),messages:AIchat,maxTokens:450})){
           if(d&&d.text){ acc+=d.text; ad.textContent=acc; } }
         AIchat.push({role:'assistant',content:acc});
         try{ var k='prophexy.daily::'+pid; var dd=JSON.parse(localStorage.getItem(k))||{day:tk(),thread:[]};
