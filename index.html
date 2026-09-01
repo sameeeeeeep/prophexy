@@ -422,6 +422,20 @@
   .so-prog{padding:12px 16px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:8px}
   .so-prog .track{height:2px;background:var(--rule);overflow:hidden}
   .so-prog .track i{display:block;height:100%;background:var(--amber);width:0;transition:width .3s}
+  /* source status + picker on the identify form */
+  .identsrc{margin-top:22px}
+  .identsrc-lb{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .identsrc-lb .mono{font-size:11px}
+  #idSrcStatus{color:var(--amber)}
+  .idsrcopts{display:flex;gap:1px;background:var(--rule);border:1px solid var(--rule)}
+  .idsrcopt{flex:1 1 0;min-width:0;background:#000;border:none;cursor:pointer;padding:12px 10px;text-align:left;display:flex;flex-direction:column;gap:3px}
+  .idsrcopt b{color:var(--ink);font-weight:500;font-size:14px;line-height:1.15}
+  .idsrcopt span{font-family:'Fragment Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .idsrcopt:hover{background:rgba(255,171,77,.06)}
+  .idsrcopt.cur{background:rgba(255,171,77,.1)}
+  .idsrcopt.cur b{color:var(--amber)}
+  .idsrcopt:disabled{opacity:.32;cursor:default}
+  .idsrcopt:disabled:hover{background:#000}
 </style>
 </head>
 <body>
@@ -477,6 +491,14 @@
         <span><label class="mono">Time · if known</label><input id="fTob" type="time"></span>
       </div>
       <label class="mono">Where you were born</label><input id="fPlace" placeholder="Any city or town">
+      <div class="identsrc" id="identSrc">
+        <div class="identsrc-lb"><span class="mono">Read with</span><span class="mono" id="idSrcStatus">checking&hellip;</span></div>
+        <div class="idsrcopts">
+          <button class="idsrcopt" id="idSrcSB" type="button"><b>Your Claude</b><span>Switchboard</span></button>
+          <button class="idsrcopt" id="idSrcDev" type="button"><b>On device</b><span>Private &middot; ~1GB</span></button>
+          <button class="idsrcopt cur" id="idSrcNone" type="button"><b>Computed</b><span>No AI &middot; instant</span></button>
+        </div>
+      </div>
       <button class="cbtn go" id="fGo">Begin the reading</button>
       <p class="movenote" id="fNote">Name and date make your numbers. Time and place sharpen the chart. Nothing about you leaves this device.</p>
     </div>
@@ -1240,6 +1262,30 @@
     var c=$('srcNone'); if(c)c.addEventListener('click',function(){ setSource('computed'); });
     renderSource();
   })();
+  /* source status + picker on the identify form — so you choose/see the source BEFORE the reading */
+  function updateIdentSrc(){
+    var st=$('idSrcStatus'); if(!st)return;
+    var sb=$('idSrcSB'), dev=$('idSrcDev'); var sbOK=AI.installed, devOK=LocalAI.supported();
+    if(sb)sb.disabled=!sbOK; if(dev)dev.disabled=!devOK;
+    [['idSrcSB','switchboard'],['idSrcDev','local'],['idSrcNone','computed']].forEach(function(p){
+      var el=$(p[0]); if(el)el.classList.toggle('cur',(AIMODE||'computed')===p[1]); });
+    if(AIMODE==='switchboard') st.textContent=AI.connected?'Your Claude · connected':'Your Claude';
+    else if(AIMODE==='local') st.textContent='On your device';
+    else st.textContent=sbOK?'Computed · your Claude is available':(devOK?'Computed · on-device available':'Computed only in this browser');
+  }
+  (function(){
+    var sb=$('idSrcSB'), dev=$('idSrcDev'), none=$('idSrcNone');
+    function persist(m){ AIMODE=m; try{localStorage.setItem('prophexy.aimode',m);}catch(e){} }
+    if(none)none.addEventListener('click',function(){ persist('computed'); updateIdentSrc(); });
+    if(dev)dev.addEventListener('click',function(){ if(!LocalAI.supported())return; persist('local'); updateIdentSrc(); });
+    if(sb)sb.addEventListener('click',function(){
+      if(!AI.installed){ updateIdentSrc(); return; }
+      sb.disabled=true; var st=$('idSrcStatus'); if(st)st.textContent='Connecting your Claude…';
+      AI.connect().then(function(){ persist('switchboard'); sb.disabled=false; updateIdentSrc(); })
+        .catch(function(){ sb.disabled=false; persist('computed'); if(st)st.textContent='Could not connect · computed'; updateIdentSrc(); });
+    });
+    updateIdentSrc();
+  })();
   (function(){
     function ready(){ if(window.claude&&window.claude.isRelay)return Promise.resolve(window.claude);
       return new Promise(function(res){ var done=false,fin=function(){ if(done)return; done=true;
@@ -1262,6 +1308,7 @@
       grantThen(function(granted){
         /* pick up where the user left off; first-time default follows what's available */
         if(!AIMODE){ AIMODE = granted ? 'switchboard' : 'computed'; }
+        if(typeof updateIdentSrc==='function') updateIdentSrc();
         if(AIMODE==='switchboard' && AI.installed){
           AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); else if(window.__enrichSystems) window.__enrichSystems(); })
             .catch(function(){ AIMODE='computed'; updateAIUI(); });
