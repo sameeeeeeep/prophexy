@@ -163,16 +163,105 @@
     padding:11px 18px;cursor:pointer}
   .filelb:hover{border-color:var(--amber);color:var(--amber)}
 
-  /* cards */
-  .deck{display:flex;gap:12px;margin-top:var(--s3);overflow-x:auto;
-    scroll-snap-type:x proximity;scrollbar-width:none;padding-bottom:10px}
-  .deck::-webkit-scrollbar{display:none}
-  .tcard{flex:0 0 200px;scroll-snap-align:start;border:1px solid var(--rule);padding:22px 18px;
-    display:grid;gap:10px;align-content:start;background:var(--void)}
-  .tcard .tn{font-size:20px;font-weight:460;font-variation-settings:'wdth' 100;line-height:1.22}
-  .tcard .tm{font-size:13.5px;color:var(--dust);line-height:1.55}
-  .tcard.rev .tn::after{content:" · reversed";font-size:11px;color:var(--amber)}
-  .tverdict{margin-top:22px;max-width:52ch}
+  /* cards — the full interactive tarot (ported); its own token aliases */
+  .tarot{--g1:#9c9ca8;--g2:#54545f;--g3:#33333d;--line:#242430;--sig:var(--amber);--gold:#ffc27a}
+  .qtypes{display:flex;gap:1px;background:var(--g3);border:1px solid var(--g3);flex-wrap:wrap;max-width:720px;margin-top:var(--s3)}
+  .qtypes button{flex:1 1 auto;background:#000;border:none;color:var(--g1);font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:11px 13px;cursor:pointer;transition:.2s;white-space:nowrap}
+  .qtypes button:hover{color:var(--ink)}
+  .qtypes button.on{background:var(--ink);color:#000;font-weight:700}
+  .qhint{font-size:12px;color:var(--g1);margin:12px 0 16px;letter-spacing:.02em;line-height:1.5}
+  .qrow{display:flex;gap:1px;background:var(--g3);border:1px solid var(--g3);max-width:720px}
+  .qrow input{flex:1;background:#000;border:none;color:var(--ink);font-family:'Archivo',sans-serif;font-size:16px;padding:15px 17px;min-width:0}
+  .qrow input:focus{outline:none;background:#07070c}
+  .qrow input::placeholder{color:var(--g2)}
+  .qrow button{background:var(--sig);color:#000;border:none;font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;padding:0 26px;cursor:pointer;font-weight:700;transition:.2s;white-space:nowrap}
+  .qrow button:hover{filter:brightness(1.1)}
+  .qrow button:disabled{background:var(--g3);color:var(--g2);cursor:default}
+  .plates{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2.6vw,26px);margin-top:clamp(30px,5vw,52px)}
+  @media(max-width:640px){.plates{grid-template-columns:1fr;max-width:320px;margin-left:auto;margin-right:auto}}
+  .plate{position:relative;background:#000;padding:9px;opacity:0;transform:translateY(26px) scale(.985);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1)}
+  .plate.on{opacity:1;transform:none}
+  .plate .frameA{position:absolute;inset:0;border:1px solid var(--g3);pointer-events:none}
+  .plate .frameB{position:absolute;inset:6px;border:1px solid var(--line);pointer-events:none}
+  .plate .brk{position:absolute;width:14px;height:14px;border:1px solid var(--sig);pointer-events:none}
+  .plate .brk.tl{top:-1px;left:-1px;border-right:none;border-bottom:none}
+  .plate .brk.tr{top:-1px;right:-1px;border-left:none;border-bottom:none}
+  .plate .brk.bl{bottom:-1px;left:-1px;border-right:none;border-top:none}
+  .plate .brk.br{bottom:-1px;right:-1px;border-left:none;border-top:none}
+  .plate .inner{position:relative;z-index:1;padding:6px}
+  .plate .ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:6px 6px 11px;border-bottom:1px solid var(--line)}
+  .plate .ph .pn{font-family:'Fragment Mono',monospace;font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--sig)}
+  .plate .ph .px{font-family:'Fragment Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:var(--g2);text-transform:uppercase}
+  .plate figure{margin:11px 0 0;position:relative;overflow:hidden;background:#050508;aspect-ratio:2/3;border:1px solid var(--line)}
+  .plate img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06);transition:filter 1.7s ease,opacity 1.1s ease}
+  .plate img.inv{transform:rotate(180deg)}
+  .plate.dev img{filter:grayscale(1) contrast(.18) brightness(2.4) blur(7px);opacity:.16}
+  .plate figure .tickrail{position:absolute;left:0;top:0;bottom:0;width:9px;pointer-events:none;background:repeating-linear-gradient(180deg,var(--g3) 0 1px,transparent 1px 9px);opacity:.5}
+  .plate figure .tickrail.r{left:auto;right:0}
+  .plate figure .scan{position:absolute;left:0;right:0;height:34%;pointer-events:none;opacity:0;background:linear-gradient(180deg,transparent,rgba(255,171,77,.16),transparent)}
+  .plate.sweeping figure .scan{opacity:1;animation:scandown 1.5s ease-out 1}
+  @keyframes scandown{from{transform:translateY(-120%)}to{transform:translateY(320%)}}
+  .plate .numeral{position:absolute;right:14px;bottom:52px;font-family:'Fragment Mono',monospace;font-size:clamp(28px,4.4vw,44px);line-height:1;color:var(--g3);letter-spacing:-.05em;pointer-events:none;z-index:0;opacity:.85}
+  .plate .cap{padding:13px 6px 6px}
+  .plate .cap .nm{font-size:clamp(20px,2.5vw,26px);letter-spacing:-.015em;line-height:1.1}
+  .plate .cap .mn{color:var(--g1);font-size:13px;line-height:1.55;margin-top:9px}
+  .guilloche{height:16px;margin:13px 0 0;opacity:.5}
+  .guilloche svg{display:block;width:100%;height:100%}
+  .plate .stamp{display:flex;align-items:center;gap:8px;padding:10px 6px 2px;border-top:1px solid var(--line);margin-top:11px;font-family:'Fragment Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--g2)}
+  .plate .stamp svg{width:13px;height:13px;flex:none;color:var(--gold);opacity:.85}
+  .plate .stamp .ref{margin-left:auto;color:var(--g3)}
+  .plate .stamp b{color:var(--g1);font-weight:400}
+  .plate .invtag{color:var(--sig)}
+  .qecho{margin-top:clamp(22px,3vw,32px);color:var(--g1);font-size:13.5px;line-height:1.6;max-width:62ch}
+  .qecho b{color:var(--ink);font-weight:400}
+  .deckwrap{margin-top:clamp(28px,4.5vw,46px);position:relative}
+  .deckglow{position:absolute;top:0;bottom:0;width:38%;pointer-events:none;left:-45%;z-index:8;background:linear-gradient(90deg,transparent,rgba(255,171,77,.15),rgba(255,255,255,.09),transparent)}
+  .deckglow.sweep{animation:deckSweep 1s ease-out 1}
+  @keyframes deckSweep{0%{left:-45%;opacity:.9}100%{left:112%;opacity:0}}
+  .deckhint{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--g1);margin-bottom:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .deckhint b{color:var(--sig);font-weight:400}
+  .deckrow{display:flex;justify-content:center;align-items:flex-end;padding:44px 0;min-height:190px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  .deckrow::-webkit-scrollbar{display:none}
+  .dcard{flex:0 0 auto;width:82px;height:126px;margin-right:-46px;background:#08080e;border:1px solid var(--g3);position:relative;cursor:pointer;transition:transform .3s cubic-bezier(.3,1.1,.4,1),opacity .4s,border-color .2s;transform-origin:bottom center}
+  .dcard:last-child{margin-right:0}
+  .dcard svg{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);opacity:.5}
+  .dcard:hover{transform:translateY(-22px)!important;border-color:var(--sig);z-index:5}
+  .dcard.taken{opacity:.12;pointer-events:none;transform:translateY(10px) scale(.9)!important}
+  .dcard.shuffling{transition:transform .22s ease}
+  .deckrow.locked .dcard{pointer-events:none}
+  .deckrow.locked .dcard:not(.taken){opacity:.3}
+  .verdict{margin-top:clamp(26px,4vw,42px);border-top:1px solid var(--line);padding-top:clamp(22px,3vw,32px);display:none}
+  .verdict.on{display:block}
+  .verdict .vl{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--g2)}
+  .verdict .vv{font-size:clamp(30px,6vw,60px);line-height:1.02;letter-spacing:-.035em;margin-top:12px;text-transform:lowercase}
+  .verdict .vv em{font-style:normal;color:var(--sig)}
+  .verdict .vr{margin-top:16px;color:var(--g1);font-size:15px;line-height:1.6;max-width:60ch}
+  .verdict .vr b{color:var(--ink);font-weight:400}
+  .verdict .vl .srcbadge{margin-left:12px;vertical-align:middle}
+  .verdict .vr .vevidence{margin-top:15px;padding-top:12px;border-top:1px solid var(--line);font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--g2);line-height:1.5}
+  .srcbadge{display:inline-block;font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:4px 11px;border:1px solid var(--g3);color:var(--g2)}
+  .srcbadge.ai{border-color:var(--sig);color:var(--sig)}
+  .scoremeta{display:block;margin-top:10px;font-family:'Fragment Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--g2)}
+  #stageVeil{position:fixed;inset:0;z-index:39;pointer-events:none;opacity:0;transition:opacity .9s ease;background:radial-gradient(ellipse 90% 70% at 50% 46%,transparent 34%,rgba(0,0,0,.62) 100%)}
+  body.casting #stageVeil{opacity:1}
+  body.casting .tarot{position:relative;z-index:41}
+  .deckwrap::before{content:"";position:absolute;left:50%;top:50%;width:120%;height:150%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;opacity:0;transition:opacity 1.1s ease;background:radial-gradient(ellipse 42% 40% at 50% 50%,rgba(255,171,77,.14),rgba(255,171,77,.05) 42%,transparent 68%)}
+  body.casting .deckwrap::before{opacity:1}
+  body.casting .deckrow{position:relative;z-index:1}
+  .flycard{position:fixed;z-index:120;pointer-events:none;perspective:1100px;will-change:transform;transition:transform .74s cubic-bezier(.34,.85,.28,1)}
+  .flycard .fcin{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .74s cubic-bezier(.34,.85,.28,1);filter:drop-shadow(0 24px 40px rgba(0,0,0,.65))}
+  .flycard.flip .fcin{transform:rotateY(180deg)}
+  .flycard .fcback,.flycard .fcface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:#08080e;border:1px solid var(--g3);overflow:hidden}
+  .flycard .fcback svg{position:absolute;inset:7px;width:calc(100% - 14px);height:calc(100% - 14px);opacity:.6}
+  .flycard .fcface{transform:rotateY(180deg);border-color:var(--sig);box-shadow:0 0 0 1px rgba(255,171,77,.4),0 0 30px rgba(255,171,77,.22)}
+  .flycard .fcface img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.06)}
+  .flycard .fcface img.inv{transform:rotate(180deg)}
+  .flycard.gone{opacity:0;transition:opacity .3s ease,transform .74s cubic-bezier(.34,.85,.28,1)}
+  .plate.landing .frameA{animation:plateFlare 1s ease-out 1}
+  @keyframes plateFlare{0%{box-shadow:0 0 0 1px rgba(255,171,77,.9),0 0 34px rgba(255,171,77,.5)}100%{box-shadow:0 0 0 1px transparent,0 0 0 transparent}}
+  .verdict.on .vv{animation:vvLand .72s cubic-bezier(.2,.85,.25,1) 1}
+  @keyframes vvLand{0%{opacity:0;transform:translateY(10px) scale(1.12);text-shadow:0 0 26px rgba(255,171,77,.55)}60%{opacity:1;text-shadow:0 0 14px rgba(255,171,77,.3)}100%{transform:none;text-shadow:none}}
+  @media(prefers-reduced-motion:reduce){.deckglow.sweep,.plate.sweeping figure .scan,.verdict.on .vv,.plate.landing .frameA{animation:none}.flycard,.flycard .fcin,#stageVeil,.deckwrap::before{transition:none}}
 
   /* breath */
   .breathe{display:flex;align-items:center;gap:28px;margin-top:var(--s3);flex-wrap:wrap}
@@ -521,10 +610,34 @@
 
   <section id="s-cards">
     <div class="seclb"><span class="mono">Ask the cards</span></div>
-    <p class="secsub">Three cards, cut once. Hold a real question while you draw.</p>
-    <div class="fieldrow" style="margin-top:0"><button class="cbtn" id="drawBtn">Draw three</button><span class="savednote" id="drawNote"></span></div>
-    <div class="deck" id="deck"></div>
-    <div class="tverdict body" id="tverdict"></div>
+    <p class="secsub">Pick a spread, hold a real question, shuffle, then choose three.</p>
+    <div class="tarot">
+      <div id="stageVeil"></div>
+      <div class="qtypes" id="qtypes">
+        <button type="button" data-s="yesno" class="on">Yes or no</button>
+        <button type="button" data-s="choice">This or that</button>
+        <button type="button" data-s="timing">When</button>
+        <button type="button" data-s="block">What&rsquo;s blocking me</button>
+        <button type="button" data-s="blind">What am I missing</button>
+      </div>
+      <div class="qhint" id="qhint"></div>
+      <div class="qrow">
+        <input id="q" placeholder="One real question&hellip;" autocomplete="off">
+        <button id="draw" type="button">Shuffle</button>
+      </div>
+      <div class="deckwrap">
+        <div class="deckhint" id="deckHint">Shuffle the deck, then choose three cards</div>
+        <div class="deckrow" id="deckRow"></div>
+        <div class="deckglow" id="deckGlow"></div>
+      </div>
+      <div class="plates" id="plates"></div>
+      <div class="verdict" id="verdict">
+        <div class="vl">The answer<span class="srcbadge" id="vBadge">Computed</span></div>
+        <div class="vv" id="vv"></div>
+        <div class="vr" id="vr"></div>
+      </div>
+      <p class="qecho" id="qecho"></p>
+    </div>
   </section>
 
   <section id="s-cure">
@@ -872,16 +985,16 @@
     if(Array.isArray(ca)&&ca.length){ var yes=ca.filter(function(x){return x.v===1||x.v===true;}).length;
       $('learned').textContent='You have marked '+yes+' reading'+(yes===1?'':'s')+' right and '+(ca.length-yes)+' off so far. Every correction is carried into the next one.'; } }catch(e){}
 
-  /* cards: 3-card draw from the majors */
-  var ARC=[['The Fool','a leap of faith; trust the unknown'],['The Magician','you already hold the tools; will makes it real'],['The High Priestess','listen inward; the answer sits below the surface'],['The Empress','let it grow; nurture rather than force'],['The Emperor','take structure and authority; set the rules'],['The Hierophant','the proven path, or a mentor, holds the key'],['The Lovers','a true choice of the heart; align, then commit'],['The Chariot','drive and will win; steer hard'],['Strength','gentle courage beats force; patience is power'],['The Hermit','withdraw; the light you want is inside'],['Wheel of Fortune','a turning point; ride the cycle'],['Justice','truth and consequence; act fairly'],['The Hanged Man','surrender; the pause is the point'],['Death','an ending that clears the way'],['Temperance','balance and blend; walk the middle'],['The Devil','name the thing that binds you'],['The Tower','a false structure breaks; truth erupts'],['The Star','hope and renewal; keep the faith'],['The Moon','do not trust the surface; fear distorts'],['The Sun','joy and clarity; the yes you hoped for'],['Judgement','a reckoning; answer the call and rise'],['The World','completion; a cycle closes whole']];
-  var POS=['Where you are','The crux','Where it leads'];
-  $('drawBtn').addEventListener('click',function(){
-    var idx=[]; while(idx.length<3){ var r2=Math.floor(Math.random()*ARC.length); if(idx.indexOf(r2)<0)idx.push(r2); }
-    $('deck').innerHTML=idx.map(function(ci,i){ var rev=Math.random()<0.25;
-      return '<div class="tcard'+(rev?' rev':'')+'"><span class="mono">'+POS[i]+'</span><span class="tn">'+ARC[ci][0]+'</span><span class="tm">'+ARC[ci][1]+'</span></div>'; }).join('');
-    $('tverdict').innerHTML='The middle card is your crux — <b>sit with it before you decide anything</b>. For the woven answer, the full deck reads all three against your chart.';
-    $('drawNote').textContent='Cut once · majors only here';
-  });
+  /* cards: the full interactive deck lives in its own script; expose what it needs */
+  window.__PX={
+    name:fullname||'', first:name||'you', dob:dob, pid:pid,
+    pd:pd, npd:(NW[pd]||''), phase:phase, illum:illum, ruler:ruler, msign:msign,
+    tk:tk, eyeLoader:eyeLoader,
+    aiReady:function(){return aiReady();},
+    aiStream:function(o){return aiStream(o);},
+    sysPrompt:function(){return sysPrompt();},
+    mode:function(){return AIMODE;}
+  };
 
   /* cure */
   var REM={Sun:['Because the Sun asks to be seen','Three rounds of breath, then the Gayatri once.','Clarity first — the dawn prayer, for light.','Gayatri Mantra'],
@@ -1299,6 +1412,227 @@
       setTimeout(function(){ clearInterval(ticks); gate.style.display='none'; body.classList.add('shown'); tone(720,0.5,0.05); }, 1700);
     });
   });
+})();
+</script>
+<script src="deck.js"></script>
+<script>
+/* ================= the old tarot — full interactive deck (ported) ================= */
+(function(){
+  var $=function(i){return document.getElementById(i);};
+  if(!$('deckRow'))return;
+  var PX=window.__PX||{name:'',first:'you',dob:'2000-01-01',pd:5,npd:'',phase:'',msign:'',ruler:'',illum:0,mode:function(){return '';}};
+  function firstName(n){return String(n||'').trim().split(/\s+/)[0]||'';}
+  function pad(n){return n<10?'0'+n:''+n;}
+
+  /* ---- audio (self-contained, optional-safe) ---- */
+  var AC=null,MASTER=null;
+  function A(){ if(AC)return AC; try{ AC=new (window.AudioContext||window.webkitAudioContext)();
+    MASTER=AC.createGain(); MASTER.gain.value=0.5; MASTER.connect(AC.destination); }catch(e){AC=null;} return AC; }
+  function toRev(){}
+  function bell(f,g,t){ if(!A())return; t=t||AC.currentTime; try{ [1,2,3].forEach(function(h,i){
+    var o=AC.createOscillator(),ga=AC.createGain(); o.type='sine'; o.frequency.value=f*h;
+    var gv=(g||0.1)/(i+1); ga.gain.setValueAtTime(0.0001,t); ga.gain.exponentialRampToValueAtTime(gv,t+0.01);
+    ga.gain.exponentialRampToValueAtTime(0.0001,t+0.9); o.connect(ga).connect(MASTER); o.start(t); o.stop(t+0.95); }); }catch(e){} }
+  function blip(f,dur,g){ if(!A())return; var t=AC.currentTime; try{ var o=AC.createOscillator(),ga=AC.createGain();
+    o.type='sine'; o.frequency.value=f; ga.gain.setValueAtTime(0.0001,t); ga.gain.exponentialRampToValueAtTime(g||0.08,t+0.008);
+    ga.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.09)); o.connect(ga).connect(MASTER); o.start(t); o.stop(t+(dur||0.09)+0.02); }catch(e){} }
+  function noise(dur,g,freq,q){ if(!A())return; var t=AC.currentTime; var len=Math.floor(AC.sampleRate*(dur||0.1));
+    try{ var b=AC.createBuffer(1,len,AC.sampleRate),d=b.getChannelData(0); for(var i=0;i<len;i++)d[i]=Math.random()*2-1;
+    var s=AC.createBufferSource(); s.buffer=b; var bp=AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=freq||1200; bp.Q.value=q||1;
+    var ga=AC.createGain(); ga.gain.setValueAtTime(g||0.05,t); ga.gain.exponentialRampToValueAtTime(0.0001,t+(dur||0.1));
+    s.connect(bp).connect(ga).connect(MASTER); s.start(t); s.stop(t+(dur||0.1)); }catch(e){} }
+  function riffle(){ for(var i=0;i<18;i++)(function(k){ setTimeout(function(){ noise(0.03,0.03,800+Math.random()*1600,2); },k*12); })(i); }
+  function sweep(){ noise(0.4,0.04,1400,0.7); }
+  function swell(base){ if(!A())return; var t=AC.currentTime; try{ var o=AC.createOscillator(),g=AC.createGain(); o.type='sine';
+    o.frequency.setValueAtTime((base||523)/4,t); o.frequency.exponentialRampToValueAtTime((base||523)/2.5,t+0.5);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.12,t+0.06); g.gain.exponentialRampToValueAtTime(0.0001,t+0.7);
+    o.connect(g).connect(MASTER); o.start(t); o.stop(t+0.75); }catch(e){} }
+  function shimmerSnd(base){ if(!A())return; base=base||523.25; [0,4,7,11,14].forEach(function(st,i){ bell(base*Math.pow(2,st/12),0.05,AC.currentTime+i*0.07); }); }
+  function resolveTone(){ if(!A())return; var t=AC.currentTime; bell(110,0.2,t); bell(164.81,0.16,t+0.02);
+    var voices=[[110,110],[130.81,138.59],[164.81,164.81],[220,277.18],[329.63,329.63]];
+    voices.forEach(function(v,i){ try{ var o=AC.createOscillator(); o.type=i<2?'triangle':'sine'; o.frequency.setValueAtTime(v[0],t);
+      o.frequency.exponentialRampToValueAtTime(v[1],t+2.2); var g=AC.createGain(); g.gain.setValueAtTime(0.0001,t+i*0.06);
+      g.gain.exponentialRampToValueAtTime(0.13/(1+i*0.35),t+i*0.06+0.05); g.gain.exponentialRampToValueAtTime(0.0001,t+6.5-i*0.3);
+      o.connect(g).connect(MASTER); o.start(t+i*0.06); o.stop(t+6.6); }catch(e){} });
+    [659.25,783.99,987.77,1318.51].forEach(function(f,i){ try{ var tt=t+0.5+i*0.16,o=AC.createOscillator(); o.type='sine'; o.frequency.value=f;
+      var g=AC.createGain(); g.gain.setValueAtTime(0.0001,tt); g.gain.exponentialRampToValueAtTime(0.05,tt+0.03); g.gain.exponentialRampToValueAtTime(0.0001,tt+2.6);
+      o.connect(g).connect(MASTER); o.start(tt); o.stop(tt+2.7); }catch(e){} }); }
+
+  /* ---- deck data ---- */
+  var ARCANA=[['0','The Fool','a leap of faith; trust the unknown'],['I','The Magician','you already hold the tools; will makes it real'],['II','The High Priestess','listen inward; the answer sits below the surface'],['III','The Empress','let it grow; nurture rather than force'],['IV','The Emperor','take structure and authority; set the rules'],['V','The Hierophant','the proven path, or a mentor, holds the key'],['VI','The Lovers','a true choice of the heart; align, then commit'],['VII','The Chariot','drive and will win; steer hard'],['VIII','Strength','gentle courage beats force; patience is power'],['IX','The Hermit','withdraw; the light you want is inside'],['X','Wheel of Fortune','a turning point; ride the cycle'],['XI','Justice','truth and consequence; act fairly'],['XII','The Hanged Man','surrender; the pause is the point'],['XIII','Death','an ending that clears the way'],['XIV','Temperance','balance and blend; walk the middle'],['XV','The Devil','name the thing that binds you'],['XVI','The Tower','a false structure breaks; truth erupts'],['XVII','The Star','hope and renewal; keep the faith'],['XVIII','The Moon','do not trust the surface; fear distorts'],['XIX','The Sun','joy and clarity; the yes you hoped for'],['XX','Judgement','a reckoning; answer the call and rise'],['XXI','The World','completion; a cycle closes whole'],
+    ['A','Ace of Wands','a spark of creative fire; begin it'],['2','Two of Wands','planning your reach; the first move'],['3','Three of Wands','your ships coming in; expansion'],['4','Four of Wands','a homecoming, a celebration'],['5','Five of Wands','scrappy friction; everyone competing'],['6','Six of Wands','public victory and recognition'],['7','Seven of Wands','stand your ground; hold the line'],['8','Eight of Wands','things move fast; news in the air'],['9','Nine of Wands','worn but still standing; nearly there'],['10','Ten of Wands','carrying too much; put some down'],['P','Page of Wands','an eager spark of an idea'],['Kn','Knight of Wands','bold, headlong action'],['Q','Queen of Wands','warm, magnetic confidence'],['Kg','King of Wands','visionary leadership; own the fire'],['A','Ace of Cups','love overflowing; an open heart'],['2','Two of Cups','a true connection, a mutual pledge'],['3','Three of Cups','friendship, joy, celebration'],['4','Four of Cups','apathy; you are ignoring an offer'],['5','Five of Cups','grief over what was spilled'],['6','Six of Cups','sweetness, nostalgia, innocence'],['7','Seven of Cups','too many tempting illusions'],['8','Eight of Cups','walking away to seek something truer'],['9','Nine of Cups','contentment; a wish granted'],['10','Ten of Cups','lasting joy, harmony at home'],['P','Page of Cups','a tender, creative feeling stirs'],['Kn','Knight of Cups','romance; follow the heart'],['Q','Queen of Cups','deep compassion and intuition'],['Kg','King of Cups','calm mastery of your feelings'],['A','Ace of Swords','a breakthrough of clarity; truth cuts through'],['2','Two of Swords','a stalemate; a choice you keep avoiding'],['3','Three of Swords','heartbreak; a painful truth'],['4','Four of Swords','rest and recovery; step back to heal'],['5','Five of Swords','a hollow win; conflict costs you'],['6','Six of Swords','moving toward calmer water'],['7','Seven of Swords','getting away with something; be careful'],['8','Eight of Swords','trapped by your own thinking'],['9','Nine of Swords','anxiety; sleepless dread'],['10','Ten of Swords','rock bottom; an ending, then dawn'],['P','Page of Swords','curiosity and watchfulness'],['Kn','Knight of Swords','charging in fast, all mind'],['Q','Queen of Swords','clear, honest, unsentimental judgement'],['Kg','King of Swords','authority earned through truth'],['A','Ace of Pentacles','a solid new opportunity lands'],['2','Two of Pentacles','juggling; keeping your balance'],['3','Three of Pentacles','skilled collaboration; good work'],['4','Four of Pentacles','holding on too tightly'],['5','Five of Pentacles','hard times; you feel left out in the cold'],['6','Six of Pentacles','generosity flowing both ways'],['7','Seven of Pentacles','patience while it slowly grows'],['8','Eight of Pentacles','diligent craft; mastery through practice'],['9','Nine of Pentacles','earned comfort and independence'],['10','Ten of Pentacles','legacy; lasting security'],['P','Page of Pentacles','a practical new venture'],['Kn','Knight of Pentacles','steady, reliable, unglamorous effort'],['Q','Queen of Pentacles','nurturing, grounded abundance'],['Kg','King of Pentacles','prosperity; grounded success']];
+  var POLARITY=[1,1,0,1,1,0,1,1,1,0,1,0,-1,-1,1,-1,-1,1,-1,1,1,1,1,0,1,1,-1,1,0,1,0,-1,1,0,1,1,1,1,1,-1,-1,1,-1,0,1,1,1,1,1,1,1,-1,-1,0,-1,1,-1,-1,-1,-1,0,0,1,1,1,0,1,-1,-1,1,0,1,1,1,1,1,1,1];
+  var SPREADS={
+    yesno:{label:'Yes or no',hint:'Ask something that can actually be answered yes or no. The middle seat is the one you can act on, so it counts double.',pos:['The situation','What to do','Where it leads'],ph:'Should I take the offer?',w:[1,2,1]},
+    choice:{label:'This or that',hint:'Name both options in your question. The first two seats weigh each path; the third names what actually decides it.',pos:['If you choose the first','If you choose the second','What decides it'],ph:'Stay in the job, or go full-time on this?',w:[1,1,1]},
+    timing:{label:'When',hint:'Timing spreads do not give dates. They tell you what is holding the clock and what releases it.',pos:['What holds it','What moves it','The window'],ph:'When will this finally land?',w:[-1,1,1]},
+    block:{label:'What&rsquo;s blocking me',hint:'This spread assumes the obstacle is real. It looks for the root under it and the way through.',pos:['The block','Its root','The way through'],ph:'Why am I stuck on this?',w:[-1,-1,2]},
+    blind:{label:'What am I missing',hint:'The hardest spread to read honestly &mdash; the second seat is the one you did not want to see.',pos:['What you see','What you are missing','What it costs you'],ph:'What am I not seeing here?',w:[1,-1,-1]}
+  };
+  var SPREAD='yesno',POS=SPREADS.yesno.pos,deckOrder=[],picked=[];
+  var LOGO='<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 24 Q24 10 42 24 Q24 38 6 24Z"/><circle cx="24" cy="24" r="6"/><circle cx="24" cy="24" r="1.8" fill="currentColor" stroke="none"/></svg>';
+
+  function cardBackSVG(){ var s='<svg viewBox="0 0 60 94" fill="none" stroke-width="1">';
+    s+='<rect x="2" y="2" width="56" height="90" stroke="#33333d"/><rect x="5.5" y="5.5" width="49" height="83" stroke="#1c1c23"/>';
+    s+='<path d="M2 9 L2 2 L9 2 M51 2 L58 2 L58 9 M58 85 L58 92 L51 92 M9 92 L2 92 L2 85" stroke="#ffab4d" stroke-width="1.1"/>';
+    for(var y=12;y<=82;y+=5){ s+='<line x1="5.5" y1="'+y+'" x2="8" y2="'+y+'" stroke="#2b2b34"/><line x1="52" y1="'+y+'" x2="54.5" y2="'+y+'" stroke="#2b2b34"/>'; }
+    s+='<circle cx="30" cy="47" r="15" stroke="#54545f"/><circle cx="30" cy="47" r="9.5" stroke="#33333d"/>';
+    s+='<path d="M8.5 47 Q30 33 51.5 47 Q30 61 8.5 47 Z" stroke="#8c8c99"/><circle cx="30" cy="47" r="4.4" stroke="#f0f0fa"/>';
+    s+='<path d="M30 43.4 L31 46 L33.6 47 L31 48 L30 50.6 L29 48 L26.4 47 L29 46 Z" fill="#ffab4d" stroke="none"/>';
+    s+='<path d="M30 32 v-3 M30 62 v3 M13 47 h-3 M47 47 h3" stroke="#54545f"/>'; return s+'</svg>'; }
+
+  var _deckAdv=30;
+  function buildDeck(){ deckOrder=[]; for(var i=0;i<ARCANA.length;i++)deckOrder.push(i);
+    for(var j=deckOrder.length-1;j>0;j--){ var k=Math.floor(Math.random()*(j+1)),t=deckOrder[j];deckOrder[j]=deckOrder[k];deckOrder[k]=t; }
+    var row=$('deckRow');row.className='deckrow';row.innerHTML='';
+    var cardW=82,avail=(row.clientWidth||document.body.clientWidth||700);
+    _deckAdv=Math.max(6,Math.min(30,(avail-cardW-12)/(deckOrder.length-1)));
+    var mid=(deckOrder.length-1)/2;
+    deckOrder.forEach(function(cardIdx,pos){ var d=document.createElement('div');d.className='dcard';
+      d.style.marginRight=(pos===deckOrder.length-1?0:-(cardW-_deckAdv))+'px';
+      var frac=mid?(pos-mid)/mid:0;
+      d.style.transform='rotate('+(frac*30).toFixed(2)+'deg) translateY('+(frac*frac*66).toFixed(1)+'px)';
+      d.dataset.card=cardIdx;d.innerHTML=cardBackSVG();
+      d.addEventListener('click',function(){pickCard(d);}); row.appendChild(d); }); }
+
+  function pickCard(el){ if(picked.length>=3||el.classList.contains('taken'))return;
+    el.classList.add('taken'); var cardIdx=+el.dataset.card,inv=Math.random()<0.25; picked.push({r:cardIdx,inv:inv});
+    A();sweep(); document.body.classList.add('casting');
+    var baseN=[523.25,659.25,783.99][picked.length-1]; bell(baseN,0.16); bell(baseN*1.5,0.08,AC?AC.currentTime+0.04:0); swell(baseN);
+    layPlate(picked.length-1,picked[picked.length-1]); flyCard(el,cardIdx,inv,$('plates').lastChild);
+    $('deckHint').innerHTML=picked.length<3?'Chosen <b>'+picked.length+'</b> of 3 &mdash; '+(3-picked.length)+' to go':'Three drawn &middot; reading below';
+    if(picked.length===3){ $('deckRow').classList.add('locked'); setTimeout(function(){shimmerSnd(523.25);},350); setTimeout(verdict,1100); } }
+
+  function flyCard(src,idx,inv,plate){ if(!src||!plate)return;
+    if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches){plate.classList.add('landing');return;}
+    var s=src.getBoundingClientRect(),fig=plate.querySelector('figure'),t=(fig?fig:plate).getBoundingClientRect();
+    var img=(window.PXCARDS&&window.PXCARDS[idx])?window.PXCARDS[idx]:'';
+    var fc=document.createElement('div');fc.className='flycard';
+    fc.style.left=s.left+'px';fc.style.top=s.top+'px';fc.style.width=s.width+'px';fc.style.height=s.height+'px';
+    fc.innerHTML='<div class="fcin"><div class="fcback">'+cardBackSVG()+'</div><div class="fcface">'+(img?'<img class="'+(inv?'inv':'')+'" alt="" src="'+img+'">':'')+'</div></div>';
+    document.body.appendChild(fc);
+    var dx=(t.left+t.width/2)-(s.left+s.width/2),dy=(t.top+t.height/2)-(s.top+s.height/2),sc=Math.max(t.width/s.width,t.height/s.height);
+    setTimeout(function(){ fc.classList.add('flip'); fc.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) scale('+sc.toFixed(3)+')'; },24);
+    setTimeout(function(){ plate.classList.add('landing'); bell(1046.5,0.05); },700);
+    setTimeout(function(){ fc.classList.add('gone'); },720);
+    setTimeout(function(){ if(fc.parentNode)fc.parentNode.removeChild(fc); },1080); }
+
+  function forcePlate(el){ if(!el)return; el.classList.remove('dev');el.classList.remove('sweeping');el.classList.add('on');
+    el.style.opacity='1';el.style.transform='none'; var im=el.querySelector('img'); if(im){im.style.filter='grayscale(1) contrast(1.06)';im.style.opacity='1';} }
+
+  function guillocheSVG(seed){ var pts1='',pts2='',W=300,H=16;
+    for(var x=0;x<=W;x+=3){ var y1=8+Math.sin((x/W)*Math.PI*2*7+seed)*5.4+Math.sin((x/W)*Math.PI*2*11+seed*1.7)*2.0;
+      var y2=8+Math.sin((x/W)*Math.PI*2*7+seed+Math.PI)*5.4+Math.sin((x/W)*Math.PI*2*13+seed*2.3)*1.7;
+      pts1+=(x?' L':'M')+x+' '+y1.toFixed(2); pts2+=(x?' L':'M')+x+' '+y2.toFixed(2); }
+    return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" fill="none" stroke-width=".6"><path d="'+pts1+'" stroke="#54545f"/><path d="'+pts2+'" stroke="#33333d"/></svg>'; }
+  function castRef(cardIdx,i){ var d=new Date(),base=(d.getFullYear()*372+(d.getMonth()+1)*31+d.getDate());
+    var nameSum=0,n=(PX.name||'').toUpperCase().replace(/[^A-Z]/g,''); for(var k=0;k<n.length;k++)nameSum+=n.charCodeAt(k)-64;
+    var hex=((base*97+nameSum*13+cardIdx*7+i)%4096).toString(16).toUpperCase(); while(hex.length<3)hex='0'+hex; return hex+'-'+ARCANA[cardIdx][0]; }
+  function layPlate(i,c){ var a=ARCANA[c.r],img=(window.PXCARDS&&window.PXCARDS[c.r])?window.PXCARDS[c.r]:'',dt=new Date(),who=PX.first||firstName(PX.name)||'you';
+    var el=document.createElement('div');el.className='plate dev';
+    el.innerHTML='<div class="frameA"></div><div class="frameB"></div><i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>'+
+      '<div class="inner"><div class="numeral">'+a[0]+'</div><div class="ph"><span class="pn">Plate '+['I','II','III'][i]+'</span><span class="px">'+POS[i]+'</span></div>'+
+      '<figure><span class="tickrail"></span><span class="tickrail r"></span><span class="scan"></span>'+(img?'<img alt="" src="'+img+'" class="'+(c.inv?'inv':'')+'">':'')+'</figure>'+
+      '<div class="cap"><div class="nm">'+a[1]+'</div><div class="mn">'+(c.inv?'<span class="invtag">Inverted &mdash;</span> ':'')+a[2]+'</div></div>'+
+      '<div class="guilloche">'+guillocheSVG(c.r*1.7+i)+'</div>'+
+      '<div class="stamp">'+LOGO+'<span>Cast for <b>'+who+'</b> &middot; '+pad(dt.getDate())+'.'+pad(dt.getMonth()+1)+' '+((dt.getHours()%12)||12)+':'+pad(dt.getMinutes())+(dt.getHours()<12?'am':'pm')+'</span><span class="ref">REF '+castRef(c.r,i)+'</span></div>'+
+      '</div>';
+    $('plates').appendChild(el);
+    setTimeout(function(){el.classList.add('on');},20); setTimeout(function(){el.classList.add('sweeping');},260);
+    setTimeout(function(){el.classList.remove('dev');},450); setTimeout(function(){el.classList.remove('sweeping');},2100); setTimeout(function(){forcePlate(el);},2600); }
+
+  function liveForce(){ var f='today reads as a '+PX.pd+'-day'+(PX.npd?(' &mdash; '+PX.npd):'');
+    if(PX.phase&&PX.msign)f+=', with a '+String(PX.phase).toLowerCase()+' in '+PX.msign; if(PX.ruler)f+=' and '+PX.ruler+' ruling'; return f; }
+
+  function verdict(){ var S=SPREADS[SPREAD],w=S.w,score=0,p=[];
+    picked.forEach(function(c,i){ var v=POLARITY[c.r]*(c.inv?-1:1); p.push(v); score+=v*w[i]; });
+    var maxAbs=w.reduce(function(a,b){return a+Math.abs(b);},0);
+    var who=PX.first||firstName(PX.name)||'',force=liveForce();
+    var qraw=($('q')&&$('q').value||'').trim().replace(/[<>]/g,''),qc=qraw?(' against &ldquo;'+qraw+'&rdquo;'):'';
+    var c=[0,1,2].map(function(i){ var a=ARCANA[picked[i].r]; return {n:a[1],m:a[2],inv:picked[i].inv,pos:S.pos[i].toLowerCase()}; });
+    var cardline='<b>'+c[0].n+'</b>'+(c[0].inv?' (inverted)':'')+' fell in &ldquo;'+c[0].pos+'&rdquo;, <b>'+c[1].n+'</b>'+(c[1].inv?' (inverted)':'')+' at the centre, <b>'+c[2].n+'</b>'+(c[2].inv?' (inverted)':'')+' in &ldquo;'+c[2].pos+'&rdquo;.';
+    var cruxIdx=({yesno:1,choice:2,timing:1,block:2,blind:1})[SPREAD]; if(cruxIdx==null)cruxIdx=1; var crux=c[cruxIdx];
+    var v,lead;
+    if(SPREAD==='yesno'){ if(score>=3){v='yes<em>.</em>';lead='Three seats agree.';}
+      else if(score>=1){v='yes<em>, with one condition.</em>';lead='The way is open, but priced.';}
+      else if(score===0){v='not yet<em>.</em>';lead='The board is balanced &mdash; nothing refused, nothing ready.';}
+      else if(score>=-2){v='not in this form<em>.</em>';lead='The want is sound; the shape is wrong.';}
+      else{v='no<em>.</em>';lead='The board is against this one.';} }
+    else if(SPREAD==='choice'){ if(p[0]>p[1]){v='the <em>first</em>.';lead='The first path reads stronger &mdash; but the deciding seat is neither option.';}
+      else if(p[1]>p[0]){v='the <em>second</em>.';lead='The second path reads stronger &mdash; but the deciding seat is neither option.';}
+      else{v='<em>neither, yet</em>.';lead='Both paths weigh the same, so the choice is not the real question.';} }
+    else if(SPREAD==='timing'){ if(score>=2){v='<em>sooner</em> than you think.';lead='What was holding it has lost its grip.';}
+      else if(score>=0){v='when you <em>move first</em>.';lead='Nothing external is due to turn on its own.';}
+      else{v='<em>not on this attempt</em>.';lead='The hold is still real; forcing it costs you the next window.';} }
+    else if(SPREAD==='block'){ if(score>=2){v='it is <em>already lifting</em>.';lead='The way through outweighs the block.';}
+      else if(score>=0){v='the root is <em>within your reach</em>.';lead='Nothing outside is doing this to you.';}
+      else{v='the block is <em>structural</em>.';lead='Effort will not shift this &mdash; the arrangement has to change.';} }
+    else{ if(score>=1){v='<em>less</em> than you fear.';lead='What you are missing is not against you.';}
+      else if(score>=-1){v='the <em>obvious thing</em>.';lead='You already suspect it.';}
+      else{v='<em>the cost</em>.';lead='You have seen the opportunity, not the price.';} }
+    var tip=(score>0?'tips it your way':score<0?'tips it against you':'holds it at a standstill');
+    var reason=lead+' '+cardline+' '+'This reading is yours, not a template &mdash; '+force+(who?(', for '+who):'')+qc+'. '+
+      'That live pressure is what '+tip+'. '+'Your move is in &ldquo;'+S.pos[cruxIdx].toLowerCase()+'&rdquo; &mdash; <b>'+crux.n+'</b>'+(crux.inv?', inverted,':'')+': '+crux.m+'. '+
+      '<span class="scoremeta">Weighted '+(score>0?'+':'')+score+' of &plusmn;'+maxAbs+'.</span>';
+    $('vv').innerHTML=v; $('verdict').classList.add('on'); resolveTone();
+    interpretDraw(reason,{v:v,score:score,maxAbs:maxAbs,cards:c,S:S,cruxIdx:cruxIdx,crux:crux,force:force,who:who,qraw:qraw});
+    shimmerSnd(score>=0?523.25:392); setTimeout(function(){document.body.classList.remove('casting');},1600); }
+
+  function aiUsable(){ return !!(PX.aiReady&&PX.aiReady()); }
+  function setVBadge(mode){ var bd=$('vBadge'); if(!bd)return;
+    if(mode==='computed'){ bd.textContent='Computed'; bd.className='srcbadge'; }
+    else{ var m=PX.mode?PX.mode():''; bd.textContent=(m==='local'?'On your device':m==='switchboard'?'Your Claude':'AI reading'); bd.className='srcbadge ai'; } }
+  function tarotDrawPrompt(ev){ var seats=ev.cards.map(function(cd,i){ var seat=(i===1?'centre':ev.S.pos[i]); return '- '+seat+': '+cd.n+(cd.inv?' (reversed)':'')+' — '+cd.m; }).join('\n');
+    var ans=String(ev.v).replace(/<[^>]+>/g,'').replace(/[.\s]+$/,''); var q=ev.qraw?('"'+ev.qraw+'"'):'the question I am already carrying';
+    return 'I just drew three cards for myself. I asked: '+q+'.\nThe cards, in their seats:\n'+seats+'\n'+
+      'The mechanical weighing lands on "'+ans+'" (weighted '+(ev.score>0?'+':'')+ev.score+' of ±'+ev.maxAbs+'). '+
+      'What is live for me right now: '+String(ev.force).replace(/&[a-z]+;/g,'').replace(/<[^>]+>/g,'')+'.\n\n'+
+      'Read THIS specific draw for me in 3 or 4 sentences. Weave the three cards together — do not list them back. '+
+      'Tell me what they say about my question, why, and the one real thing to do. Land on the same answer ("'+ans+'"). Speak straight to me, warm and specific, plain language, no tarot jargon.'; }
+  function interpretDraw(fallback,ev){ var el=$('vr'); if(!el)return;
+    if(!aiUsable()){ el.innerHTML=fallback; setVBadge('computed'); return; }
+    setVBadge('ai'); el.innerHTML=(PX.eyeLoader?PX.eyeLoader('reading the cards…'):'…');
+    (async function(){ var acc='';
+      try{ for await(var d of PX.aiStream({system:PX.sysPrompt(),messages:[{role:'user',content:tarotDrawPrompt(ev)}],maxTokens:340})){ if(d&&d.text){ acc+=d.text; el.textContent=acc; } }
+        acc=acc.trim();
+        if(acc.replace(/[()\s]/g,'').length>8){ el.textContent=acc; setVBadge('ai');
+          var ln=document.createElement('div'); ln.className='vevidence';
+          ln.innerHTML='Weighted '+(ev.score>0?'+':'')+ev.score+' of &plusmn;'+ev.maxAbs+' &middot; '+ev.cards.map(function(cd){return cd.n+(cd.inv?' rev.':'');}).join(' &middot; '); el.appendChild(ln);
+        } else { el.innerHTML=fallback; setVBadge('computed'); }
+      }catch(e){ el.innerHTML=fallback; setVBadge('computed'); } })(); }
+
+  function setSpread(k){ SPREAD=k; POS=SPREADS[k].pos;
+    document.querySelectorAll('#qtypes button').forEach(function(b){ b.classList.toggle('on',b.dataset.s===k); });
+    $('qhint').innerHTML=SPREADS[k].hint; $('q').placeholder=SPREADS[k].ph;
+    picked=[]; $('plates').innerHTML=''; $('verdict').classList.remove('on'); document.body.classList.remove('casting');
+    $('deckHint').innerHTML='Shuffle the deck, then choose three cards';
+    var row=$('deckRow'); if(row){ row.className='deckrow'; row.innerHTML=''; }
+    setVBadge('computed'); $('draw').textContent='Shuffle'; }
+  document.querySelectorAll('#qtypes button').forEach(function(b){ b.addEventListener('click',function(){ A();blip(700,0.09,0.1); setSpread(b.dataset.s); }); });
+  setSpread('yesno');
+
+  function fanTransform(off){ var mid=(ARCANA.length-1)/2,frac=mid?off/mid:0; return 'rotate('+(frac*30).toFixed(2)+'deg) translateY('+(frac*frac*66).toFixed(1)+'px)'; }
+  var _shufBusy=false;
+  $('draw').addEventListener('click',function(){ if(_shufBusy)return; _shufBusy=true;
+    A(); if(AC&&AC.state==='suspended')AC.resume();
+    var btn=this; picked=[]; btn.disabled=true; document.body.classList.add('casting');
+    $('plates').innerHTML=''; $('verdict').classList.remove('on'); buildDeck();
+    var qtext=$('q').value.trim();
+    $('qecho').innerHTML=qtext?('Asked: <b>'+qtext.replace(/[<>]/g,'')+'</b>'):'No question set &mdash; the cards will answer the one you are already carrying.';
+    var row=$('deckRow'),cards=[].slice.call(row.querySelectorAll('.dcard')),n=cards.length,mid=(n-1)/2,STEP=_deckAdv;
+    $('deckHint').innerHTML='Shuffling&hellip;'; cards.forEach(function(d){d.classList.add('shuffling');});
+    function at(ms,fn){setTimeout(fn,ms);}
+    cards.forEach(function(d,i){ d.style.transition='transform .42s cubic-bezier(.3,1,.4,1)'; d.style.transform='translateX('+((mid-i)*STEP).toFixed(1)+'px)'; });
+    bell(174.6,0.13);
+    [520,980,1440].forEach(function(t0){ at(t0,function(){ riffle();
+        cards.forEach(function(d,i){ var side=(i%2?1:-1); d.style.transition='transform .17s ease';
+          d.style.transform='translateX('+(((mid-i)*STEP)+side*(46+Math.random()*34)).toFixed(1)+'px) translateY('+(-34-Math.random()*22).toFixed(1)+'px) rotate('+(side*(7+Math.random()*9)).toFixed(1)+'deg)'; }); });
+      at(t0+190,function(){ cards.forEach(function(d,i){ setTimeout(function(){ d.style.transition='transform .2s cubic-bezier(.3,1,.4,1)';
+          d.style.transform='translateX('+((mid-i)*STEP).toFixed(1)+'px)'; if(i%4===0)bell([392,440,523.25][Math.floor(Math.random()*3)],0.04); },(i*6)%150); }); }); });
+    at(1900,function(){ cards.forEach(function(d,i){ d.style.transition='transform .55s cubic-bezier(.3,1,.4,1)'; d.style.transform=fanTransform(i-mid); });
+      var g=$('deckGlow'); if(g){ g.classList.remove('sweep'); void g.offsetWidth; g.classList.add('sweep'); } shimmerSnd(659.25); });
+    at(2500,function(){ cards.forEach(function(d){ d.classList.remove('shuffling'); d.style.transition=''; });
+      $('deckHint').innerHTML='All '+ARCANA.length+' cards shuffled &middot; <b>choose three</b>'; btn.textContent='Reshuffle'; btn.disabled=false; _shufBusy=false; }); });
 })();
 </script>
 </body>
