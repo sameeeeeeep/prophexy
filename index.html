@@ -610,11 +610,14 @@
 
     <div class="sub3">
       <div class="seclb"><span class="mono">Let me see you</span></div>
-      <p class="secsub">The chart says who you were born as. Your palm and face say who you&rsquo;ve become. Nothing leaves this device until you connect your own Claude.</p>
+      <p class="secsub">The chart says who you were born as. Your palm and face say who you&rsquo;ve become. Photos stay on this device unless you tap Read &mdash; then the image is sent to your own Claude to read.</p>
       <div class="capgrid">
         <div class="capslot"><span class="mono">Your palm</span><img id="palmImg" alt="" hidden><label class="filelb">Add a photo<input type="file" id="palmIn" accept="image/*" hidden></label></div>
         <div class="capslot"><span class="mono">Your face</span><img id="faceImg" alt="" hidden><label class="filelb">Add a photo<input type="file" id="faceIn" accept="image/*" hidden></label></div>
       </div>
+      <div class="fieldrow" style="margin-top:16px"><button class="cbtn" id="readBody">Read my palm &amp; face</button><span class="savednote" id="bodyNote">Add a palm or face photo first.</span></div>
+      <div id="palmReadBlk" hidden style="margin-top:20px"><div class="seclb"><span class="mono">What your palm says</span></div><p class="body" id="palmRead">&mdash;</p></div>
+      <div id="faceReadBlk" hidden style="margin-top:20px"><div class="seclb"><span class="mono">What your face says</span></div><p class="body" id="faceRead">&mdash;</p></div>
     </div>
 
     <div class="sub3">
@@ -912,10 +915,10 @@
     Pisces:'porous and dreaming, absorbing what’s around you'
   };
   var VEDIC_COMPUTED=
-    'To Western astrology you’re '+wsun+'. But Vedic astrology reads the sky from a fixed star point about 24° behind, and by that measure your Sun sits in '+vsun+' — '+(SIGNTRAIT[vsun]||'')+'. '+
+    'Your Vedic Sun sits in '+vsun+'. At the core, that makes you '+(SIGNTRAIT[vsun]||'')+' — and in the Vedic view that core runs deeper than the personality the world first meets. It shapes how you take on whatever the day brings: in the '+vsun+' way, patiently and on your own terms. '+
     (wsun===vsun
-      ? 'Here the two traditions agree, which is rare: it means this part of you reads the same however you look at it.'
-      : 'So under the '+wsun+' you were handed, a quieter '+vsun+' is running. When the two disagree, the Vedic one tends to be who you are when no one’s watching — the private default underneath the public sign.');
+      ? 'Western astrology lands on the same sign here — rare, and it means this part of you reads the same however you look at it.'
+      : '(Western astrology, which measures a little differently, would call you '+wsun+'; Vedic works from the fixed stars, about 24° back, and gives you '+vsun+'.)');
   var CHINESE_COMPUTED=
     'You were born in the year of the '+yy+' '+elem+' '+animal+'. The '+animal+' is '+(ANOTE[animal]||'')+' — the face the world meets first. Its element is '+elem+': '+(ENOTE[elem]||'')+'. And it runs '+yy+', '+(yy==='Yang'?'turned outward — initiating, spending energy to make things happen':'turned inward — receptive, gathering energy before it moves')+'. Together they describe how you actually operate, underneath the Western story.';
   if($('vedicRead')) $('vedicRead').textContent=VEDIC_COMPUTED;
@@ -923,7 +926,7 @@
 
   /* upgrade to a real AI reading when a source is connected; computed prose is the instant fallback */
   function sysReadPrompt(kind){
-    if(kind==='vedic') return 'Write my Vedic (sidereal) astrology reading in 2–3 plain sentences. My Western Sun is '+wsun+'; my Vedic Sun is '+vsun+'. Second person, warm and specific, a reading not advice, no headline and no label — say what this Vedic placement means for who I am underneath the Western sign.';
+    if(kind==='vedic') return 'Write my Vedic (sidereal) astrology reading in 2–3 plain sentences. My Vedic Sun is '+vsun+' (for reference my Western Sun is '+wsun+', but do NOT make the reading about the difference). Second person, warm and specific, a reading not advice, no headline and no label — lead with what my Vedic '+vsun+' Sun says about who I am and how I move through things. Mention the Western sign only as a brief aside at the very end, if at all.';
     return 'Write my Chinese astrology reading in 2–3 plain sentences. I am a '+yy+' '+elem+' '+animal+' (born '+by+'). Second person, warm and specific, a reading not advice, no headline and no label — say how this describes the way I actually operate.';
   }
   function streamInto(el,prompt,cacheKey,fallback){
@@ -979,11 +982,36 @@
       $('jNote').textContent='Saved · '+a.length+' page'+(a.length>1?'s':''); $('jIn').value='';}catch(e){}
   });
 
-  /* palm / face: local preview only — privacy holds */
-  function slot(inId,imgId){ $(inId).addEventListener('change',function(){
-    var f=this.files&&this.files[0]; if(!f)return;
-    var img=$(imgId); img.src=URL.createObjectURL(f); img.hidden=false; }); }
-  slot('palmIn','palmImg'); slot('faceIn','faceImg');
+  /* palm / face: preview + store, then a real reading (your Claude reads the actual photo; computed framing otherwise) */
+  var BODY={palm:null,face:null};
+  try{ var bj=JSON.parse(localStorage.getItem('prophexy.body::'+pid)); if(bj){ BODY.palm=bj.palm||null; BODY.face=bj.face||null; } }catch(e){}
+  function bodySave(){ try{ localStorage.setItem('prophexy.body::'+pid,JSON.stringify(BODY)); }catch(e){} }
+  function refreshBodyBtn(){ var b=$('readBody'),n=$('bodyNote'); if(!b)return; var has=!!(BODY.palm||BODY.face); b.disabled=!has;
+    if(n)n.textContent=!has?'Add a palm or face photo first.':(aiReady()&&AIMODE!=='local'?'Sends the photo to your Claude to read your actual lines.':(aiReady()?'On-device can’t see images — you’ll get a chart-based read.':'Computed read now; connect your Claude to read the actual photo.')); }
+  window.__refreshBodyBtn=refreshBodyBtn;
+  function slot(inId,imgId,which){ var el=$(inId); if(!el)return;
+    if(BODY[which]){ var im0=$(imgId); if(im0){ im0.src=BODY[which]; im0.hidden=false; } }
+    el.addEventListener('change',function(){ var f=this.files&&this.files[0]; if(!f)return;
+      var r=new FileReader(); r.onload=function(){ BODY[which]=r.result; var img=$(imgId); if(img){ img.src=r.result; img.hidden=false; } bodySave(); refreshBodyBtn(); }; r.readAsDataURL(f); }); }
+  slot('palmIn','palmImg','palm'); slot('faceIn','faceImg','face'); refreshBodyBtn();
+  ['palm','face'].forEach(function(w){ if(!BODY[w])return; try{ var c=JSON.parse(localStorage.getItem('prophexy.bodyread::'+pid+'::'+w)); if(c&&c.day===tk()&&c.text){ var el=$(w+'Read'),blk=$(w+'ReadBlk'); if(el&&blk){ el.textContent=c.text; blk.hidden=false; } } }catch(e){} });
+
+  var HAND={Fire:'a Fire hand — warm, driven, quick to act on instinct',Water:'a Water hand — sensitive, intuitive, feeling its way',Earth:'an Earth hand — practical, solid, happiest building something real',Metal:'an Air hand — sharp-minded, communicative, restless in the head',Wood:'a growing hand — reaching, patient, steady as it climbs'};
+  var FACE={Fire:'warmth and expression',Water:'softness and depth',Earth:'steadiness and weight',Metal:'definition and edge',Wood:'openness and height'};
+  function palmComputed(){ return 'Classical palmistry sorts hands into elemental types; by your chart yours reads as '+(HAND[elem]||'a balanced hand')+'. The three lines to know are the heart (how you love), the head (how you think), and the life (your vitality and pace). Connect your Claude and tap Read, and I’ll read the actual lines in your photo.'; }
+  function faceComputed(){ return 'Face reading works in three zones — the forehead (early life and thought), the midface (the middle years and drive), the jaw and chin (later life and will). Your '+elem+' element leans your features toward '+(FACE[elem]||'balance')+'. Connect your Claude and tap Read, and I’ll read your actual features.'; }
+  function readBodyOne(which,el,blk){ if(!BODY[which]||!el||!blk)return; blk.hidden=false;
+    var computed=(which==='palm'?palmComputed():faceComputed());
+    if(!aiReady()||AIMODE==='local'){ el.textContent=computed; return; }
+    el.innerHTML=eyeLoader('reading your '+which+'…');
+    var prompt=(which==='palm'
+      ? 'This is a photo of my palm. Read it for me as a palmist would, in 3–4 plain sentences. Look at the major lines (heart, head, life, and fate if visible) and the hand shape, and tell me what they suggest about how I love, how I think, and how I move through life. Warm, specific, second person, no disclaimers about it being for entertainment.'
+      : 'This is a photo of my face. Read it for me the way a face reader (physiognomy) would, in 3–4 plain sentences. Read the three zones — forehead, midface, jaw and chin — and any notable features, and tell me what they suggest about my temperament and how I move through life. Warm, specific, second person, no disclaimers.');
+    (async function(){ var acc='';
+      try{ for await (var d of aiStream({system:sysPrompt(),messages:[{role:'user',content:prompt}],attachments:[{role:which,data:BODY[which]}],maxTokens:320})){ if(d&&d.text){ acc+=d.text; el.textContent=acc; } }
+        acc=acc.trim(); if(acc){ el.textContent=acc; try{ localStorage.setItem('prophexy.bodyread::'+pid+'::'+which,JSON.stringify({day:tk(),text:acc})); }catch(e){} } else el.textContent=computed;
+      }catch(e){ el.textContent=computed; } })(); }
+  if($('readBody'))$('readBody').addEventListener('click',function(){ readBodyOne('palm',$('palmRead'),$('palmReadBlk')); readBodyOne('face',$('faceRead'),$('faceReadBlk')); });
 
   /* vision board */
   var VK='prophexy.vision::'+(pid||'_');
@@ -1161,7 +1189,9 @@
       if(msgs.length&&msgs[0].role==='user'){ msgs[0]={role:'user',content:o.system+'\n\n'+msgs[0].content}; }
       else { msgs.unshift({role:'user',content:o.system}); }
     }
-    return {model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,max_tokens:o.maxTokens||800,messages:msgs};
+    var p={model:o.model||'claude-sonnet-5',maxTokens:o.maxTokens||800,max_tokens:o.maxTokens||800,messages:msgs};
+    if(o.attachments&&o.attachments.length)p.attachments=o.attachments; /* Switchboard image attachments {role,data} */
+    return p;
   }
   async function *streamOnce(o){
     var params=toWire(o),res=null;
@@ -1206,6 +1236,7 @@
     else if(AIMODE==='switchboard'||AIMODE==='local'){ $('askNote').textContent='Connecting your source — I answer here once it’s ready.'; }
     else { $('askNote').textContent='Reading on the chart. Pick a source above and I’ll answer your questions.'; }
     renderSource();
+    if(window.__refreshBodyBtn)window.__refreshBodyBtn();
   }
   function renderSource(){
     var lbl=AIMODE==='local'?'on your device':(AIMODE==='switchboard'?'your Claude':'computed');
