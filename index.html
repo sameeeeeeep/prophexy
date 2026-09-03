@@ -784,6 +784,11 @@
   function pdayFor(d){var q=dob.split('-');return red(red(+q[1])+red(+q[2])+red(d.getFullYear())+red(d.getMonth()+1)+red(d.getDate()));}
   var dp=dob.split('-'), pd=pdayFor(now);
   var lifePath=red(String(dp[0]+dp[1]+dp[2]).split('').reduce(function(a,c){return a+ +c;},0));
+  /* numerology timing cycles — anchors so predictions can name a real window */
+  var pyear=red(red(+dp[1])+red(+dp[2])+red(now.getFullYear()));
+  var pmonth=red(pyear+red(now.getMonth()+1));
+  var PYTHEME={1:'new starts and momentum',2:'partnership, patience, waiting',3:'expression, social life, creativity',4:'building and steady work',5:'change, freedom, the unexpected, moves',6:'love, home, marriage, commitment, responsibility',7:'reflection and inner work — a slower year',8:'money, power, career leaps',9:'endings and clearing the way',11:'intuition and a spiritual step-up',22:'building something lasting'};
+  function nextPY(target){ for(var i=0;i<9;i++){ var y=now.getFullYear()+i; if(red(red(+dp[1])+red(+dp[2])+red(y))===target) return y; } return null; }
   var PY={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8};
   var nameNum=fullname?red(fullname.toUpperCase().replace(/[^A-Z]/g,'').split('').reduce(function(a,c){return a+(PY[c]||0);},0)):0;
   var NW={1:'a beginning',2:'patience',3:'expression',4:'foundation',5:'change',6:'care',7:'the inner life',8:'power',9:'completion',11:'insight',22:'building big'};
@@ -1360,6 +1365,8 @@
     L.push('You are Prophexy, a personal oracle instrument. Speak in first person as the instrument. Plain, warm, specific. Never generic, no emojis.');
     L.push('SUBJECT: '+(fullname||'unnamed')+', born '+dob+((person&&person.tob)?(' at '+person.tob):'')+((place)?(' in '+place):'')+'.');
     L.push('TONIGHT: '+phase+' ('+illum+'% lit) in '+msign+'; '+ruler+' rules the day; personal day '+pd+' ('+(NW[pd]||'')+'); life path '+lifePath+'; sun in '+wsun+'.');
+    L.push('TIMING ANCHORS (use these to name real windows): personal year '+pyear+' — '+(PYTHEME[pyear]||'')+'; personal month '+pmonth+'. Classic cycle years: love/marriage/commitment falls in a 6 year (next: '+nextPY(6)+'), partnership in a 2 year (next: '+nextPY(2)+'), big change or a move in a 5 year (next: '+nextPY(5)+'), money/career in an 8 year (next: '+nextPY(8)+'). The current calendar year is '+now.getFullYear()+'.');
+    L.push('BE DEFINITIVE. When I ask a question — especially a "when" question — commit to a concrete window: a number of weeks, a named month or season, a number of months, or a specific year, reasoned from the timing anchors and cycles above. NEVER answer "soon", "sooner than you think", "in time", or "when you are ready". Give the single most likely window, plus a shorter/longer bracket, and name the reason in one clause (e.g. "most likely around autumn '+nextPY(6)+', your next 6 year; earliest late this year, at the outside two years out"). Predict a real answer; do not hedge it into nothing.');
     try{var dm=JSON.parse(localStorage.getItem('prophexy.dreams::'+pid))||[]; if(dm.length)L.push('LATEST DREAM: '+String(dm[dm.length-1].t||'').slice(0,220));}catch(e){}
     try{var mm=JSON.parse(localStorage.getItem('prophexy.mood::'+pid))||[]; if(mm.length)L.push('RECENT MOODS: '+mm.slice(-3).map(function(x){return x.m;}).join(', ')+'.');}catch(e){}
     try{var jj=JSON.parse(localStorage.getItem('prophexy.journal::'+pid))||[]; if(jj.length)L.push('LAST JOURNAL LINE: '+String(jj[jj.length-1].t||'').slice(0,180));}catch(e){}
@@ -1637,6 +1644,19 @@
   var PX=window.__PX||{name:'',first:'you',dob:'2000-01-01',pd:5,npd:'',phase:'',msign:'',ruler:'',illum:0,mode:function(){return '';}};
   function firstName(n){return String(n||'').trim().split(/\s+/)[0]||'';}
   function pad(n){return n<10?'0'+n:''+n;}
+  /* timing spreads name a real window, not "soon" */
+  var MON3=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function addM(n){ var d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+n); return d; }
+  function fmtM(d){ return MON3[d.getMonth()]+' '+d.getFullYear(); }
+  function timingWindow(score){ var lo,hi;
+    if(score>=2){ lo=1;hi=3; } else if(score>=0){ lo=3;hi=6; } else { lo=8;hi=14; }
+    var mid=Math.round((lo+hi)/2), v='around <em>'+fmtM(addM(mid))+'</em>.';
+    var lead=(score>=2
+      ? 'What was holding it has lost its grip — look for it inside the next '+hi+' months, most likely between '+fmtM(addM(lo))+' and '+fmtM(addM(mid))+'.'
+      : score>=0
+      ? 'Nothing turns on its own here — once you move first, expect it in about '+lo+'–'+hi+' months, most likely around '+fmtM(addM(mid))+'.'
+      : 'Not on this attempt. The real window opens later — roughly '+lo+'–'+hi+' months out, near '+fmtM(addM(mid))+', once the block clears.');
+    return {v:v,lead:lead}; }
 
   /* ---- audio (self-contained, optional-safe) ---- */
   var AC=null,MASTER=null;
@@ -1775,9 +1795,7 @@
     else if(SPREAD==='choice'){ if(p[0]>p[1]){v='the <em>first</em>.';lead='The first path reads stronger &mdash; but the deciding seat is neither option.';}
       else if(p[1]>p[0]){v='the <em>second</em>.';lead='The second path reads stronger &mdash; but the deciding seat is neither option.';}
       else{v='<em>neither, yet</em>.';lead='Both paths weigh the same, so the choice is not the real question.';} }
-    else if(SPREAD==='timing'){ if(score>=2){v='<em>sooner</em> than you think.';lead='What was holding it has lost its grip.';}
-      else if(score>=0){v='when you <em>move first</em>.';lead='Nothing external is due to turn on its own.';}
-      else{v='<em>not on this attempt</em>.';lead='The hold is still real; forcing it costs you the next window.';} }
+    else if(SPREAD==='timing'){ var tw=timingWindow(score); v=tw.v; lead=tw.lead; }
     else if(SPREAD==='block'){ if(score>=2){v='it is <em>already lifting</em>.';lead='The way through outweighs the block.';}
       else if(score>=0){v='the root is <em>within your reach</em>.';lead='Nothing outside is doing this to you.';}
       else{v='the block is <em>structural</em>.';lead='Effort will not shift this &mdash; the arrangement has to change.';} }
@@ -1802,7 +1820,8 @@
       'The mechanical weighing lands on "'+ans+'" (weighted '+(ev.score>0?'+':'')+ev.score+' of ±'+ev.maxAbs+'). '+
       'What is live for me right now: '+String(ev.force).replace(/&[a-z]+;/g,'').replace(/<[^>]+>/g,'')+'.\n\n'+
       'Read THIS specific draw for me in 3 or 4 sentences. Weave the three cards together — do not list them back. '+
-      'Tell me what they say about my question, why, and the one real thing to do. Land on the same answer ("'+ans+'"). Speak straight to me, warm and specific, plain language, no tarot jargon.'; }
+      'Tell me what they say about my question, why, and the one real thing to do. Land on the same answer ("'+ans+'"). Speak straight to me, warm and specific, plain language, no tarot jargon.'+
+      (SPREAD==='timing'?' This is a WHEN question: commit to the concrete window in the answer ("'+ans+'") — a named month or a season and year — and do NOT soften it to "soon" or "sooner than you think".':''); }
   function interpretDraw(fallback,ev){ var el=$('vr'); if(!el)return;
     if(!aiUsable()){ el.innerHTML=fallback; setVBadge('computed'); return; }
     setVBadge('ai'); el.innerHTML=(PX.eyeLoader?PX.eyeLoader('reading the cards…'):'…');
