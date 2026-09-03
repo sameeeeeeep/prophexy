@@ -436,6 +436,34 @@
   .idsrcopt.cur b{color:var(--amber)}
   .idsrcopt:disabled{opacity:.32;cursor:default}
   .idsrcopt:disabled:hover{background:#000}
+  /* compatibility */
+  .cmplb{margin-bottom:12px}
+  .cmpwho{display:flex;flex-wrap:wrap;gap:10px}
+  .cmp-p{background:none;border:1px solid var(--rule);color:var(--dust);cursor:pointer;padding:11px 15px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:120px}
+  .cmp-p .nm{font-size:15px;color:var(--ink)}
+  .cmp-p .mt{font-family:'Fragment Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  .cmp-p:hover{border-color:var(--amber)}
+  .cmp-p.on{border-color:var(--amber);background:rgba(255,171,77,.08)}
+  .cmp-p.on .nm{color:var(--amber)}
+  .cmpnew{margin-top:12px;display:flex;flex-direction:column;gap:10px;max-width:420px}
+  .cmpnew input{background:#0b0b10;border:1px solid var(--rule);color:var(--ink);font-family:'Archivo',sans-serif;font-size:15px;padding:12px 14px}
+  .cmpnewrow{display:flex;gap:10px}
+  .cmpnewrow input{flex:1;min-width:0}
+  .cmprel{display:flex;gap:1px;background:var(--rule);border:1px solid var(--rule);flex-wrap:wrap}
+  .cmprel button{flex:1 1 auto;background:#000;border:none;color:var(--faint);font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:11px 12px;cursor:pointer;white-space:nowrap}
+  .cmprel button:hover{color:var(--ink)}
+  .cmprel button.on{background:var(--ink);color:#000;font-weight:700}
+  .cmpverdict{margin-top:var(--s4);border-top:1px solid var(--rule);padding-top:var(--s3)}
+  .cmpverdict .vl{display:flex;align-items:baseline;gap:12px}
+  .cmpscore{color:var(--amber)}
+  #cmpVV{font-size:clamp(24px,5vw,38px);margin:12px 0 14px;text-transform:lowercase}
+  #cmpVR{max-width:60ch}
+  .cmpsig{display:flex;gap:12px;align-items:baseline;padding:11px 0;border-top:1px solid var(--rule)}
+  .cmpsig:first-child{margin-top:18px}
+  .cmpsig .k{font-family:'Fragment Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);flex:none;width:96px}
+  .cmpsig .t{font-size:14px;color:var(--dust);line-height:1.5}
+  .cmpsig .sc{margin-left:auto;font-family:'Fragment Mono',monospace;font-size:11px;flex:none}
+  .cmpsig .sc.pos{color:var(--amber)}.cmpsig .sc.neg{color:#8a8a97}
 </style>
 </head>
 <body>
@@ -472,6 +500,7 @@
   <a class="stab" href="#s-ways">Systems</a>
   <a class="stab" href="#s-vedic">Vedic</a>
   <a class="stab" href="#s-chinese">Chinese</a>
+  <a class="stab" href="#s-compat">Together</a>
   <a class="stab" href="#s-checkin">Check in</a>
   <a class="stab" href="#s-cards">Cards</a>
   <a class="stab" href="#s-cure">Cure</a>
@@ -587,6 +616,32 @@
     <p class="secsub">One birth year, read as animal, element, and force.</p>
     <p class="body" id="chineseRead">&mdash;</p>
     <div class="ways" id="chineseCells" style="margin-top:var(--s3)"></div>
+  </section>
+
+  <section id="s-compat">
+    <div class="seclb"><span class="mono">The two of you</span></div>
+    <p class="secsub">Read how you and someone else fit &mdash; choose who, and for what.</p>
+    <div class="cmplb mono">Who am I reading you with?</div>
+    <div class="cmpwho" id="cmpWho"></div>
+    <div class="cmpnew" id="cmpNew" hidden>
+      <input id="cmpName" placeholder="Their name" autocomplete="off">
+      <div class="cmpnewrow"><input id="cmpDob" type="date" value="1990-06-15"><button class="cbtn" id="cmpAdd" type="button">Use them</button></div>
+    </div>
+    <div class="cmplb mono" style="margin-top:var(--s3)">Compatibility for what?</div>
+    <div class="cmprel" id="cmpRel">
+      <button type="button" data-r="relationship" class="on">Relationship</button>
+      <button type="button" data-r="friends">Friends</button>
+      <button type="button" data-r="coworkers">Coworkers</button>
+      <button type="button" data-r="family">Family</button>
+      <button type="button" data-r="business">Business</button>
+    </div>
+    <div class="fieldrow" style="margin-top:var(--s3)"><button class="cbtn go" id="cmpGo" disabled>Read the two of you</button><span class="savednote" id="cmpNote">Pick a person above.</span></div>
+    <div class="cmpverdict" id="cmpVerdict" hidden>
+      <div class="vl mono">The fit<span class="cmpscore" id="cmpScore"></span></div>
+      <h3 class="display" id="cmpVV">&mdash;</h3>
+      <p class="body" id="cmpVR">&mdash;</p>
+      <div id="cmpSignals"></div>
+    </div>
   </section>
 
   <section id="s-checkin">
@@ -1012,6 +1067,87 @@
         acc=acc.trim(); if(acc){ el.textContent=acc; try{ localStorage.setItem('prophexy.bodyread::'+pid+'::'+which,JSON.stringify({day:tk(),text:acc})); }catch(e){} } else el.textContent=computed;
       }catch(e){ el.textContent=computed; } })(); }
   if($('readBody'))$('readBody').addEventListener('click',function(){ readBodyOne('palm',$('palmRead'),$('palmReadBlk')); readBodyOne('face',$('faceRead'),$('faceReadBlk')); });
+
+  /* ================= compatibility — the two of you ================= */
+  (function(){
+    if(!$('s-compat'))return;
+    var people=[]; try{ people=JSON.parse(localStorage.getItem('prophexy.people'))||[]; }catch(e){}
+    var A={name:(name||'You'),sun:wsun,animal:animal,elem:elem,life:lifePath};
+    var B=null, REL='relationship';
+    function pdata(dob,nm){ var dp=String(dob||'1990-01-01').split('-'),by=+dp[0]||1990;
+      return {name:nm||'Them',sun:sunSignByDate(+dp[1],+dp[2]),animal:ANI[(((by-4)%12)+12)%12],elem:ELE[((by%10)+10)%10],
+        life:red(String(dp[0]+dp[1]+dp[2]).split('').reduce(function(a,c){return a+ +c;},0)),dob:dob}; }
+    function sunElem(s){ return {Aries:'Fire',Leo:'Fire',Sagittarius:'Fire',Taurus:'Earth',Virgo:'Earth',Capricorn:'Earth',Gemini:'Air',Libra:'Air',Aquarius:'Air',Cancer:'Water',Scorpio:'Water',Pisces:'Water'}[s]||'Air'; }
+    function elemPair(a,b){ if(a===b)return{s:2,t:'Both '+a+' signs — an easy, instinctive read of each other.'};
+      var fr={Fire:'Air',Air:'Fire',Earth:'Water',Water:'Earth'}; if(fr[a]===b)return{s:2,t:a+' and '+b+' feed each other — one lights, the other carries.'};
+      var cl={Fire:'Water',Water:'Fire',Earth:'Air',Air:'Earth'}; if(cl[a]===b)return{s:-1,t:a+' and '+b+' can douse or unsettle each other; it needs handling.'};
+      return{s:0,t:a+' and '+b+' run on different wavelengths — not wrong, just work.'}; }
+    var TR={Rat:0,Dragon:0,Monkey:0,Ox:1,Snake:1,Rooster:1,Tiger:2,Horse:2,Dog:2,Rabbit:3,Goat:3,Pig:3};
+    function chinPair(a,b){ var ai=ANI.indexOf(a),bi=ANI.indexOf(b);
+      if(a===b)return{s:1,t:'Two '+a+'s — familiar, though you may want the same spotlight.'};
+      if(TR[a]===TR[b])return{s:2,t:'The '+a+' and '+b+' share a trine — natural allies in Chinese astrology.'};
+      if(ai>=0&&bi>=0&&Math.abs(ai-bi)===6)return{s:-2,t:'The '+a+' and '+b+' are the classic clash (six apart) — sparks, for better and worse.'};
+      return{s:0,t:'The '+a+' and '+b+' neither lock in nor clash — it takes intention.'}; }
+    function numPair(a,b){ if(a===b)return{s:1,t:'Matching life paths ('+a+') — you get each other, sometimes too well.'};
+      var set=[a,b].sort(function(x,y){return x-y;}).join('-');
+      var good={'1-5':1,'2-6':1,'3-6':1,'3-9':1,'6-9':1,'2-4':1,'4-8':1,'1-9':1,'5-7':1};
+      var hard={'1-8':1,'4-5':1,'2-7':1,'1-4':1,'5-6':1};
+      if(good[set])return{s:1,t:'Life paths '+a+' and '+b+' support each other.'};
+      if(hard[set])return{s:-1,t:'Life paths '+a+' and '+b+' pull in different directions.'};
+      return{s:0,t:'Life paths '+a+' and '+b+' are neutral — neither helps nor hinders.'}; }
+    var LENS={
+      relationship:{w:{e:1.2,c:1,n:.8},noun:'a relationship',ask:'chemistry, tenderness, and whether it lasts'},
+      friends:{w:{e:1,c:1,n:.8},noun:'friends',ask:'ease, loyalty, and how much fun you two are'},
+      coworkers:{w:{e:.7,c:.8,n:1.3},noun:'coworkers',ask:'complementary strengths and friction under a deadline'},
+      family:{w:{e:.9,c:1.1,n:.9},noun:'family',ask:'patience, old patterns, and unconditional ground'},
+      business:{w:{e:.6,c:.9,n:1.4},noun:'business partners',ask:'trust, money instincts, and how you decide together'}
+    };
+    function compute(){
+      var e=elemPair(sunElem(A.sun),sunElem(B.sun)),c=chinPair(A.animal,B.animal),n=numPair(A.life,B.life),L=LENS[REL]||LENS.relationship;
+      var score=e.s*L.w.e+c.s*L.w.c+n.s*L.w.n, maxPos=2*L.w.e+2*L.w.c+1*L.w.n, maxNeg=1*L.w.e+2*L.w.c+1*L.w.n;
+      var pct=Math.max(6,Math.min(97,Math.round(((score+maxNeg)/(maxPos+maxNeg))*100)));
+      var head,tier;
+      if(pct>=78){head='a strong, natural fit';tier='strong';}
+      else if(pct>=60){head='a good fit, with a little to mind';tier='good';}
+      else if(pct>=42){head='a workable fit — real, but earned';tier='mixed';}
+      else {head='an opposites match — hard, and interesting';tier='hard';}
+      return{e:e,c:c,n:n,score:score,pct:pct,head:head,tier:tier,L:L};
+    }
+    function sig(k,t,s){ var cls=s>0?'pos':(s<0?'neg':''); return '<div class="cmpsig"><span class="k">'+k+'</span><span class="t">'+esc(t)+'</span><span class="sc '+cls+'">'+(s>0?'+':'')+s+'</span></div>'; }
+    function render(){ if(!B)return; var r=compute();
+      $('cmpVerdict').hidden=false; $('cmpScore').textContent=' · '+r.pct+'%';
+      $('cmpVV').textContent=A.name+' & '+B.name+' — '+r.head;
+      var lead=({strong:'As '+r.L.noun+', you two click where it counts.',good:'As '+r.L.noun+', this works — with one or two things to stay awake to.',mixed:'As '+r.L.noun+', this is real but not automatic; it rewards effort.',hard:'As '+r.L.noun+', this one runs hot — the friction is the feature and the risk.'})[r.tier];
+      $('cmpVR').textContent=lead+' It comes down to '+r.L.ask+'. '+r.e.t+' '+r.c.t+' '+r.n.t;
+      $('cmpSignals').innerHTML=sig('Western',r.e.t,r.e.s)+sig('Chinese',r.c.t,r.c.s)+sig('Numbers',r.n.t,r.n.s);
+      enrich(r);
+    }
+    function enrich(r){ if(!aiReady())return; var el=$('cmpVR'),computed=el.textContent;
+      var prompt='Give a compatibility reading between two people, 4–5 plain sentences, warm and specific, addressed to me ('+A.name+') in second person. '+
+        'Us as '+r.L.noun+'. Me: Sun '+A.sun+', Chinese '+A.animal+', life path '+A.life+'. Them ('+B.name+'): Sun '+B.sun+', Chinese '+B.animal+', life path '+B.life+'. '+
+        'Signals: '+r.e.t+' '+r.c.t+' '+r.n.t+' Overall about '+r.pct+'% — "'+r.head+'". '+
+        'Weave the systems together (do not list them), focus on '+r.L.ask+', name the one real strength and the one real watch-out, land on the same overall verdict. No disclaimers.';
+      el.innerHTML=eyeLoader('reading the two of you…');
+      (async function(){ var acc=''; try{ for await(var d of aiStream({system:sysPrompt(),messages:[{role:'user',content:prompt}],maxTokens:360})){ if(d&&d.text){acc+=d.text; el.textContent=acc;} } if(!acc.trim())el.textContent=computed; }catch(e){ el.textContent=computed; } })();
+    }
+    function renderWho(){ var others=people.filter(function(p){return p.id!==pid;});
+      var html=others.map(function(p){ return '<button class="cmp-p" type="button" data-id="'+p.id+'"><span class="nm">'+esc(p.name)+'</span><span class="mt">'+esc(p.dob||'')+(p.place?(' · '+esc(p.place)):'')+'</span></button>'; }).join('');
+      html+='<button class="cmp-p" type="button" data-id="__new"><span class="nm">Someone new</span><span class="mt">add a name + date</span></button>';
+      $('cmpWho').innerHTML=html;
+      [].slice.call($('cmpWho').querySelectorAll('.cmp-p')).forEach(function(btn){ btn.addEventListener('click',function(){
+        $('cmpWho').querySelectorAll('.cmp-p').forEach(function(o){o.classList.remove('on');}); btn.classList.add('on');
+        if(btn.dataset.id==='__new'){ $('cmpNew').hidden=false; B=null; $('cmpGo').disabled=true; $('cmpNote').textContent='Enter their name and date, then Use them.'; return; }
+        $('cmpNew').hidden=true; var p=others.filter(function(x){return x.id===btn.dataset.id;})[0]; if(!p)return;
+        B=pdata(p.dob,String(p.name||'').split(/\s+/)[0]); $('cmpGo').disabled=false; $('cmpNote').textContent=''; }); });
+    }
+    renderWho();
+    $('cmpAdd').addEventListener('click',function(){ var nm=($('cmpName').value||'').trim(),db=$('cmpDob').value||'1990-06-15';
+      if(!nm){ $('cmpNote').textContent='Give them a name first.'; return; } B=pdata(db,nm.split(/\s+/)[0]); $('cmpGo').disabled=false; $('cmpNote').textContent='Ready — read the two of you.'; });
+    [].slice.call($('cmpRel').querySelectorAll('button')).forEach(function(b){ b.addEventListener('click',function(){
+      $('cmpRel').querySelectorAll('button').forEach(function(o){o.classList.remove('on');}); b.classList.add('on'); REL=b.dataset.r;
+      if(B&&!$('cmpVerdict').hidden)render(); }); });
+    $('cmpGo').addEventListener('click',function(){ if(!B){ $('cmpNote').textContent='Pick a person above.'; return; } render(); });
+  })();
 
   /* vision board */
   var VK='prophexy.vision::'+(pid||'_');
