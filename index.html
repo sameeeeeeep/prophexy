@@ -834,7 +834,7 @@
   function tk(d){d=d||new Date();var p=function(n){return n<10?'0'+n:''+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
   var daily=null; try{ var dj=JSON.parse(localStorage.getItem('prophexy.daily::'+pid)); if(dj&&dj.day===tk())daily=dj; }catch(e){}
   function capWords(str,n){var w=String(str||'').trim().split(/\s+/);return w.length<=n?w.join(' '):w.slice(0,n).join(' ')+'…';}
-  var HL={1:'Expect a restless, ready day.',2:'Expect a slow, waiting day.',3:'Expect a bright, talkative day.',4:'Expect a steady, working day.',5:'Expect a loose, changeable day.',6:'Expect a quiet day, close to home.',7:'Expect a quiet, inward day.',8:'Expect a strong, sure day.',9:'Expect a winding-down day.',11:'Expect a gut-feeling day.',22:'Expect a big-picture day.'};
+  var HL={1:'The day has its engine running.',2:'A slow day — and it should be.',3:'The day wants to talk.',4:'Heads down; things get done.',5:'The day won’t sit still.',6:'The day pulls you home.',7:'Go quiet, and listen in.',8:'You can push today, and win.',9:'A door is ready to close.',11:'Your gut runs the show today.',22:'A day that thinks in years.'};
   var MEANING={1:'Today has push in it. Something you keep circling comes closer to the surface, and you feel the pull to move on it. Point that restless energy at one thing and it goes.',2:'Today moves slowly, and it is not yours to rush. What you want is still forming in the background. This is a waiting day — it goes better the moment you stop forcing it.',3:'Today is bright and talkative. Words come easily and you want to share what is on your mind. Reach out — a conversation opens something up.',4:'Today is steady and grounded — a working day, not a dramatic one. The practical pile that has been building finally gets manageable. Solid and useful; you get real things done.',5:'Today runs loose. The routine has give in it, plans shift, and something unplanned gets room to move. Stay flexible and the change works for you.',6:'Today turns toward home and the people in it. Their moods reach you, and the small things close to you carry the weight. It is about who you are doing it for, not the to-do list.',7:'Today turns inward. The outside world matters less and your own thoughts more. Low-key and quiet — you feel exactly how you are actually doing.',8:'Today gives you firmer ground. You carry more weight, speak up sooner, and get taken seriously. A strong, sure day — spend the confidence.',9:'Today closes a chapter. Something that has run its course is ready to end, and it reads like an exhale. Let the ending be an ending.',11:'Today your gut runs louder than your logic. You know things before you can explain them — a first impression, a hunch that turns out right. Trust the read.',22:'Today thinks big. The long game — the someday plans — feels closer and more real. It moves in years, not hours; set the larger thing in motion now.'};
   if(daily&&daily.line){ $('hl').textContent=capWords(daily.line,13);
     $('kick').innerHTML='<b>Tonight&rsquo;s reading</b> · '+(daily.src==='local'?'on your device':'your Claude');
@@ -1016,9 +1016,19 @@
       finally{ delete el.dataset.busy; }
     })();
   }
+  /* lazy: only spend tokens on a section's AI reading when you actually scroll to it (and never re-run a cached day) */
+  function lazyEnrich(secId,el,prompt,cacheKey,fallback){
+    if(!el)return;
+    try{ var c=JSON.parse(localStorage.getItem(cacheKey)); if(c&&c.day===tk()&&c.text){ el.textContent=c.text; return; } }catch(e){}
+    if(!aiReady())return; /* computed fallback already shown */
+    var sec=$(secId); if(!sec||el.dataset.obs)return; el.dataset.obs='1';
+    if(!('IntersectionObserver' in window)){ streamInto(el,prompt,cacheKey,fallback); return; }
+    var io=new IntersectionObserver(function(ents){ ents.forEach(function(en){ if(en.isIntersecting){ io.disconnect(); streamInto(el,prompt,cacheKey,fallback); } }); },{rootMargin:'0px 0px -15% 0px'});
+    io.observe(sec);
+  }
   window.__enrichSystems=function(){
-    streamInto($('vedicRead'),sysReadPrompt('vedic'),'prophexy.vedic::'+pid,VEDIC_COMPUTED);
-    streamInto($('chineseRead'),sysReadPrompt('chinese'),'prophexy.chinese::'+pid,CHINESE_COMPUTED);
+    lazyEnrich('s-vedic',$('vedicRead'),sysReadPrompt('vedic'),'prophexy.vedic::'+pid,VEDIC_COMPUTED);
+    lazyEnrich('s-chinese',$('chineseRead'),sysReadPrompt('chinese'),'prophexy.chinese::'+pid,CHINESE_COMPUTED);
   };
   if(aiReady()) window.__enrichSystems();
 
@@ -1373,7 +1383,7 @@
       } else throw e;
     }
   }
-  var CORE='Write my reading for today as a confident forecast — commit to it. Predict what the day holds and how it will land, plainly and specifically: where you can, name a time of day (morning, mid-afternoon, after dark), a kind of moment, or a person-shaped situation. Do NOT hedge — avoid "maybe", "might", "probably", "you may", "tends to", "could", "you’ll likely"; at most ONE soft word in the whole reading. State the day. Open with ONE headline on its own line starting "Expect a…" that names the day in a few easy words — at most 6 words, like "Expect a strong, sure day." — no label, no clever twists. Then a blank line, then two short paragraphs that read my day to me with conviction: what happens, what I notice, how it feels. This is a reading, NOT advice — describe, don’t instruct; never say "you should". Keep it simple: short sentences, plain everyday words like texting a friend. No poetic phrases (nothing like "inward gravity"), no jargon, no emojis. At the very end, on its own line, write DO: then one small concrete thing to do today.';
+  var CORE='Write my reading for today as a confident forecast — commit to it. Predict what the day holds and how it will land, plainly and specifically: where you can, name a time of day (morning, mid-afternoon, after dark), a kind of moment, or a person-shaped situation. Do NOT hedge — avoid "maybe", "might", "probably", "you may", "tends to", "could", "you’ll likely"; at most ONE soft word in the whole reading. State the day. Open with ONE short, vivid headline on its own line — at most 7 words — that captures today with an image or a stance; do NOT start it with "Expect", and never generic (aim for lines like "The day pulls you home." or "You can push today, and win."). Then a blank line, then two short paragraphs that read my day to me with conviction: ground the day in something concrete — a likely moment, a domain (a message, money, a person, work, rest, a decision), a time of day — so it reads written for today, not any day. Say what happens, what I notice, how it lands. This is a reading, NOT advice — describe, don’t instruct; never say "you should". Keep it simple: short sentences, plain everyday words like texting a friend. No poetic phrases (nothing like "inward gravity"), no jargon, no emojis. At the very end, on its own line, write DO: then one small concrete thing to do today.';
   function sysPrompt(){
     var L=[];
     L.push('You are Prophexy, a personal oracle instrument. Speak in first person as the instrument. Plain, warm, specific. Never generic, no emojis.');
@@ -1468,6 +1478,7 @@
     if(dev)dev.addEventListener('click',function(){ if(!LocalAI.supported())return; persist('local'); updateIdentSrc(); });
     if(sb)sb.addEventListener('click',function(){
       if(!AI.installed){ updateIdentSrc(); return; }
+      if(AI.connected){ persist('switchboard'); updateIdentSrc(); return; } /* already approved — no re-prompt */
       sb.disabled=true; var st=$('idSrcStatus'); if(st)st.textContent='Connecting your Claude…';
       AI.connect().then(function(){ persist('switchboard'); sb.disabled=false; updateIdentSrc(); })
         .catch(function(){ sb.disabled=false; persist('computed'); if(st)st.textContent='Could not connect · computed'; updateIdentSrc(); });
@@ -1498,8 +1509,15 @@
         if(!AIMODE){ AIMODE = granted ? 'switchboard' : 'computed'; }
         if(typeof updateIdentSrc==='function') updateIdentSrc();
         if(AIMODE==='switchboard' && AI.installed){
-          AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); else if(window.__enrichSystems) window.__enrichSystems(); })
-            .catch(function(){ AIMODE='computed'; updateAIUI(); });
+          if(granted){
+            /* already approved before — connect silently, never re-prompt */
+            AI.connected=true; try{localStorage.setItem('prophexy.sbok','1');}catch(e){}
+            updateAIUI(); if(!daily) readNow(); else if(window.__enrichSystems) window.__enrichSystems();
+          } else {
+            /* first time only: this prompts for approval */
+            AI.connect().then(function(){ updateAIUI(); if(!daily) readNow(); else if(window.__enrichSystems) window.__enrichSystems(); })
+              .catch(function(){ AIMODE='computed'; updateAIUI(); });
+          }
         } else if(AIMODE==='local' && LocalAI.supported()){
           updateAIUI(); if(!daily) loadLocalThenRead(); else if(window.__enrichSystems) window.__enrichSystems();
         } else {
@@ -1586,6 +1604,17 @@
     $('fGo').addEventListener('click',function(){
       var nm=($('fName').value||'').trim();
       if(!nm){ $('fNote').textContent='A name is required — your number is made from it.'; $('fName').focus(); return; }
+      /* if reading through Claude, do NOT proceed until access is approved */
+      if(AIMODE==='switchboard'){
+        if(!AI.installed){ $('fNote').textContent='Switchboard isn\u2019t detected here \u2014 pick On device or Computed above.'; return; }
+        if(!AI.connected){
+          $('fNote').textContent='Approve Claude access to read with your Claude\u2026';
+          var self=this;
+          AI.connect().then(function(){ if(typeof updateIdentSrc==='function')updateIdentSrc(); self.click(); })
+            .catch(function(){ $('fNote').textContent='Claude access is needed to read with your Claude. Approve it, or switch the source above.'; });
+          return;
+        }
+      }
       var d2=$('fDob').value||'1992-10-01', t2=$('fTob').value||'', plq=($('fPlace').value||'').trim();
       $('fNote').textContent='Finding that place\u2026';
       function fin(loc){
