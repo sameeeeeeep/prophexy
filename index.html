@@ -1073,10 +1073,20 @@
   function refreshBodyBtn(){ var b=$('readBody'),n=$('bodyNote'); if(!b)return; var has=!!(BODY.palm||BODY.face); b.disabled=!has;
     if(n)n.textContent=!has?'Add a palm or face photo first.':(aiReady()&&AIMODE!=='local'?'Sends the photo to your Claude to read your actual lines.':(aiReady()?'On-device can’t see images — you’ll get a chart-based read.':'Computed read now; connect your Claude to read the actual photo.')); }
   window.__refreshBodyBtn=refreshBodyBtn;
+  /* downscale + recompress before storing/sending — a phone photo at full res is megabytes and costs a fortune in tokens */
+  function compressImg(file,maxDim,quality){ return new Promise(function(res){
+    var r=new FileReader(); r.onerror=function(){res('');};
+    r.onload=function(){ var img=new Image();
+      img.onload=function(){ var w=img.width,h=img.height,scale=Math.min(1,maxDim/Math.max(w,h||1));
+        var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale));
+        try{ var c=document.createElement('canvas'); c.width=cw; c.height=ch; c.getContext('2d').drawImage(img,0,0,cw,ch);
+          res(c.toDataURL('image/jpeg',quality||0.72)); }catch(e){ res(r.result); } };
+      img.onerror=function(){ res(r.result); }; img.src=r.result; };
+    r.readAsDataURL(file); }); }
   function slot(inId,imgId,which){ var el=$(inId); if(!el)return;
     if(BODY[which]){ var im0=$(imgId); if(im0){ im0.src=BODY[which]; im0.hidden=false; } }
     el.addEventListener('change',function(){ var f=this.files&&this.files[0]; if(!f)return;
-      var r=new FileReader(); r.onload=function(){ BODY[which]=r.result; var img=$(imgId); if(img){ img.src=r.result; img.hidden=false; } bodySave(); refreshBodyBtn(); }; r.readAsDataURL(f); }); }
+      compressImg(f,768,0.72).then(function(durl){ if(!durl)return; BODY[which]=durl; var img=$(imgId); if(img){ img.src=durl; img.hidden=false; } bodySave(); refreshBodyBtn(); }); }); }
   slot('palmIn','palmImg','palm'); slot('faceIn','faceImg','face'); refreshBodyBtn();
   ['palm','face'].forEach(function(w){ if(!BODY[w])return; try{ var c=JSON.parse(localStorage.getItem('prophexy.bodyread::'+pid+'::'+w)); if(c&&c.day===tk()&&c.text){ var el=$(w+'Read'),blk=$(w+'ReadBlk'); if(el&&blk){ el.textContent=c.text; blk.hidden=false; } } }catch(e){} });
 
@@ -1569,10 +1579,12 @@
     var ad=document.createElement('div'); ad.className='aq me'; ad.innerHTML=eyeLoader('reading\u2026'); th.appendChild(ad);
     if(!AIchat.length&&daily&&daily.base)AIchat=[{role:'user',content:CORE},{role:'assistant',content:daily.base}];
     AIchat.push({role:'user',content:q});
+    /* only send the base reading + the last few turns, so a long thread doesn't resend everything each time */
+    var sendMsgs=(AIchat.length<=10)?AIchat:AIchat.slice(0,2).concat(AIchat.slice(-8));
     (async function(){
       var acc='';
       try{
-        for await (var d of aiStream({system:sysPrompt(),messages:AIchat,maxTokens:450})){
+        for await (var d of aiStream({system:sysPrompt(),messages:sendMsgs,maxTokens:450})){
           if(d&&d.text){ acc+=d.text; ad.textContent=acc; } }
         AIchat.push({role:'assistant',content:acc});
         try{ var k='prophexy.daily::'+pid; var dd=JSON.parse(localStorage.getItem(k))||{day:tk(),thread:[]};
